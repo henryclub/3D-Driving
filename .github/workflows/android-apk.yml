@@ -1,0 +1,62 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Collect game files
+        run: |
+          mkdir -p www
+          cp index.html three.min.js www/
+
+      - name: Wrap the game in a Capacitor Android app
+        run: |
+          npm init -y > /dev/null
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          npx cap init "3D Driving" com.azarr.driving3d --web-dir www
+          npx cap add android
+          # Play in landscape
+          sed -i 's/<activity/<activity android:screenOrientation="sensorLandscape"/' android/app/src/main/AndroidManifest.xml
+          npx cap sync android
+
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../3D-Driving.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 3D-Driving-apk
+          path: 3D-Driving.apk
+
+      - name: Publish APK as a release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: 3D Driving APK (build ${{ github.run_number }})
+          body: Download 3D-Driving.apk below and open it on your Android phone to install.
+          files: 3D-Driving.apk
+          make_latest: true

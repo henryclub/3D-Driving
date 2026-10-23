@@ -1,13 +1,20 @@
 # 3D Driving
 
-A 3D open-world driving game that runs in the browser. Your home sits in the middle of an endless city. Step outside, take the Fortuner or the Thar from your driveway, call any car or bike with your phone, and take on missions for cash.
+A 3D open-world driving and action game that runs in the browser and on Android. Your home sits in the middle of an endless city. Step outside, take the Fortuner or the Thar from your driveway, call any car or bike with your phone, run missions for cash, or cause trouble and outrun the police.
 
-Built with [Three.js](https://threejs.org/). The whole game is a single `index.html` file.
+Built with [Three.js](https://threejs.org/). The game is a single `index.html` plus a local copy of `three.min.js`, so it also works offline.
+
+## Download the Android APK
+Every push to `main` builds a fresh APK automatically. Open the repo's **Releases** page, download `3D-Driving.apk` from the newest release, and open it on your phone. Android will ask you to allow installing from this source the first time.
 
 ## Features
 - **Endless city.** Roads, buildings, parks and street lights keep generating as you drive, with traffic on the roads.
 - **Your home.** It has a garage, a driveway and a "MY HOME" sign. A Toyota Fortuner, a Mahindra Thar and a Royal Enfield are parked outside.
-- **34 real-world vehicles.** Each one wears an **AZARR** badge where the maker's logo would be: on the grille, the boot, and the fuel tank on bikes.
+- **34 real-world vehicles at real size.** Cars are built from their real length, width, height and wheelbase, with curved bodies and each car's own front: BMW twin round headlights and kidney grille, Porsche round "frog-eye" lamps, Thar round lamps and slotted grille, G 63 round lamps with fender indicators, Audi's big single-frame grille, the Bugatti horseshoe, and more. Each one wears an **AZARR** badge where the maker's logo would be.
+- **Weapons.** Pistol, machine gun, assault rifle, sniper rifle (with scope) and grenade launcher, picked from the bar at the top of the screen. Shoot or blast any car until it explodes.
+- **Police and wanted stars.** Every crime adds a star (up to 5), shown just above your health bar. Police cars chase you for 2 minutes after your last crime. If you stop or get out, officers jump out and shoot. An officer goes down after 5 pistol shots.
+- **Health and WASTED.** Your HP bar sits at the bottom and slowly heals. If it runs out, the screen shows a red **WASTED** and you wake up at home.
+- **People on the streets.** Pedestrians walk the pavements. Shoot at them and they die or run away. Stand in front of a car in traffic to stop it, then press `E` to pull the driver out and take it.
 - **Phone.** Press `P`. The **Garage** tab lists every vehicle's number. Call a number and that vehicle drops in beside you.
 - **6 missions.** Taxi Rush, Hot Pizza Delivery, Checkpoint Race, Emergency Rescue, Police Patrol and Supercar Delivery. You earn cash, plus a bonus for time left on the clock.
 - **Minimap**, **nitro**, **day/night mode** (windows light up at night and you get headlights), engine sound and a horn.
@@ -17,7 +24,10 @@ Built with [Three.js](https://threejs.org/). The whole game is a single `index.h
 | Key | Action |
 | --- | --- |
 | `W A S D` / Arrows | Walk, drive and steer |
-| `E` | Get in or out of a vehicle |
+| `E` | Get in or out of a vehicle, or steal a car in traffic |
+| Left click / `F` | Shoot |
+| Right click (hold) / `Z` | Aim; with the sniper this opens the scope |
+| `1`-`5`, `Q`, mouse wheel | Change weapon |
 | `P` | Phone |
 | `M` | Missions |
 | `Shift` | Nitro while driving, run on foot |
@@ -26,7 +36,7 @@ Built with [Three.js](https://threejs.org/). The whole game is a single `index.h
 | `C` | Change camera |
 | `N` | Day / night |
 
-On phones and tablets you get on-screen buttons.
+On phones and tablets you get on-screen buttons: steering, gas, brake, nitro, FIRE, weapon, aim, phone and camera.
 
 ## Vehicle codes
 | Number | Vehicle | Number | Vehicle |
@@ -52,6 +62,7 @@ On phones and tablets you get on-screen buttons.
 
 ## Run it
 - **Locally:** open `index.html` in a browser.
+- **Android:** see *Download the Android APK* above. The build is defined in `.github/workflows/android-apk.yml` (it wraps the game with Capacitor).
 - **GitHub Pages:** go to **Settings → Pages**, set Source to **Deploy from a branch**, pick branch `main` and folder `/ (root)`, then save. The game will be live at `https://kainatmirza329-beep.github.io/3D-Driving/`.
 
 ## Add your own vehicle
