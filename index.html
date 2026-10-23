@@ -1840,7 +1840,7 @@
       const side = v.spec.wid / 2 + 0.8;
       const x = v.x + f.z * side * sgn, z = v.z - f.x * side * sgn;
       const r = resolve(x, z, 0.35);
-      const o = { hum, x: r.x, z: r.z, h: v.h, hp: 100, state: 'engage', dead: false, inCar: false, car: v, fireT: rand(0.6, 1.4), phase: 0, deadT: 0 };
+      const o = { hum, x: r.x, z: r.z, h: v.h, hp: 100, state: 'engage', dead: false, inCar: false, car: v, fireT: rand(1.6, 2.4), phase: 0, deadT: 0 };
       hum.g.position.set(o.x, 0, o.z); scene.add(hum.g);
       cops.push(o); v.ai.officers.push(o);
     }
@@ -1966,18 +1966,11 @@
     setTimeout(() => { $('wastedSub').textContent = 'Hospital bill ' + money(Math.min(save.cash, 500)); $('wasted').hidden = false; }, 900);
     if (mission) endMission(false, 'You were wasted.');
   }
+  // After WASTED the whole game starts over from home
   function respawn() {
-    wastedT = -1;
-    for (const v of vehicles.slice()) if (v.police) removeVehicle(v);
-    for (const o of cops) { scene.remove(o.hum.g); if (o.blood) scene.remove(o.blood); }
-    cops.length = 0;
-    stars = 0; wantedT = 0; hp = MAX_HP;
     save.cash -= Math.min(save.cash, 500); persist();
-    P.x = HOME_SPAWN.x; P.z = HOME_SPAWN.z; P.h = HOME_SPAWN.h;
-    player.rotation.set(0, P.h, 0); player.position.set(P.x, 0, P.z);
-    $('wasted').hidden = true; $('stage').classList.remove('dead');
-    snapCam = true;
-    toast('You woke up at home.');
+    resetWorld();
+    toast('Game restarted. You are back home.');
   }
 
   // ================= Input =================
@@ -2738,22 +2731,35 @@
     trigger = false; triggerPressed = false; setAim(false);
     if (on) $('resumeBtn').focus();
   }
-  // Put the player back at home with a clean slate. Cash and missions passed are kept.
+  // Start the game over from home: every vehicle, person, wreck and effect is cleared and rebuilt.
+  // Cash and missions passed are kept.
   function resetWorld() {
+    if (phoneOpen) togglePhone(false);
+    calling = false; $('calling').hidden = true;
     if (mode === 'drive') exit(true);
+    mode = 'foot'; current = null;
     if (mission) { if (mission.prop) scene.remove(mission.prop); marker.g.visible = false; mission = null; $('missionBox').hidden = true; }
     for (const v of vehicles.slice()) removeVehicle(v);
+    for (const t of traffic.slice()) removeTraffic(t);
     for (const o of cops) { scene.remove(o.hum.g); if (o.blood) scene.remove(o.blood); }
     cops.length = 0;
     for (const g of grenades) scene.remove(g.m);
     grenades.length = 0;
-    spawnHomeVehicles();
-    for (const p of peds) placePed(p, true);
-    stars = 0; wantedT = 0; hp = MAX_HP; nitro = 1; wastedT = -1;
+    for (const p of peds.splice(PED_N)) { scene.remove(p.hum.g); if (p.blood) scene.remove(p.blood); }
+    for (const p of particles) p.s.visible = false;
+    for (const tr of tracers) tr.m.visible = false;
+    for (const fb of fireballs) fb.m.visible = false;
+    blastLight.intensity = 0; blastT = 0; shake = 0;
+    stars = 0; wantedT = 0; hp = MAX_HP; nitro = 1; wastedT = -1; playerStill = 0;
     $('wasted').hidden = true; $('stage').classList.remove('dead');
-    P.x = HOME_SPAWN.x; P.z = HOME_SPAWN.z; P.h = HOME_SPAWN.h;
+    P.x = HOME_SPAWN.x; P.z = HOME_SPAWN.z; P.h = HOME_SPAWN.h; P.walk = 0;
+    scene.add(player);
     player.rotation.set(0, P.h, 0); player.position.set(P.x, 0, P.z); player.visible = true; sitPose(false);
-    setWeapon(-1);
+    updateChunks(P.x, P.z);
+    spawnHomeVehicles();
+    spawnTraffic(isTouch ? 8 : 14);
+    for (const p of peds) placePed(p, true);
+    setWeapon(-1); camFar = false;
     snapCam = true;
   }
   $('pauseBtn').addEventListener('click', () => togglePause(true));
