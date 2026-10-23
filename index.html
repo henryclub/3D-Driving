@@ -1478,6 +1478,7 @@
   }
   // Moving vehicles knock people down
   function runOver(v) {
+    if (!v) return;
     if (Math.abs(v.speed) < 5) return;
     const R = v.r * 0.75 + 0.3;
     for (const list of v.police ? [peds] : [peds, cops]) for (const o of list) {
@@ -1912,6 +1913,9 @@
           if (o.blocked && d > 4) { mx = ddx / d; mz = ddz / d; speed = 4; }
           o.hum.armR.rotation.x = Math.PI / 2;
           o.fireT -= dt;
+          // Officers hold fire while the player is driving; they shoot once you stop or step out
+          const driving = mode === 'drive' && current && Math.abs(current.speed) > 3;
+          if (driving) o.fireT = Math.max(o.fireT, 0.8);
           if (o.fireT <= 0 && wastedT < 0) {
             o.fireT = rand(1.0, 1.6);
             const f = fwd(o.h);
@@ -2486,7 +2490,7 @@
     if (hit) {
       const sp = Math.abs(v.speed);
       if (isPlayer && sp > 8 && crashCool <= 0) { crashCool = 1; onCrash(); beep([90, 70], 0.25, 'sawtooth', 0.1); }
-      if (sp > 14) damageVehicle(v, (sp - 12) * 2, false);
+      if (sp > 20) damageVehicle(v, (sp - 18) * (isPlayer ? 0.8 : 2), false);
       if (isPlayer && sp > 6) shake = Math.min(0.6, sp / 40);
       v.speed *= -0.2;
     }
@@ -2777,9 +2781,14 @@
 
   const clock = new THREE.Clock();
   let introT = 0;
+  // The next frame is always scheduled first, so one bad frame can never freeze the game
   function tick(now) {
+    requestAnimationFrame(tick);
+    try { step(now); } catch (e) { console.error(e); }
+  }
+  function step(now) {
     const raw = clock.getDelta(), realDt = Math.min(raw, 0.05);
-    if (paused) { renderer.render(scene, camera); requestAnimationFrame(tick); return; }
+    if (paused) { renderer.render(scene, camera); return; }
     let dt = realDt;
     if (wastedT >= 0) { wastedT += Math.min(raw, 0.5); dt = realDt * 0.35; if (wastedT > 5) respawn(); }
     const live = started && !phoneOpen && wastedT < 0;
@@ -2787,9 +2796,9 @@
       if (mode === 'foot') updateFoot(dt);
       else {
         updateDrive(current, dt, { up: keys.up, down: keys.down, steer: keys.left - keys.right, brake: keys.space, boost: keys.shift }, true);
-        runOver(current);
+        if (current) runOver(current); // a crash can blow the car up and throw the player out
       }
-      playerStill = mode === 'foot' || Math.abs(current.speed) < 3 ? playerStill + dt : 0;
+      playerStill = mode === 'foot' || !current || Math.abs(current.speed) < 3 ? playerStill + dt : 0;
       fireCool -= dt;
       if ((trigger || triggerPressed) && fireCool <= 0 && wi >= 0) {
         fire(); fireCool = WEAPONS[wi].rate; triggerPressed = false;
@@ -2833,7 +2842,6 @@
       sun.position.set(F.x + 45, 90, F.z + 30); sun.target.position.set(F.x, 0, F.z);
     }
     renderer.render(scene, camera);
-    requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
 })();
