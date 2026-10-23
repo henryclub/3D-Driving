@@ -118,7 +118,6 @@
   .scope::before, .scope::after { content: ""; position: absolute; background: rgba(0,0,0,0.85); }
   .scope::before { left: 50%; top: 0; bottom: 0; width: 2px; transform: translateX(-1px); }
   .scope::after { top: 50%; left: 0; right: 0; height: 2px; transform: translateY(-1px); }
-  .lock { position: fixed; width: 34px; height: 34px; border: 2px solid var(--stop); border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 6px rgba(0,0,0,0.6); }
   .hurt { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 45%, rgba(214,31,44,0.55)); opacity: 0; transition: opacity 0.35s; }
 
   .wasted { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; background: rgba(0,0,0,0.25); z-index: 8; }
@@ -213,22 +212,49 @@
   .pad button { width: 62px; height: 62px; border-radius: 18px; border: 1px solid var(--line); background: var(--panel); font-weight: 800; font-size: 14px; touch-action: none; }
   .pad button.gas { background: rgba(60,207,122,0.3); }
   .pad button.brk { background: rgba(255,92,92,0.3); }
-  .fire-btn { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(92px + env(safe-area-inset-bottom, 0px)); width: 76px; height: 76px; border-radius: 50%; border: 2px solid rgba(255,92,92,0.6); background: rgba(214,31,44,0.4); font-weight: 800; font-size: 15px; display: none; touch-action: none; }
-  .nos-btn { position: fixed; right: calc(max(16px, env(safe-area-inset-right, 0px)) + 10px); bottom: calc(180px + env(safe-area-inset-bottom, 0px)); width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--line); background: rgba(74,163,255,0.35); font-weight: 800; font-size: 12px; display: none; touch-action: none; }
-  .tbtns { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(92px + env(safe-area-inset-bottom, 0px)); display: none; flex-direction: column; gap: 6px; }
-  .tbtns button { height: 38px; min-width: 72px; padding: 0 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); font-weight: 800; font-size: 12.5px; }
+  /* Round action buttons sit above the gas/brake pads on the right */
+  .fire-btn, .side-btn { position: fixed; display: none; touch-action: none; border-radius: 50%; font-weight: 800; }
+  .fire-btn { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); width: 62px; height: 62px; border: 2px solid rgba(255,92,92,0.6); background: rgba(214,31,44,0.45); font-size: 13px; }
+  .side-btn { right: calc(max(16px, env(safe-area-inset-right, 0px)) + 72px); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); width: 54px; height: 54px; border: 1px solid var(--line); font-size: 11.5px; }
+  .nos-btn { background: rgba(74,163,255,0.4); }
+  .zoom-btn { background: var(--panel); }
+  .zoom-btn.on { background: rgba(255,201,60,0.35); border-color: var(--accent); }
+  .tbtns { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); display: none; flex-direction: row; gap: 6px; }
+  .tbtns button { height: 32px; padding: 0 11px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font-weight: 800; font-size: 12px; }
   @media (pointer: coarse) {
     .touch, .tbtns { display: flex; }
-    .fire-btn, .nos-btn { display: block; }
+    .fire-btn, .side-btn { display: block; }
     .phone-btn { display: none; }
-    .vitals { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
-    .speedo { left: 50%; transform: translateX(-50%); align-items: center; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+    .pad button { width: 54px; height: 54px; border-radius: 16px; font-size: 13px; }
+    .vitals { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); gap: 4px; }
+    .stars svg { width: 16px; height: 16px; }
+    .hp { width: min(190px, 30vw); height: 13px; }
+    .hp span { font-size: 10px; }
+    .speedo { left: 50%; transform: translateX(-50%); align-items: center; bottom: calc(54px + env(safe-area-inset-bottom, 0px)); }
+    .speedo b { font-size: 30px; }
+    .speedo .bar { width: 90px; height: 4px; }
     .hint { display: none; }
     .phone { right: 50%; transform: translate(50%, -50%); }
-    .hp { width: min(200px, 40vw); }
+    .chip { padding: 5px 9px; }
+    .chip .value { font-size: 13px; }
+    .label { font-size: 9px; }
+    .map { width: 88px; height: 88px; }
+    .map-legend { font-size: 10.5px; padding: 3px 8px; }
+    .cash { font-size: 13px; padding: 3px 9px; }
+    .wslots { gap: 4px; padding: 4px; border-radius: 12px; }
+    .wslot { width: 42px; height: 32px; }
+    .wslot svg { width: 32px; height: 17px; }
+    .wname { display: none; }
+    .toast { top: calc(66px + env(safe-area-inset-top, 0px)); font-size: 13px; padding: 7px 12px; }
   }
-  @media (max-width: 760px) {
-    .weapons { display: none; }
+  /* Phone held upright: stack the small buttons and lift the bars clear of the pads */
+  @media (pointer: coarse) and (orientation: portrait) {
+    .tbtns { flex-direction: column; }
+    .vitals { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+    .hp { width: 34vw; }
+    .side-btn { right: calc(max(16px, env(safe-area-inset-right, 0px)) + 4px); bottom: calc(152px + env(safe-area-inset-bottom, 0px)); }
+    .speedo { bottom: calc(126px + env(safe-area-inset-bottom, 0px)); }
+    .weapons { top: auto; bottom: calc(214px + env(safe-area-inset-bottom, 0px)); }
     .toast { top: calc(14px + env(safe-area-inset-top, 0px)); }
   }
   @media (max-width: 560px) {
@@ -244,7 +270,6 @@
 <div class="hurt" id="hurt"></div>
 <div class="scope" id="scope" hidden></div>
 <div class="cross" id="cross" hidden></div>
-<div class="lock" id="lock" hidden></div>
 
 <div class="hud-top">
   <div class="col">
@@ -265,7 +290,7 @@
 
 <div class="weapons">
   <div class="wslots" id="wslots"></div>
-  <div class="wname" id="wname">Pistol</div>
+  <div class="wname" id="wname">Unarmed</div>
 </div>
 
 <div class="vitals">
@@ -285,13 +310,12 @@
 
 <div class="tbtns" id="tbtns">
   <button id="tAct">Enter</button>
-  <button id="tWeapon">Pistol</button>
-  <button id="tAim">Aim</button>
   <button id="tPhone">Phone</button>
   <button id="tCam">Cam</button>
 </div>
-<button class="fire-btn" id="fireBtn">FIRE</button>
-<button class="nos-btn" data-hold="shift">NOS</button>
+<button class="fire-btn" id="fireBtn" hidden>FIRE</button>
+<button class="side-btn nos-btn" id="nosBtn" data-hold="shift" hidden>NOS</button>
+<button class="side-btn zoom-btn" id="zoomBtn" hidden>Zoom</button>
 <div class="touch" id="touch">
   <div class="pad"><button data-hold="left" aria-label="Steer left">&#9664;</button><button data-hold="right" aria-label="Steer right">&#9654;</button></div>
   <div class="pad"><button class="brk" data-hold="down">Brake</button><button class="gas" data-hold="up">Gas</button></div>
@@ -1528,29 +1552,39 @@
     sniper: 'M0 10l8-2h31v3H24l-2 6h-3l1-6h-7l-5 3H0zM18 4h10v3H18z',
     gl: 'M3 6h26a3 3 0 010 6H18l-2 8h-5l2-8H3z',
   };
-  let wi = 0, trigger = false, triggerPressed = false, fireCool = 0, aiming = false, aimPitch = 0, armUp = 0;
+  let wi = -1, trigger = false, triggerPressed = false, fireCool = 0, aiming = false, aimPitch = 0, armUp = 0;
   const guns = WEAPONS.map((w) => { const m = gunModel(w.id); m.visible = false; PL.hand.add(m); return m; });
   (function renderWeapons() {
     const wrap = $('wslots');
     WEAPONS.forEach((w, i) => {
       const b = document.createElement('button'); b.className = 'wslot'; b.title = w.name;
       b.innerHTML = '<span class="k">' + (i + 1) + '</span><svg viewBox="0 0 40 22"><path d="' + ICONS[w.id] + '"/></svg>';
-      b.addEventListener('click', () => setWeapon(i));
+      b.addEventListener('click', () => selectWeapon(i));
       wrap.appendChild(b);
     });
   })();
+  // wi = -1 means unarmed: nothing fires until the player picks a weapon
   function setWeapon(i) {
-    wi = (i + WEAPONS.length) % WEAPONS.length;
+    wi = i;
     guns.forEach((g, k) => { g.visible = k === wi; });
     document.querySelectorAll('.wslot').forEach((b, k) => b.classList.toggle('on', k === wi));
-    $('wname').textContent = WEAPONS[wi].name;
-    $('tWeapon').textContent = WEAPONS[wi].name.split(' ')[0];
+    $('wname').textContent = wi >= 0 ? WEAPONS[wi].name : 'Unarmed';
+    $('fireBtn').hidden = wi < 0;
+    if (wi < 0) { trigger = false; triggerPressed = false; setAim(false); }
   }
-  const isScope = () => aiming && WEAPONS[wi].scope && mode === 'foot';
+  const selectWeapon = (i) => setWeapon(i === wi ? -1 : i);
+  function cycleWeapon(d) {
+    let n = wi + d;
+    if (n >= WEAPONS.length) n = -1;
+    if (n < -1) n = WEAPONS.length - 1;
+    setWeapon(n);
+  }
+  const isScope = () => aiming && wi >= 0 && WEAPONS[wi].scope && mode === 'foot';
   function setAim(on) {
-    aiming = on && mode === 'foot' && started && wastedT < 0;
+    aiming = on && wi >= 0 && mode === 'foot' && started && wastedT < 0;
     if (!aiming) aimPitch = 0;
-    $('tAim').textContent = aiming ? 'Stop aim' : 'Aim';
+    $('zoomBtn').classList.toggle('on', aiming);
+    $('zoomBtn').textContent = aiming ? 'Unzoom' : 'Zoom';
   }
 
   const grenades = [];
@@ -1577,7 +1611,7 @@
     const f = fwd(P.h);
     return new THREE.Vector3(P.x + f.x * 0.75 - f.z * 0.36, 1.5, P.z + f.z * 0.75 + f.x * 0.36);
   }
-  let lockTarget = null;
+
   function fire() {
     const w = WEAPONS[wi];
     const F = focus(), f = fwd(F.h);
@@ -1857,8 +1891,8 @@
       return;
     }
     if (KEYMAP[k]) { keys[KEYMAP[k]] = 1; e.preventDefault(); return; }
-    if (/^[1-5]$/.test(k)) setWeapon(Number(k) - 1);
-    else if (k === 'q') setWeapon(wi + 1);
+    if (/^[1-5]$/.test(k)) selectWeapon(Number(k) - 1);
+    else if (k === 'q') cycleWeapon(1);
     else if (k === 'f') { if (!e.repeat) triggerPressed = true; trigger = true; }
     else if (k === 'z') setAim(!aiming);
     else if (k === 'e') action();
@@ -1874,7 +1908,7 @@
   const stage = $('stage');
   stage.addEventListener('contextmenu', (e) => e.preventDefault());
   stage.addEventListener('mousedown', (e) => {
-    if (!started || phoneOpen) return;
+    if (!started || phoneOpen || isTouch) return;
     if (e.button === 0) { trigger = true; triggerPressed = true; }
     if (e.button === 2) setAim(true);
   });
@@ -1885,7 +1919,20 @@
     P.h -= e.movementX * sens;
     aimPitch = clamp(aimPitch - e.movementY * sens, -0.6, 0.7);
   });
-  stage.addEventListener('wheel', (e) => { if (started) setWeapon(wi + (e.deltaY > 0 ? 1 : -1)); }, { passive: true });
+  stage.addEventListener('wheel', (e) => { if (started) cycleWeapon(e.deltaY > 0 ? 1 : -1); }, { passive: true });
+  // While zoomed in on a touch screen, drag a finger anywhere on the view to aim
+  let lookId = null, lookX = 0, lookY = 0;
+  stage.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') { lookId = e.pointerId; lookX = e.clientX; lookY = e.clientY; } });
+  stage.addEventListener('pointermove', (e) => {
+    if (e.pointerId !== lookId) return;
+    const dx = e.clientX - lookX, dy = e.clientY - lookY;
+    lookX = e.clientX; lookY = e.clientY;
+    if (!aiming) return;
+    const sens = isScope() ? 0.0018 : 0.005;
+    P.h -= dx * sens;
+    aimPitch = clamp(aimPitch - dy * sens, -0.6, 0.7);
+  });
+  for (const ev of ['pointerup', 'pointercancel']) stage.addEventListener(ev, (e) => { if (e.pointerId === lookId) lookId = null; });
 
   document.querySelectorAll('[data-hold]').forEach((b) => {
     const k = b.dataset.hold;
@@ -1897,8 +1944,7 @@
   for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) fb.addEventListener(ev, () => { trigger = false; });
   $('tAct').addEventListener('click', action);
   $('tPhone').addEventListener('click', () => togglePhone(!phoneOpen));
-  $('tWeapon').addEventListener('click', () => setWeapon(wi + 1));
-  $('tAim').addEventListener('click', () => setAim(!aiming));
+  $('zoomBtn').addEventListener('click', () => setAim(!aiming));
   $('tCam').addEventListener('click', () => { camFar = !camFar; });
   $('phoneBtn').addEventListener('click', () => togglePhone(!phoneOpen));
 
@@ -2428,7 +2474,7 @@
   let hintText = '';
   function setHint(html) { if (html === hintText) return; hintText = html; $('hint').hidden = !html; $('hint').innerHTML = html; }
   let lastHud = 0, lastStars = -1;
-  const v3 = new THREE.Vector3();
+
   function updateHud(now) {
     if (now - lastHud < 80) return;
     lastHud = now;
@@ -2464,16 +2510,8 @@
     const scope = isScope();
     $('scope').hidden = !scope;
     $('cross').hidden = !(aiming && !scope);
-    lockTarget = null;
-    if (!aiming && wastedT < 0) {
-      const o = muzzle();
-      lockTarget = findTarget(o, fwd(F.h), WEAPONS[wi].range || 60, mode === 'drive' ? 0.3 : 0.45);
-    }
-    if (lockTarget) {
-      v3.copy(lockTarget.p).project(camera);
-      if (v3.z < 1) { const el = $('lock'); el.hidden = false; el.style.left = ((v3.x + 1) / 2 * innerWidth) + 'px'; el.style.top = ((1 - v3.y) / 2 * innerHeight) + 'px'; }
-      else $('lock').hidden = true;
-    } else $('lock').hidden = true;
+    $('zoomBtn').hidden = !(wi >= 0 && mode === 'foot' && wastedT < 0);
+    $('nosBtn').hidden = mode !== 'drive';
     if (wastedT >= 0) { setHint(''); return; }
     if (mode === 'drive') {
       $('modeLabel').textContent = current.spec.num + ' · ' + current.spec.group;
@@ -2563,7 +2601,7 @@
   player.position.set(P.x, 0, P.z); player.rotation.y = P.h;
   spawnTraffic(isTouch ? 8 : 14);
   for (let i = 0; i < PED_N; i++) placePed(spawnPed(0, 0), true);
-  setWeapon(0);
+  setWeapon(-1);
   if (save.night) setNight(true);
   renderHome();
 
@@ -2593,7 +2631,7 @@
       }
       playerStill = mode === 'foot' || Math.abs(current.speed) < 3 ? playerStill + dt : 0;
       fireCool -= dt;
-      if ((trigger || triggerPressed) && fireCool <= 0) {
+      if ((trigger || triggerPressed) && fireCool <= 0 && wi >= 0) {
         fire(); fireCool = WEAPONS[wi].rate; triggerPressed = false;
       }
       if (now / 1000 - lastHurt > 6 && hp < MAX_HP) hp = Math.min(MAX_HP, hp + dt * (stars > 0 ? 1 : 4));
