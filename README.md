@@ -1,54 +1,61 @@
 # 3D Driving
 
-Browser mein chalne wala 3D driving game. Aapka ghar ek endless shehar ke beech mein hai. Ghar se niklo, garage se gaadi uthao, ya phone se koi bhi gaadi bulao.
+A 3D open-world driving game that runs in the browser. Your home sits in the middle of an endless city. Step outside, take the Fortuner or the Thar from your driveway, call any car or bike with your phone, and take on missions for cash.
 
-Ye [Three.js](https://threejs.org/) se bana hai, aur pura game ek hi `index.html` file mein hai.
+Built with [Three.js](https://threejs.org/). The whole game is a single `index.html` file.
 
 ## Features
-- **Endless city**: aap jitna aage jaoge, shehar utna aage banta rahega (sadkein, buildings, park, street lights)
-- **Mera Ghar**: garage, driveway aur "MERA GHAR" board ke saath. Wahan aapki hatchback aur bike khadi milegi.
-- **18 vehicles**: cars, bikes, scooty, police, ambulance, pickup, bus, truck, auto rickshaw
-- **Phone**: `P` dabao. **Code** tab mein har gaadi ka number hai. Us number par call karo to wahi gaadi aapke paas aa jayegi.
-- Shehar mein traffic, horn, aur do camera modes
+- **Endless city.** Roads, buildings, parks and street lights keep generating as you drive, with traffic on the roads.
+- **Your home.** It has a garage, a driveway and a "MY HOME" sign. A Toyota Fortuner, a Mahindra Thar and a Royal Enfield are parked outside.
+- **34 real-world vehicles.** Each one wears an **AZARR** badge where the maker's logo would be: on the grille, the boot, and the fuel tank on bikes.
+- **Phone.** Press `P`. The **Garage** tab lists every vehicle's number. Call a number and that vehicle drops in beside you.
+- **6 missions.** Taxi Rush, Hot Pizza Delivery, Checkpoint Race, Emergency Rescue, Police Patrol and Supercar Delivery. You earn cash, plus a bonus for time left on the clock.
+- **Minimap**, **nitro**, **day/night mode** (windows light up at night and you get headlights), engine sound and a horn.
+- Progress (cash, missions passed, settings) is saved in your browser.
 
 ## Controls
-| Key | Kaam |
+| Key | Action |
 | --- | --- |
-| `W A S D` / Arrows | Chalo, gaadi chalao, mudo |
-| `E` | Gaadi mein baitho / utro |
-| `P` | Phone kholo |
+| `W A S D` / Arrows | Walk, drive and steer |
+| `E` | Get in or out of a vehicle |
+| `P` | Phone |
+| `M` | Missions |
+| `Shift` | Nitro while driving, run on foot |
 | `Space` | Handbrake |
-| `Shift` | Paidal daudo |
 | `H` | Horn |
-| `C` | Camera badlo |
+| `C` | Change camera |
+| `N` | Day / night |
 
-Phone par on-screen buttons milte hain.
+On phones and tablets you get on-screen buttons.
 
-## Gaadi codes
-| Number | Gaadi |
-| --- | --- |
-| 1001 | Chhotu Hatchback |
-| 1002 | Raja Sedan |
-| 1003 | Kaali-Peeli Taxi |
-| 1004 | Pahadi SUV |
-| 1005 | Toofan GT |
-| 1006 | Jungle Jeep |
-| 1007 | Neela Coupe |
-| 2001 | Daily Bike |
-| 2002 | Scooty |
-| 2003 | Bijli Sports Bike |
-| 2004 | Cruiser Bike |
-| 2005 | Laal Racer |
-| 3001 | Police Interceptor |
-| 3002 | Ambulance |
-| 4001 | Kisan Pickup |
-| 4002 | City Bus |
-| 4003 | Bharat Truck |
-| 5001 | Auto Rickshaw |
+## Vehicle codes
+| Number | Vehicle | Number | Vehicle |
+| --- | --- | --- | --- |
+| 1001 | Maruti Swift | 1301 | Lamborghini Huracán |
+| 1002 | Honda Civic | 1302 | Ferrari F8 Tributo |
+| 1003 | Hyundai Creta | 1303 | Porsche 911 |
+| 1004 | Tata Nexon | 1304 | Ford Mustang GT |
+| 1005 | Toyota Innova Crysta | 1305 | Bugatti Chiron |
+| 1006 | Maruti Dzire Taxi | 2001 | Hero Splendor Plus |
+| 1101 | Toyota Fortuner | 2002 | Honda Activa |
+| 1102 | Mahindra Thar | 2003 | Royal Enfield Classic 350 |
+| 1103 | Mahindra Scorpio-N | 2004 | KTM Duke 390 |
+| 1104 | Mercedes-Benz G 63 | 2005 | Kawasaki Ninja ZX-10R |
+| 1105 | Range Rover | 2006 | Suzuki Hayabusa |
+| 1106 | Toyota Land Cruiser | 2007 | Bajaj Pulsar 220F |
+| 1201 | BMW M5 | 3001 | Police Bolero |
+| 1202 | Mercedes-Benz S-Class | 3002 | Ambulance (Force Traveller) |
+| 1203 | Audi A6 | 4001 | Mahindra Bolero Pickup |
+| 1204 | BMW X5 | 4002 | Tata City Bus |
+| | | 4003 | Tata Signa Truck |
+| | | 5001 | Bajaj RE Auto Rickshaw |
 
-## Kaise chalayein
-- **Local**: `index.html` ko browser mein kholo.
-- **GitHub Pages**: repo ki **Settings → Pages** mein Source **Deploy from a branch** chuno, branch `main` aur folder `/ (root)` select karo, phir Save karo. Thodi der mein game `https://kainatmirza329-beep.github.io/3D-Driving/` par live ho jayega.
+## Run it
+- **Locally:** open `index.html` in a browser.
+- **GitHub Pages:** go to **Settings → Pages**, set Source to **Deploy from a branch**, pick branch `main` and folder `/ (root)`, then save. The game will be live at `https://kainatmirza329-beep.github.io/3D-Driving/`.
 
-## Nayi gaadi kaise jodein
-`index.html` mein `SPECS` list mein ek nayi line jodo. Usme naya `num` (phone number), `name`, `color` aur speed (`max`, `acc`, `turn`) do. Gaadi apne aap phone ke Code tab mein aa jayegi.
+## Add your own vehicle
+Add a line to the `SPECS` list in `index.html` with a new `num` (its phone number), a `name`, a body template (`hatch`, `sedan`, `lux`, `csuv`, `suv`, `boxy`, `mpv`, `super`, `fastback`), a colour and its speed (`max`, `acc`, `turn`). It shows up in the phone's Garage tab automatically.
+
+## Note
+This is a fan-made game. Vehicle names belong to their respective manufacturers. The game is not affiliated with or endorsed by any of them, and it uses its own AZARR badge in place of real logos.

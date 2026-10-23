@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Manrope:wght@400;600;800&display=swap">
 <style>
-  /* Layout: full-screen 3D city; HUD in the corners, phone slides in from the right, touch pads at the bottom. One dark game UI by choice. */
+  /* Layout: full-screen 3D city; status + mission on the left, minimap on the right, phone slides in, touch pads at the bottom. One dark game UI by choice. */
   :root {
     --night: #12161f;
     --panel: rgba(18, 22, 31, 0.86);
@@ -18,6 +18,7 @@
     --accent: #ffc93c;
     --go: #3ccf7a;
     --stop: #ff5c5c;
+    --blue: #4aa3ff;
     --display: "Russo One", "Arial Black", system-ui, sans-serif;
     --body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
     color-scheme: dark;
@@ -29,6 +30,7 @@
   #stage canvas { display: block; width: 100%; height: 100%; }
   button { font-family: var(--body); color: var(--ink); }
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  kbd { font-family: var(--body); font-weight: 800; font-size: 12px; background: rgba(243,241,234,0.12); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; color: var(--ink); white-space: nowrap; }
 
   .hud-top {
     position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
@@ -37,32 +39,47 @@
     padding-right: max(16px, env(safe-area-inset-right, 0px));
     pointer-events: none;
   }
-  .chip { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .chip .label { font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  .col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .col.right { align-items: flex-end; }
+  .chip { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; max-width: min(300px, 52vw); }
+  .label { font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
   .chip .value { font-family: var(--display); font-size: 16px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .compass { flex-direction: row; align-items: center; gap: 10px; }
-  .arrow { width: 28px; height: 28px; display: grid; place-items: center; transition: transform 0.08s linear; }
-  .arrow svg { width: 22px; height: 22px; fill: var(--accent); }
-  .compass .value { font-variant-numeric: tabular-nums; }
+  .mission { border-color: rgba(255, 201, 60, 0.5); gap: 4px; }
+  .mission .label { color: var(--accent); }
+  .mission .obj { font-weight: 800; font-size: 14px; line-height: 1.3; }
+  .mission .meta { display: flex; gap: 12px; font-variant-numeric: tabular-nums; font-size: 13px; color: var(--muted); font-weight: 600; }
+  .mission .meta b { font-family: var(--display); font-weight: 400; color: var(--ink); font-size: 18px; }
+  .mission .meta b.low { color: var(--stop); }
+  .mission .note { font-size: 12px; color: var(--stop); font-weight: 800; }
+
+  .map { position: relative; width: 148px; height: 148px; border-radius: 50%; overflow: hidden; border: 2px solid var(--line); background: #1a1f2a; box-shadow: 0 6px 20px rgba(0,0,0,0.35); }
+  .map canvas { width: 100%; height: 100%; display: block; }
+  .map-legend { display: flex; gap: 10px; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 5px 10px; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+  .cash { font-family: var(--display); font-size: 18px; color: var(--go); font-variant-numeric: tabular-nums; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 5px 12px; }
 
   .speedo {
-    position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-    display: flex; align-items: baseline; gap: 6px; pointer-events: none; font-variant-numeric: tabular-nums;
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; font-variant-numeric: tabular-nums;
     text-shadow: 0 2px 8px rgba(0,0,0,0.5);
   }
+  .speedo .row { display: flex; align-items: baseline; gap: 6px; }
   .speedo b { font-family: var(--display); font-weight: 400; font-size: 46px; line-height: 1; }
   .speedo span { font-weight: 800; color: var(--muted); font-size: 13px; letter-spacing: 0.08em; }
+  .nitro { width: 120px; height: 6px; border-radius: 3px; background: rgba(243,241,234,0.15); overflow: hidden; }
+  .nitro i { display: block; height: 100%; width: 100%; background: var(--blue); transform-origin: left; }
   .hint {
-    position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(96px + env(safe-area-inset-bottom, 0px));
     background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; font-weight: 600; font-size: 14px;
     white-space: nowrap; pointer-events: none; max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis;
   }
-  .hint kbd, .card kbd { font-family: var(--body); font-weight: 800; font-size: 12px; background: rgba(243,241,234,0.12); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
   .toast {
-    position: fixed; left: 50%; top: calc(76px + env(safe-area-inset-top, 0px)); transform: translateX(-50%);
-    background: var(--accent); color: #1b1606; font-weight: 800; border-radius: 12px; padding: 10px 16px; max-width: calc(100% - 32px); text-align: center;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+    position: fixed; left: 50%; top: calc(14px + env(safe-area-inset-top, 0px)); transform: translateX(-50%);
+    background: var(--accent); color: #1b1606; font-weight: 800; border-radius: 12px; padding: 10px 16px; max-width: min(420px, calc(100% - 32px)); text-align: center;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.35); z-index: 5;
   }
+  .toast.win { background: var(--go); color: #06210f; }
+  .toast.fail { background: var(--stop); color: #2a0606; }
 
   .phone-btn {
     position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
@@ -73,9 +90,9 @@
 
   /* ---------- Phone ---------- */
   .phone {
-    position: fixed; top: 50%; transform: translateY(-50%);
+    position: fixed; top: 50%; transform: translateY(-50%); z-index: 6;
     right: max(16px, env(safe-area-inset-right, 0px));
-    width: min(320px, calc(100% - 32px)); height: min(600px, calc(100% - 40px));
+    width: min(330px, calc(100% - 32px)); height: min(620px, calc(100% - 40px));
     background: #0b0d12; border: 2px solid #2b303b; border-radius: 34px; padding: 10px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.55);
   }
@@ -88,22 +105,39 @@
   .display { font-family: var(--display); font-size: 34px; text-align: center; min-height: 46px; letter-spacing: 0.06em; padding-top: 18px; font-variant-numeric: tabular-nums; overflow: hidden; }
   .dial-name { text-align: center; color: var(--accent); font-weight: 800; min-height: 20px; font-size: 14px; }
   .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: auto; }
-  .keypad button { aspect-ratio: 1.35; max-width: 100%; border-radius: 16px; border: 0; background: rgba(243,241,234,0.08); font-family: var(--display); font-size: 22px; cursor: pointer; }
+  .keypad button { aspect-ratio: 1.4; max-width: 100%; border-radius: 16px; border: 0; background: rgba(243,241,234,0.08); font-family: var(--display); font-size: 22px; cursor: pointer; }
   .keypad button:active { background: rgba(243,241,234,0.2); }
   .dial-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
   .call { border: 0; border-radius: 16px; padding: 12px; background: var(--go); color: #06210f; font-weight: 800; font-size: 16px; cursor: pointer; }
   .del { border: 0; border-radius: 16px; padding: 12px; background: rgba(243,241,234,0.08); font-weight: 800; cursor: pointer; }
-  .code-list { overflow-y: auto; display: flex; flex-direction: column; gap: 4px; margin: 0 -6px; padding: 0 6px; }
+  .scroll { overflow-y: auto; display: flex; flex-direction: column; gap: 4px; margin: 0 -6px; padding: 0 6px 6px; }
   .code-group { font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 10px 2px 2px; }
   .code-row { display: flex; align-items: center; gap: 10px; border: 0; background: rgba(243,241,234,0.05); border-radius: 12px; padding: 9px 10px; text-align: left; cursor: pointer; }
   .code-row:hover { background: rgba(243,241,234,0.1); }
   .code-row .sw { width: 12px; height: 12px; border-radius: 4px; flex: none; border: 1px solid rgba(255,255,255,0.25); }
   .code-row .nm { flex: 1; min-width: 0; font-weight: 600; font-size: 14px; }
   .code-row .num { font-family: var(--display); color: var(--accent); font-variant-numeric: tabular-nums; }
-  .big-btn { border: 0; border-radius: 14px; padding: 13px; font-weight: 800; font-size: 15px; cursor: pointer; background: var(--accent); color: #1b1606; }
+  .m-card { background: rgba(243,241,234,0.05); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .m-card.active { background: rgba(255,201,60,0.12); border: 1px solid rgba(255,201,60,0.4); }
+  .m-card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .m-card h3 { margin: 0; font-size: 15px; font-weight: 800; }
+  .m-card .reward { font-family: var(--display); color: var(--go); font-size: 14px; white-space: nowrap; }
+  .m-card p { font-size: 12.5px; }
+  .m-card .need { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .m-card button { align-self: flex-start; border: 0; border-radius: 10px; padding: 7px 14px; font-weight: 800; background: var(--accent); color: #1b1606; cursor: pointer; }
+  .m-card button.quit { background: rgba(255,92,92,0.2); color: var(--ink); }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat { background: rgba(243,241,234,0.05); border-radius: 12px; padding: 10px; }
+  .stat b { display: block; font-family: var(--display); font-weight: 400; font-size: 18px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .big-btn { border: 0; border-radius: 14px; padding: 12px; font-weight: 800; font-size: 14px; cursor: pointer; background: var(--accent); color: #1b1606; }
   .big-btn.ghost { background: rgba(243,241,234,0.08); color: var(--ink); }
-  .tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
-  .tabs button { background: none; border: 0; padding: 12px 4px 14px; font-weight: 800; font-size: 13px; color: var(--muted); cursor: pointer; }
+  .toggle { display: flex; justify-content: space-between; align-items: center; border: 0; background: rgba(243,241,234,0.05); border-radius: 12px; padding: 11px 12px; font-weight: 800; font-size: 14px; cursor: pointer; }
+  .toggle .sw2 { width: 38px; height: 22px; border-radius: 11px; background: rgba(243,241,234,0.2); position: relative; transition: background 0.15s; }
+  .toggle .sw2::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); transition: transform 0.15s; }
+  .toggle[aria-pressed="true"] .sw2 { background: var(--go); }
+  .toggle[aria-pressed="true"] .sw2::after { transform: translateX(16px); }
+  .tabs { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); }
+  .tabs button { background: none; border: 0; padding: 12px 2px 14px; font-weight: 800; font-size: 12.5px; color: var(--muted); cursor: pointer; }
   .tabs button.on { color: var(--accent); }
   .calling { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(180deg, #1c3a2a, #0e1a14); text-align: center; padding: 20px; }
   .calling .c-num { font-family: var(--display); font-size: 36px; letter-spacing: 0.06em; }
@@ -114,31 +148,37 @@
 
   /* ---------- Start card ---------- */
   .overlay {
-    position: fixed; inset: 0; display: grid; place-items: center; background: linear-gradient(180deg, rgba(18,22,31,0.25), rgba(18,22,31,0.8));
+    position: fixed; inset: 0; display: grid; place-items: center; background: linear-gradient(180deg, rgba(18,22,31,0.2), rgba(18,22,31,0.82)); z-index: 7;
     padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    overflow-y: auto; padding-block: 16px;
   }
-  .card { width: min(460px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 26px 22px; display: flex; flex-direction: column; gap: 14px; }
+  .card { width: min(480px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 26px 22px; display: flex; flex-direction: column; gap: 14px; }
   .card h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(36px, 10vw, 54px); line-height: 0.95; color: var(--accent); }
+  .card .brand { font-size: 11px; font-weight: 800; letter-spacing: 0.3em; color: var(--muted); }
   .card p { margin: 0; color: var(--muted); line-height: 1.5; }
   .controls { display: grid; grid-template-columns: auto 1fr; gap: 7px 12px; font-size: 14px; align-items: center; }
-  .controls span { color: var(--ink); }
 
   /* ---------- Touch controls ---------- */
   .touch { position: fixed; left: 0; right: 0; bottom: 0; display: none; justify-content: space-between; align-items: flex-end; pointer-events: none;
     padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
     padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
   .pad { display: flex; gap: 10px; pointer-events: auto; }
-  .pad button { width: 64px; height: 64px; border-radius: 18px; border: 1px solid var(--line); background: var(--panel); font-weight: 800; font-size: 15px; touch-action: none; }
+  .pad button { width: 62px; height: 62px; border-radius: 18px; border: 1px solid var(--line); background: var(--panel); font-weight: 800; font-size: 14px; touch-action: none; }
   .pad button.gas { background: rgba(60,207,122,0.3); }
   .pad button.brk { background: rgba(255,92,92,0.3); }
-  .tbtns { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); top: calc(70px + env(safe-area-inset-top, 0px)); display: none; flex-direction: column; gap: 8px; }
-  .tbtns button { width: 64px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); font-weight: 800; font-size: 13px; }
+  .pad button.nos { background: rgba(74,163,255,0.3); }
+  .tbtns { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(92px + env(safe-area-inset-bottom, 0px)); display: none; gap: 8px; }
+  .tbtns button { height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); font-weight: 800; font-size: 13px; }
   @media (pointer: coarse) {
     .touch, .tbtns { display: flex; }
     .phone-btn { display: none; }
-    .speedo { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
-    .hint { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+    .speedo { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+    .hint { bottom: calc(210px + env(safe-area-inset-bottom, 0px)); }
     .phone { right: 50%; transform: translate(50%, -50%); }
+  }
+  @media (max-width: 560px) {
+    .map { width: 108px; height: 108px; }
+    .chip .value { font-size: 14px; }
   }
   @media (prefers-reduced-motion: reduce) { .ring { animation: none; } }
 </style>
@@ -148,87 +188,114 @@
 <div id="stage"></div>
 
 <div class="hud-top">
-  <div class="chip"><span class="label" id="modeLabel">Paidal</span><span class="value" id="modeValue">Ghar ke bahar</span></div>
-  <div class="chip compass"><div class="arrow" id="homeArrow"><svg viewBox="0 0 24 24"><path d="M12 2l7 18-7-4-7 4z"/></svg></div><div><div class="label">Ghar</div><div class="value" id="homeDist">0 m</div></div></div>
+  <div class="col">
+    <div class="chip"><span class="label" id="modeLabel">On foot</span><span class="value" id="modeValue">Outside your home</span></div>
+    <div class="chip mission" id="missionBox" hidden>
+      <span class="label" id="mTitle">Mission</span>
+      <span class="obj" id="mObj"></span>
+      <div class="meta"><span id="mTimeWrap">Time <b id="mTime">0:00</b></span><span>Distance <b id="mDist">0 m</b></span></div>
+      <span class="note" id="mNote" hidden></span>
+    </div>
+  </div>
+  <div class="col right">
+    <div class="map"><canvas id="map" width="296" height="296"></canvas></div>
+    <div class="map-legend"><span><i class="dot" style="background:#ffc93c"></i><span id="homeDist">0 m</span></span><span id="tgtLegend" hidden><i class="dot" style="background:#3ccf7a"></i><span id="tgtDist">0 m</span></span></div>
+    <div class="cash" id="cash">₹0</div>
+  </div>
 </div>
 
-<div class="speedo" id="speedo" hidden><b id="speed">0</b><span>KM/H</span></div>
+<div class="speedo" id="speedo" hidden><div class="row"><b id="speed">0</b><span>KM/H</span></div><div class="nitro" title="Nitro"><i id="nitroBar"></i></div></div>
 <div class="hint" id="hint" hidden></div>
 <div class="toast" id="toast" hidden></div>
 
-<button class="phone-btn" id="phoneBtn" aria-label="Phone kholo"><svg viewBox="0 0 24 24"><path d="M7 1h10a2 2 0 012 2v18a2 2 0 01-2 2H7a2 2 0 01-2-2V3a2 2 0 012-2zm0 3v14h10V4zm5 15.5a1 1 0 100 2 1 1 0 000-2z"/></svg>Phone <kbd>P</kbd></button>
+<button class="phone-btn" id="phoneBtn" aria-label="Open phone"><svg viewBox="0 0 24 24"><path d="M7 1h10a2 2 0 012 2v18a2 2 0 01-2 2H7a2 2 0 01-2-2V3a2 2 0 012-2zm0 3v14h10V4zm5 15.5a1 1 0 100 2 1 1 0 000-2z"/></svg>Phone <kbd>P</kbd></button>
 
 <div class="tbtns" id="tbtns">
-  <button id="tAct">Baitho</button>
+  <button id="tAct">Enter</button>
   <button id="tPhone">Phone</button>
   <button id="tHorn">Horn</button>
-  <button id="tCam">Camera</button>
+  <button id="tCam">Cam</button>
 </div>
 <div class="touch" id="touch">
-  <div class="pad"><button data-hold="left" aria-label="Left">&#9664;</button><button data-hold="right" aria-label="Right">&#9654;</button></div>
-  <div class="pad"><button class="brk" data-hold="down">Brake</button><button class="gas" data-hold="up">Gas</button></div>
+  <div class="pad"><button data-hold="left" aria-label="Steer left">&#9664;</button><button data-hold="right" aria-label="Steer right">&#9654;</button></div>
+  <div class="pad"><button class="nos" data-hold="shift">Nitro</button><button class="brk" data-hold="down">Brake</button><button class="gas" data-hold="up">Gas</button></div>
 </div>
 
 <div class="phone" id="phone" hidden>
   <div class="screen">
     <div class="notch"></div>
-    <div class="status"><span id="clock">9:41</span><span>4G</span></div>
+    <div class="status"><span id="clock">9:41</span><span>AZARR 5G</span></div>
 
     <div class="pane" id="pane-dialer">
       <div class="display" id="dialDisplay"></div>
-      <div class="dial-name" id="dialName">Code tab mein number dekho</div>
+      <div class="dial-name" id="dialName">Find vehicle numbers in the Garage tab</div>
       <div class="keypad" id="keypad">
         <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
         <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
         <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
         <button data-k="*">*</button><button data-k="0">0</button><button data-k="#">#</button>
       </div>
-      <div class="dial-actions"><button class="call" id="callBtn">Call</button><button class="del" id="delBtn">Mitao</button></div>
+      <div class="dial-actions"><button class="call" id="callBtn">Call</button><button class="del" id="delBtn">Delete</button></div>
     </div>
 
-    <div class="pane" id="pane-code" hidden>
-      <h2>Gaadi Code</h2>
-      <p>Number par call karo, gaadi aapke paas aa jayegi.</p>
-      <div class="code-list" id="codeList"></div>
+    <div class="pane" id="pane-garage" hidden>
+      <h2>Vehicle Codes</h2>
+      <p>Call a number and that vehicle is delivered right next to you.</p>
+      <div class="scroll" id="codeList"></div>
+    </div>
+
+    <div class="pane" id="pane-missions" hidden>
+      <h2>Missions</h2>
+      <p>Finish jobs around the city to earn cash. Beat the clock for a bonus.</p>
+      <div class="scroll" id="missionList"></div>
     </div>
 
     <div class="pane" id="pane-home" hidden>
-      <h2>Mera Ghar</h2>
-      <p id="homeInfo">Ghar yahan se 0 m door hai.</p>
-      <button class="big-btn" id="goHome">Ghar wapas chalo</button>
-      <button class="big-btn ghost" id="clearCars">Bulayi hui gaadiyan wapas bhejo</button>
-      <p>Ghar ke garage ke paas aapki apni hatchback aur bike khadi hai.</p>
+      <h2>Home</h2>
+      <div class="stats">
+        <div class="stat"><span class="label">Cash</span><b id="statCash">₹0</b></div>
+        <div class="stat"><span class="label">Missions passed</span><b id="statDone">0</b></div>
+      </div>
+      <p id="homeInfo">Home is 0 m away.</p>
+      <button class="big-btn" id="goHome">Take me home</button>
+      <button class="big-btn ghost" id="clearCars">Send called vehicles back</button>
+      <button class="toggle" id="nightToggle" aria-pressed="false">Night mode <span class="sw2"></span></button>
+      <button class="toggle" id="soundToggle" aria-pressed="true">Engine sound <span class="sw2"></span></button>
     </div>
 
     <div class="calling" id="calling" hidden>
       <div class="ring"></div>
       <div class="c-num" id="cNum"></div>
       <div class="c-name" id="cName"></div>
-      <div class="c-state" id="cState">Ring ho raha hai...</div>
+      <div class="c-state" id="cState">Ringing...</div>
     </div>
 
     <nav class="tabs" id="tabs">
       <button data-tab="dialer" class="on">Dialer</button>
-      <button data-tab="code">Code</button>
-      <button data-tab="home">Ghar</button>
+      <button data-tab="garage">Garage</button>
+      <button data-tab="missions">Missions</button>
+      <button data-tab="home">Home</button>
     </nav>
   </div>
 </div>
 
 <div class="overlay" id="overlay">
   <div class="card">
+    <span class="brand">AZARR MOTORS PRESENTS</span>
     <h1>3D Driving</h1>
-    <p>Aapka ghar ek kabhi na khatam hone wale shehar ke beech mein hai. Ghar se niklo, garage se gaadi uthao, ya phone se koi bhi gaadi bulao.</p>
+    <p>Your home sits in the middle of an endless city. Take the Fortuner or the Thar from your driveway, call any car or bike with your phone, and take on missions for cash.</p>
     <div class="controls">
-      <kbd>W A S D / Arrows</kbd><span>Chalo, gaadi chalao, mudo</span>
-      <kbd>E</kbd><span>Gaadi mein baitho / utro</span>
-      <kbd>P</kbd><span>Phone: Code tab se number par call</span>
+      <kbd>W A S D / Arrows</kbd><span>Walk, drive and steer</span>
+      <kbd>E</kbd><span>Get in or out of a vehicle</span>
+      <kbd>P</kbd><span>Phone: call vehicles by number</span>
+      <kbd>M</kbd><span>Missions</span>
+      <kbd>Shift</kbd><span>Nitro while driving, run on foot</span>
       <kbd>Space</kbd><span>Handbrake</span>
-      <kbd>Shift</kbd><span>Paidal daudo</span>
-      <kbd>H</kbd><span>Horn</span>
-      <kbd>C</kbd><span>Camera badlo</span>
+      <kbd>H</kbd> <span>Horn</span>
+      <kbd>C</kbd><span>Change camera</span>
+      <kbd>N</kbd><span>Day / night</span>
     </div>
-    <button class="big-btn" id="startBtn">Ghar se niklo</button>
+    <button class="big-btn" id="startBtn">Step outside</button>
   </div>
 </div>
 
@@ -242,6 +309,13 @@
   const $ = (id) => document.getElementById(id);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const fwd = (h) => ({ x: -Math.sin(h), z: -Math.cos(h) });
+  const money = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
+  const fmtDist = (d) => (d < 1000 ? Math.round(d) + ' m' : (d / 1000).toFixed(1) + ' km');
+
+  const SAVE_KEY = 'azarr-3d-driving';
+  const save = { cash: 0, done: 0, night: false, sound: true };
+  try { Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')); } catch (e) {}
+  const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
 
   // ================= Renderer & scene =================
   const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -250,35 +324,40 @@
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   $('stage').appendChild(renderer.domElement);
 
-  const FOG = 0xd8e4ea;
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(FOG);
-  scene.fog = new THREE.Fog(FOG, 70, 195);
+  scene.background = new THREE.Color(0xd8e4ea);
+  scene.fog = new THREE.Fog(0xd8e4ea, 70, 195);
   const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 700);
 
+  const skyU = { top: { value: new THREE.Color(0x4a95e6) }, bottom: { value: new THREE.Color(0xd8e4ea) } };
   const sky = new THREE.Mesh(new THREE.SphereGeometry(450, 24, 12), new THREE.ShaderMaterial({
-    side: THREE.BackSide, depthWrite: false, fog: false,
-    uniforms: { top: { value: new THREE.Color(0x4a95e6) }, bottom: { value: new THREE.Color(FOG) } },
+    side: THREE.BackSide, depthWrite: false, fog: false, uniforms: skyU,
     vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
     fragmentShader: 'uniform vec3 top; uniform vec3 bottom; varying vec3 vP; void main(){ float h = normalize(vP).y; gl_FragColor = vec4(mix(bottom, top, smoothstep(0.0, 0.45, h)), 1.0); }'
   }));
   scene.add(sky);
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x8b8f7c, 0.72));
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x8b8f7c, 0.72);
+  scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xfff0d6, 0.85);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
   Object.assign(sun.shadow.camera, { left: -70, right: 70, top: 70, bottom: -70, near: 1, far: 260 });
   sun.shadow.bias = -0.0008;
   scene.add(sun, sun.target);
+  const headlight = new THREE.SpotLight(0xfff2d0, 0, 60, 0.55, 0.5, 1);
+  scene.add(headlight, headlight.target);
 
   // ================= Materials & textures =================
   const matCache = new Map();
   const mat = (c) => { if (!matCache.has(c)) matCache.set(c, new THREE.MeshLambertMaterial({ color: c })); return matCache.get(c); };
-  const GLASS = new THREE.MeshPhongMaterial({ color: 0x22324a, shininess: 90, specular: 0x8899aa });
-  const TIRE = mat(0x1b1c1f), BLACK = mat(0x232428), METAL = mat(0x8a8f98);
+  const paintCache = new Map();
+  const paint = (c) => { if (!paintCache.has(c)) paintCache.set(c, new THREE.MeshPhongMaterial({ color: c, shininess: 70, specular: 0x555555 })); return paintCache.get(c); };
+  const GLASS = new THREE.MeshPhongMaterial({ color: 0x1d2a3d, shininess: 100, specular: 0x99aabb });
+  const TIRE = mat(0x1b1c1f), BLACK = mat(0x202125), METAL = mat(0x8a8f98), CHROME = new THREE.MeshPhongMaterial({ color: 0xcfd3d8, shininess: 120, specular: 0xffffff });
   const HEAD = new THREE.MeshBasicMaterial({ color: 0xfff6d8 });
   const TAIL = new THREE.MeshBasicMaterial({ color: 0xd61f2c });
+  const PLATE = mat(0xf4f2ea);
 
   function canvasTex(w, h, draw) {
     const c = document.createElement('canvas'); c.width = w; c.height = h;
@@ -288,11 +367,33 @@
     t.anisotropy = 4;
     return t;
   }
-  // One 4m x 4m facade tile: wall with two windows. UV (0,0) lands on wall so roofs read as plain.
-  const winTex = canvasTex(64, 64, (g) => {
-    g.fillStyle = '#ffffff'; g.fillRect(0, 0, 64, 64);
-    g.fillStyle = '#56657a'; g.fillRect(7, 14, 20, 30); g.fillRect(37, 14, 20, 30);
-    g.fillStyle = '#8fa2b8'; g.fillRect(7, 14, 20, 5); g.fillRect(37, 14, 20, 5);
+  // The AZARR badge sits where a carmaker's logo would.
+  const BADGE = new THREE.MeshBasicMaterial({
+    transparent: true,
+    map: canvasTex(256, 84, (g) => {
+      const grd = g.createLinearGradient(0, 0, 0, 84);
+      grd.addColorStop(0, '#f4f6f8'); grd.addColorStop(0.5, '#a9b0b8'); grd.addColorStop(1, '#e6e9ec');
+      g.fillStyle = grd; g.beginPath(); g.ellipse(128, 42, 124, 39, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#12161f'; g.beginPath(); g.ellipse(128, 42, 112, 30, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#ffc93c'; g.font = 'bold 44px "Arial Black", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText('AZARR', 128, 45);
+    }),
+  });
+  BADGE.map.wrapS = BADGE.map.wrapT = THREE.ClampToEdgeWrapping;
+
+  // Facade: 4 x 4 window tiles covering 16 m. Lit texture glows at night.
+  const winTex = canvasTex(128, 128, (g) => {
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, 128, 128);
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
+      g.fillStyle = '#56657a'; g.fillRect(c * 32 + 3, r * 32 + 7, 11, 16); g.fillRect(c * 32 + 18, r * 32 + 7, 11, 16);
+      g.fillStyle = '#8fa2b8'; g.fillRect(c * 32 + 3, r * 32 + 7, 11, 3); g.fillRect(c * 32 + 18, r * 32 + 7, 11, 3);
+    }
+  });
+  const litTex = canvasTex(128, 128, (g) => {
+    g.fillStyle = '#000000'; g.fillRect(0, 0, 128, 128);
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) for (const ox of [3, 18]) {
+      if (Math.random() < 0.38) { g.fillStyle = Math.random() < 0.7 ? '#ffd27a' : '#bfe3ff'; g.fillRect(c * 32 + ox, r * 32 + 7, 11, 16); }
+    }
   });
   const armTex = canvasTex(64, 128, (g) => {
     g.fillStyle = '#3b3e45'; g.fillRect(0, 0, 64, 128);
@@ -302,7 +403,7 @@
   armTex.repeat.set(1, 33 / 8);
   const ASPHALT = new THREE.MeshLambertMaterial({ map: armTex });
   const BUILD_MATS = [0xe9dcc8, 0xc6d4de, 0xd99a7e, 0xa3bcb0, 0xefe2ac, 0xbcaed0, 0xd6d6d2, 0x93a7bb, 0xe3b9a4]
-    .map((c) => new THREE.MeshLambertMaterial({ color: c, map: winTex }));
+    .map((c) => new THREE.MeshLambertMaterial({ color: c, map: winTex, emissive: 0xffffff, emissiveMap: litTex, emissiveIntensity: 0 }));
 
   const G = {
     ground: new THREE.PlaneGeometry(CH, CH).rotateX(-Math.PI / 2),
@@ -313,8 +414,9 @@
     trunk: new THREE.CylinderGeometry(0.22, 0.3, 2.2, 6),
     leaf: new THREE.IcosahedronGeometry(1.7, 0),
     pole: new THREE.CylinderGeometry(0.1, 0.13, 6.5, 6),
-    lampArm: new THREE.BoxGeometry(0.1, 0.1, 1.8),
     lamp: new THREE.BoxGeometry(0.45, 0.18, 0.7),
+    badge: new THREE.PlaneGeometry(0.6, 0.2),
+    badgeSmall: new THREE.PlaneGeometry(0.36, 0.12),
   };
   const LEAF = new THREE.MeshLambertMaterial({ color: 0x4f8f3a, flatShading: true });
   const LAMP = new THREE.MeshBasicMaterial({ color: 0xfff1bd });
@@ -329,7 +431,7 @@
   function buildingGeo(w, h, d) {
     const g = new THREE.BoxGeometry(w, h, d);
     const uv = g.attributes.uv;
-    const scale = [[d / 4, h / 4], [d / 4, h / 4], [0, 0], [0, 0], [w / 4, h / 4], [w / 4, h / 4]];
+    const scale = [[d / 16, h / 16], [d / 16, h / 16], [0, 0], [0, 0], [w / 16, h / 16], [w / 16, h / 16]];
     for (let f = 0; f < 6; f++) for (let k = f * 4; k < f * 4 + 4; k++) uv.setXY(k, uv.getX(k) * scale[f][0], uv.getY(k) * scale[f][1]);
     return g;
   }
@@ -354,6 +456,8 @@
     drive.position.set(-19.5, 0.02, -15.5); drive.receiveShadow = true; drive.userData.own = true; g.add(drive);
     const path = new THREE.Mesh(new THREE.PlaneGeometry(15, 2.2).rotateX(-Math.PI / 2), mat(0xc9b99a));
     path.position.set(-18.5, 0.02, -26); path.receiveShadow = true; path.userData.own = true; g.add(path);
+    const pad = new THREE.Mesh(new THREE.PlaneGeometry(9, 6).rotateX(-Math.PI / 2), mat(0xa8a49a));
+    pad.position.set(-17, 0.02, -33); pad.receiveShadow = true; pad.userData.own = true; g.add(pad);
 
     const wall = mat(0xf1e4cc);
     box(10, 5, 12, wall, -31, 2.5, -26, g);
@@ -370,13 +474,12 @@
     box(0.5, 0.4, 0.7, mat(0xc8402f), -12.6, 1.25, -23.2, g);
 
     const sign = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.9).rotateY(Math.PI / 2), new THREE.MeshBasicMaterial({
-      map: canvasTex(256, 72, (c) => { c.fillStyle = '#12161f'; c.fillRect(0, 0, 256, 72); c.fillStyle = '#ffc93c'; c.font = 'bold 40px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('MERA GHAR', 128, 38); })
+      map: canvasTex(256, 72, (c) => { c.fillStyle = '#12161f'; c.fillRect(0, 0, 256, 72); c.fillStyle = '#ffc93c'; c.font = 'bold 40px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('MY HOME', 128, 38); })
     }));
     sign.position.set(-25.88, 4.3, -26); sign.userData.own = true; g.add(sign);
 
     cols.push({ minX: -36, maxX: -26, minZ: -32, maxZ: -20 }, { minX: -34.5, maxX: -27.5, minZ: -19, maxZ: -12 }, { minX: -12.9, maxX: -12.3, minZ: -23.5, maxZ: -22.9 });
     addTree(g, cols, 0, 0, -37, -37);
-    addTree(g, cols, 0, 0, -16, -36);
     addTree(g, cols, 0, 0, -37, -14);
   }
 
@@ -466,7 +569,6 @@
     }
     return { x, z, hit };
   }
-
   function insideWall(x, z) {
     const c = chunks.get(key(Math.round(x / CH), Math.round(z / CH)));
     if (!c) return false;
@@ -474,79 +576,155 @@
     return false;
   }
 
-  // ================= Vehicles =================
+  // ================= Vehicle catalogue =================
+  // Side profiles (metres). u runs forward from the car's centre; cab* mark where the glasshouse meets the body.
+  const T = {
+    hatch:    { len: 3.85, wid: 1.73, bh: 0.7,  cl: 0.3,  noseH: 0.7,  noseLen: 0.4,  tailLen: 0.1,  tailDrop: 0.05, cabF: 0.6,  cabR: -1.7,  cabH: 0.68, ws: 0.65, rs: 0.3,  wr: 0.35 },
+    sedan:    { len: 4.65, wid: 1.8,  bh: 0.66, cl: 0.3,  noseH: 0.62, noseLen: 0.45, tailLen: 0.2,  tailDrop: 0.08, cabF: 0.85, cabR: -1.45, cabH: 0.62, ws: 0.72, rs: 0.6,  wr: 0.36 },
+    lux:      { len: 5.0,  wid: 1.9,  bh: 0.7,  cl: 0.3,  noseH: 0.62, noseLen: 0.5,  tailLen: 0.2,  tailDrop: 0.08, cabF: 0.9,  cabR: -1.6,  cabH: 0.64, ws: 0.75, rs: 0.65, wr: 0.38 },
+    csuv:     { len: 4.3,  wid: 1.79, bh: 0.85, cl: 0.42, noseH: 0.8,  noseLen: 0.3,  tailLen: 0.1,  tailDrop: 0.05, cabF: 0.75, cabR: -1.95, cabH: 0.72, ws: 0.6,  rs: 0.25, wr: 0.4 },
+    suv:      { len: 4.8,  wid: 1.86, bh: 0.95, cl: 0.48, noseH: 0.88, noseLen: 0.25, tailLen: 0.08, tailDrop: 0.04, cabF: 0.85, cabR: -2.2,  cabH: 0.82, ws: 0.5,  rs: 0.15, wr: 0.45 },
+    boxy:     { len: 3.98, wid: 1.82, bh: 0.95, cl: 0.5,  noseH: 0.95, noseLen: 0.12, tailLen: 0.03, tailDrop: 0,    cabF: 0.55, cabR: -1.85, cabH: 0.85, ws: 0.2,  rs: 0.02, wr: 0.48 },
+    mpv:      { len: 4.73, wid: 1.83, bh: 0.82, cl: 0.38, noseH: 0.75, noseLen: 0.35, tailLen: 0.08, tailDrop: 0.03, cabF: 1.05, cabR: -2.25, cabH: 0.78, ws: 0.75, rs: 0.15, wr: 0.4 },
+    super:    { len: 4.55, wid: 1.95, bh: 0.55, cl: 0.18, noseH: 0.45, noseLen: 0.9,  tailLen: 0.3,  tailDrop: 0.05, cabF: 0.7,  cabR: -1.6,  cabH: 0.5,  ws: 0.9,  rs: 0.9,  wr: 0.36, grille: 'none' },
+    fastback: { len: 4.6,  wid: 1.88, bh: 0.62, cl: 0.22, noseH: 0.55, noseLen: 0.7,  tailLen: 0.15, tailDrop: 0.05, cabF: 0.6,  cabR: -1.9,  cabH: 0.58, ws: 0.8,  rs: 1.1,  wr: 0.37 },
+  };
+  function car(num, name, group, tpl, color, o = {}) {
+    const t = T[tpl], k = (o.len || t.len) / t.len;
+    return Object.assign({ num, name, group, kind: 'car', color, max: 40, acc: 10, turn: 2.0, grille: 'std', extras: [] }, t, { cabF: t.cabF * k, cabR: t.cabR * k }, o);
+  }
+  function bike(num, name, style, color, o = {}) {
+    return Object.assign({ num, name, group: 'Bikes', kind: 'bike', style, color, len: 2.0, wid: 0.7, max: 34, acc: 10, turn: 2.6 }, o);
+  }
   const SPECS = [
-    { num: '1001', name: 'Chhotu Hatchback', group: 'Cars', kind: 'car', color: 0xd63b3b, len: 3.8, wid: 1.75, bodyH: 0.75, cabH: 0.65, cabLen: 2.0, cabZ: 0.35, max: 38, acc: 9, turn: 2.2 },
-    { num: '1002', name: 'Raja Sedan', group: 'Cars', kind: 'car', color: 0xf0f0ee, len: 4.6, wid: 1.8, bodyH: 0.7, cabH: 0.65, cabLen: 2.2, cabZ: 0.2, max: 44, acc: 10, turn: 2.0 },
-    { num: '1003', name: 'Kaali-Peeli Taxi', group: 'Cars', kind: 'car', color: 0xffcc22, roof: 0x16171a, len: 4.2, wid: 1.7, bodyH: 0.75, cabH: 0.65, cabLen: 2.1, cabZ: 0.2, max: 38, acc: 9, turn: 2.1, extra: 'taxi' },
-    { num: '1004', name: 'Pahadi SUV', group: 'Cars', kind: 'car', color: 0x2f5d4a, len: 4.7, wid: 1.95, bodyH: 0.95, cabH: 0.8, cabLen: 2.8, cabZ: 0.45, clear: 0.5, wheelR: 0.45, max: 42, acc: 10, turn: 1.9 },
-    { num: '1005', name: 'Toofan GT', group: 'Cars', kind: 'car', color: 0xff6a1a, len: 4.5, wid: 1.95, bodyH: 0.55, cabH: 0.5, cabLen: 1.7, cabZ: 0.45, clear: 0.25, wheelR: 0.36, max: 64, acc: 17, turn: 2.3 },
-    { num: '1006', name: 'Jungle Jeep', group: 'Cars', kind: 'car', color: 0x556b2f, len: 3.9, wid: 1.8, bodyH: 0.85, clear: 0.55, wheelR: 0.48, max: 36, acc: 10, turn: 2.2, extra: 'jeep' },
-    { num: '1007', name: 'Neela Coupe', group: 'Cars', kind: 'car', color: 0x2563c9, len: 4.3, wid: 1.85, bodyH: 0.6, cabH: 0.55, cabLen: 1.8, cabZ: 0.4, clear: 0.3, max: 52, acc: 13, turn: 2.2 },
-    { num: '2001', name: 'Daily Bike', group: 'Bikes', kind: 'bike', style: 'commuter', color: 0x1d3557, len: 2.0, wid: 0.7, max: 30, acc: 9, turn: 2.6 },
-    { num: '2002', name: 'Scooty', group: 'Bikes', kind: 'bike', style: 'scooter', color: 0x7cc4de, len: 1.8, wid: 0.7, max: 24, acc: 8, turn: 2.8 },
-    { num: '2003', name: 'Bijli Sports Bike', group: 'Bikes', kind: 'bike', style: 'sport', color: 0x2bb24c, len: 2.0, wid: 0.7, max: 60, acc: 18, turn: 2.6 },
-    { num: '2004', name: 'Cruiser Bike', group: 'Bikes', kind: 'bike', style: 'cruiser', color: 0x2a2a2e, len: 2.3, wid: 0.8, max: 42, acc: 11, turn: 2.2 },
-    { num: '2005', name: 'Laal Racer', group: 'Bikes', kind: 'bike', style: 'sport', color: 0xd62839, len: 2.0, wid: 0.7, max: 56, acc: 16, turn: 2.7 },
-    { num: '3001', name: 'Police Interceptor', group: 'Seva', kind: 'car', color: 0xf2f2f2, stripe: 0x1d4fbf, len: 4.7, wid: 1.85, bodyH: 0.72, cabH: 0.65, cabLen: 2.2, cabZ: 0.2, max: 54, acc: 14, turn: 2.1, extra: 'police' },
-    { num: '3002', name: 'Ambulance', group: 'Seva', kind: 'car', color: 0xf6f6f6, stripe: 0xd62828, len: 5.4, wid: 2.0, bodyH: 1.0, cabH: 1.0, cabLen: 4.0, cabZ: 0.6, clear: 0.45, wheelR: 0.42, max: 42, acc: 9, turn: 1.8, extra: 'ambulance', boxy: true },
-    { num: '4001', name: 'Kisan Pickup', group: 'Bade vehicles', kind: 'car', color: 0x3a6fb0, len: 5.2, wid: 1.9, bodyH: 0.85, cabH: 0.75, cabLen: 1.9, cabZ: -0.9, clear: 0.5, wheelR: 0.45, max: 36, acc: 8, turn: 1.8, extra: 'bed' },
-    { num: '4002', name: 'City Bus', group: 'Bade vehicles', kind: 'car', color: 0x2a9d8f, len: 11, wid: 2.5, bodyH: 1.3, cabH: 1.3, cabLen: 10.6, cabZ: 0, clear: 0.45, wheelR: 0.55, max: 26, acc: 4.5, turn: 1.2, cam: [17, 6.5] },
-    { num: '4003', name: 'Bharat Truck', group: 'Bade vehicles', kind: 'car', color: 0xe76f51, len: 8.5, wid: 2.4, bodyH: 0.9, cabH: 1.2, cabLen: 2.0, cabZ: -3.1, clear: 0.6, wheelR: 0.6, max: 28, acc: 5, turn: 1.3, extra: 'cargo', cam: [15, 6] },
-    { num: '5001', name: 'Auto Rickshaw', group: 'Aur bhi', kind: 'auto', color: 0x2e8b3e, len: 2.8, wid: 1.4, max: 18, acc: 6, turn: 2.5 },
+    car('1001', 'Maruti Swift', 'Cars', 'hatch', 0xc8102e, { max: 40, acc: 10, turn: 2.3 }),
+    car('1002', 'Honda Civic', 'Cars', 'sedan', 0xf2f2f2, { max: 50, acc: 12 }),
+    car('1003', 'Hyundai Creta', 'Cars', 'csuv', 0x2b5797, { max: 44, acc: 10.5 }),
+    car('1004', 'Tata Nexon', 'Cars', 'csuv', 0x4d7c4a, { len: 3.99, max: 42, acc: 10 }),
+    car('1005', 'Toyota Innova Crysta', 'Cars', 'mpv', 0xb8bcc2, { max: 42, acc: 9, turn: 1.9 }),
+    car('1006', 'Maruti Dzire Taxi', 'Cars', 'sedan', 0xffcc22, { len: 4.0, roof: 0x16171a, extras: ['taxi'], max: 40, acc: 9.5 }),
+    car('1101', 'Toyota Fortuner', 'SUVs', 'suv', 0xf4f4f4, { grille: 'big', extras: ['rails'], max: 46, acc: 11, turn: 1.9 }),
+    car('1102', 'Mahindra Thar', 'SUVs', 'boxy', 0xa4161a, { roof: 0x16171a, extras: ['spare'], max: 40, acc: 10, turn: 2.1 }),
+    car('1103', 'Mahindra Scorpio-N', 'SUVs', 'suv', 0x1f2023, { len: 4.66, wid: 1.92, extras: ['rails'], max: 45, acc: 10.5 }),
+    car('1104', 'Mercedes-Benz G 63', 'SUVs', 'boxy', 0x141518, { len: 4.87, wid: 1.98, cabH: 0.9, extras: ['spare'], max: 54, acc: 14 }),
+    car('1105', 'Range Rover', 'SUVs', 'suv', 0x2f3a33, { len: 5.0, wid: 2.0, ws: 0.55, rs: 0.12, max: 54, acc: 13 }),
+    car('1106', 'Toyota Land Cruiser', 'SUVs', 'suv', 0xe8e4da, { len: 4.99, wid: 1.98, grille: 'big', extras: ['rails'], max: 50, acc: 12 }),
+    car('1201', 'BMW M5', 'Luxury', 'lux', 0x1e4fa3, { grille: 'kidney', max: 68, acc: 17, turn: 2.1 }),
+    car('1202', 'Mercedes-Benz S-Class', 'Luxury', 'lux', 0x18191b, { len: 5.18, max: 58, acc: 13 }),
+    car('1203', 'Audi A6', 'Luxury', 'lux', 0x6b7178, { len: 4.94, grille: 'big', max: 56, acc: 13 }),
+    car('1204', 'BMW X5', 'Luxury', 'suv', 0x2c2f33, { len: 4.92, wid: 2.0, grille: 'kidney', extras: ['rails'], max: 56, acc: 13 }),
+    car('1301', 'Lamborghini Huracán', 'Supercars', 'super', 0x8fd400, { max: 80, acc: 22, turn: 2.3 }),
+    car('1302', 'Ferrari F8 Tributo', 'Supercars', 'super', 0xd40000, { len: 4.61, wid: 1.98, max: 78, acc: 21, turn: 2.3 }),
+    car('1303', 'Porsche 911', 'Supercars', 'fastback', 0xc7cbd1, { len: 4.52, wid: 1.85, grille: 'none', extras: ['spoiler'], max: 74, acc: 19, turn: 2.3 }),
+    car('1304', 'Ford Mustang GT', 'Supercars', 'fastback', 0xf5c400, { len: 4.79, wid: 1.92, extras: ['spoiler'], max: 66, acc: 16 }),
+    car('1305', 'Bugatti Chiron', 'Supercars', 'super', 0x1d3f8f, { len: 4.54, wid: 2.04, roof: 0x111111, max: 94, acc: 25, turn: 2.2 }),
+    bike('2001', 'Hero Splendor Plus', 'commuter', 0x1b1b1f, { max: 28, acc: 8 }),
+    bike('2002', 'Honda Activa', 'scooter', 0xb5b9bf, { len: 1.8, max: 24, acc: 8, turn: 2.8 }),
+    bike('2003', 'Royal Enfield Classic 350', 'cruiser', 0x6b1d1d, { len: 2.2, wid: 0.8, max: 36, acc: 9, turn: 2.3 }),
+    bike('2004', 'KTM Duke 390', 'naked', 0xff7a00, { max: 48, acc: 15, turn: 2.8 }),
+    bike('2005', 'Kawasaki Ninja ZX-10R', 'sport', 0x3fae2a, { max: 76, acc: 20 }),
+    bike('2006', 'Suzuki Hayabusa', 'sport', 0x1d2a4a, { len: 2.2, max: 84, acc: 21, turn: 2.4 }),
+    bike('2007', 'Bajaj Pulsar 220F', 'commuter', 0x7d0f0f, { max: 38, acc: 11 }),
+    car('3001', 'Police Bolero', 'Emergency', 'boxy', 0xf4f4f4, { len: 3.99, wid: 1.75, cabH: 0.9, stripe: 0x1d4fbf, extras: ['police'], max: 46, acc: 11 }),
+    car('3002', 'Ambulance (Force Traveller)', 'Emergency', 'boxy', 0xf6f6f6, { len: 5.5, wid: 2.0, bh: 0.95, cl: 0.45, noseH: 0.9, noseLen: 0.3, tailLen: 0.03, cabF: 1.85, cabR: -2.7, cabH: 1.25, ws: 0.55, rs: 0, wr: 0.42, boxy: true, stripe: 0xd62828, extras: ['ambulance'], max: 42, acc: 9, turn: 1.8 }),
+    car('4001', 'Mahindra Bolero Pickup', 'Heavy', 'boxy', 0xe9e9e6, { len: 5.2, wid: 1.75, cabF: 1.45, cabR: 0.0, cabH: 0.85, ws: 0.35, rs: 0.05, extras: ['bed'], max: 38, acc: 8, turn: 1.8 }),
+    car('4002', 'Tata City Bus', 'Heavy', 'boxy', 0x2a9d8f, { len: 11, wid: 2.5, bh: 1.25, cl: 0.45, noseH: 1, noseLen: 0.08, tailLen: 0.05, cabF: 5.4, cabR: -5.4, cabH: 1.4, ws: 0.12, rs: 0.05, wr: 0.55, max: 26, acc: 4.5, turn: 1.2, cam: [17, 6.5] }),
+    car('4003', 'Tata Signa Truck', 'Heavy', 'boxy', 0xe76f51, { len: 8.5, wid: 2.4, bh: 0.95, cl: 0.6, noseH: 1, noseLen: 0.08, tailLen: 0.02, cabF: 4.15, cabR: 2.3, cabH: 1.3, ws: 0.15, rs: 0, wr: 0.6, extras: ['cargo'], max: 28, acc: 5, turn: 1.3, cam: [15, 6] }),
+    { num: '5001', name: 'Bajaj RE Auto Rickshaw', group: 'Others', kind: 'auto', color: 0x2e8b3e, len: 2.8, wid: 1.4, max: 18, acc: 6, turn: 2.5 },
   ];
-  const GROUP_ORDER = ['Cars', 'Bikes', 'Seva', 'Bade vehicles', 'Aur bhi'];
+  const GROUP_ORDER = ['Cars', 'SUVs', 'Luxury', 'Supercars', 'Bikes', 'Emergency', 'Heavy', 'Others'];
   const byNum = new Map(SPECS.map((s) => [s.num, s]));
-  const camFor = (s) => s.cam || (s.kind === 'bike' ? [5.5, 2.3] : [Math.max(6.8, s.len + 3), 2.3 + (s.bodyH || 0.7) + (s.cabH || 0.4) * 0.5]);
+  const camFor = (s) => s.cam || (s.kind === 'bike' ? [5.5, 2.3] : [Math.max(6.8, s.len + 3), 2.3 + (s.bh || 0.7) + (s.cabH || 0.4) * 0.5]);
 
-  function wheel(r, w) { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, w, 14).rotateZ(Math.PI / 2), TIRE); m.castShadow = true; return m; }
+  // ================= Vehicle models =================
+  function wheel(r, w) {
+    const g = new THREE.Group();
+    const t = new THREE.Mesh(new THREE.CylinderGeometry(r, r, w, 16).rotateZ(Math.PI / 2), TIRE); t.castShadow = true; t.userData.own = true; g.add(t);
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.6, r * 0.6, w + 0.02, 10).rotateZ(Math.PI / 2), METAL); hub.userData.own = true; g.add(hub);
+    return g;
+  }
+  function extrude(points, depth, m) {
+    const shape = new THREE.Shape();
+    shape.moveTo(points[0][0], points[0][1]);
+    for (let i = 1; i < points.length; i++) shape.lineTo(points[i][0], points[i][1]);
+    const b = 0.05;
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: depth - 2 * b, bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelSegments: 2, steps: 1 });
+    geo.translate(0, 0, -(depth - 2 * b) / 2);
+    geo.rotateY(Math.PI / 2); // profile u -> -z (nose points to -z), extrusion -> x
+    const mesh = new THREE.Mesh(geo, m);
+    mesh.castShadow = true; mesh.userData.own = true;
+    return mesh;
+  }
+  function badge(parent, x, y, z, facing, small) {
+    const p = new THREE.Mesh(small ? G.badgeSmall : G.badge, BADGE);
+    p.position.set(x, y, z);
+    p.rotation.y = facing === 'front' ? Math.PI : facing === 'left' ? -Math.PI / 2 : facing === 'right' ? Math.PI / 2 : 0;
+    parent.add(p);
+    return p;
+  }
 
   function buildCar(s, col) {
     const g = new THREE.Group();
-    const L = s.len, W = s.wid, bh = s.bodyH, cl = s.clear ?? 0.35, wr = s.wheelR ?? 0.38;
-    const bodyMat = mat(col), roofMat = s.roof != null ? mat(s.roof) : bodyMat;
-    const top = cl + bh;
-    box(W, bh, L, bodyMat, 0, cl + bh / 2, 0, g);
-    let roofY = top;
-    if (s.extra === 'jeep') {
-      box(W * 0.92, 0.5, 0.06, GLASS, 0, top + 0.25, -0.35, g);
-      box(0.08, 0.9, 0.08, BLACK, -W * 0.42, top + 0.45, 0.7, g);
-      box(0.08, 0.9, 0.08, BLACK, W * 0.42, top + 0.45, 0.7, g);
-      box(W * 0.9, 0.08, 0.08, BLACK, 0, top + 0.9, 0.7, g);
-      box(0.6, 0.6, 0.2, TIRE, 0, top - 0.1, L / 2 + 0.1, g);
-    } else {
-      box(W * 0.9, s.cabH, s.cabLen, s.boxy ? bodyMat : GLASS, 0, top + s.cabH / 2, s.cabZ, g);
-      if (s.boxy) box(W * 0.86, s.cabH * 0.55, 0.06, GLASS, 0, top + s.cabH * 0.55, s.cabZ - s.cabLen / 2 - 0.02, g);
-      box(W * 0.93, 0.08, s.cabLen * 0.98, roofMat, 0, top + s.cabH + 0.04, s.cabZ, g);
-      roofY = top + s.cabH + 0.08;
+    const L = s.len, W = s.wid, cl = s.cl, bh = s.bh, top = cl + bh, wr = s.wr, b = 0.05;
+    const body = paint(col), roofM = s.roof != null ? paint(s.roof) : body;
+    const noseTop = cl + bh * s.noseH;
+    g.add(extrude([[-L / 2, cl], [L / 2, cl], [L / 2, noseTop], [L / 2 - s.noseLen, top], [-L / 2 + s.tailLen, top], [-L / 2, top - s.tailDrop]], W, body));
+    const uA = s.cabF, uB = s.cabR, uC = s.cabF - s.ws, uD = s.cabR + s.rs;
+    g.add(extrude([[uB, top - 0.02], [uA, top - 0.02], [uC, top + s.cabH], [uD, top + s.cabH]], W * 0.88, s.boxy ? body : GLASS));
+    const roofY = top + s.cabH + 0.06;
+    box(W * 0.9, 0.07, Math.max(0.3, uC - uD), roofM, 0, top + s.cabH + 0.02, -(uC + uD) / 2, g);
+    if (s.boxy) {
+      const ws = box(W * 0.8, Math.hypot(uA - uC, s.cabH) * 0.75, 0.04, GLASS, 0, top + s.cabH * 0.5, -(uA + uC) / 2 - 0.06, g);
+      ws.rotation.x = Math.atan2(uA - uC, s.cabH);
     }
-    if (s.stripe) box(W + 0.03, 0.2, L * 0.96, mat(s.stripe), 0, cl + bh * 0.55, 0, g);
-    if (s.extra === 'taxi') box(0.8, 0.22, 0.35, mat(0xffe066), 0, roofY + 0.11, s.cabZ, g);
-    if (s.extra === 'cargo') box(W * 1.02, 2.3, 6.0, mat(0x8a6d4b), 0, top + 1.15, 1.2, g);
-    if (s.extra === 'bed') {
-      box(0.1, 0.45, 2.3, bodyMat, -W / 2 + 0.05, top + 0.22, 1.35, g);
-      box(0.1, 0.45, 2.3, bodyMat, W / 2 - 0.05, top + 0.22, 1.35, g);
-      box(W, 0.45, 0.1, bodyMat, 0, top + 0.22, L / 2 - 0.05, g);
+    const zF = -(L / 2 + b) - 0.01, zR = L / 2 + b + 0.01;
+    // Front: grille, AZARR badge, headlights, number plate
+    const gy = cl + bh * s.noseH * 0.5;
+    if (s.grille === 'kidney') { box(W * 0.13, bh * s.noseH * 0.42, 0.04, BLACK, -0.14, gy, zF, g); box(W * 0.13, bh * s.noseH * 0.42, 0.04, BLACK, 0.14, gy, zF, g); }
+    else if (s.grille === 'big') box(W * 0.62, bh * s.noseH * 0.55, 0.04, BLACK, 0, gy, zF, g);
+    else if (s.grille === 'std') box(W * 0.45, bh * s.noseH * 0.35, 0.04, BLACK, 0, gy, zF, g);
+    badge(g, 0, s.grille === 'kidney' ? gy + bh * s.noseH * 0.3 : gy + (s.grille === 'none' ? 0.05 : 0), zF - 0.03, 'front');
+    for (const sx of [-1, 1]) {
+      box(W * 0.22, 0.13, 0.05, HEAD, sx * W * 0.34, noseTop - 0.12, zF, g);
+      box(W * 0.22, 0.12, 0.05, TAIL, sx * W * 0.35, top - s.tailDrop - 0.14, zR, g);
+      box(0.08, 0.12, 0.18, body, sx * (W / 2 + 0.05), top + 0.1, -(s.cabF - 0.15), g); // mirrors
+    }
+    box(0.5, 0.12, 0.03, PLATE, 0, cl + 0.14, zF - 0.01, g);
+    box(0.5, 0.12, 0.03, PLATE, 0, cl + 0.24, zR + 0.01, g);
+    badge(g, 0, top - s.tailDrop - 0.32, zR + 0.03, 'back', true);
+    if (s.stripe) box(W + 0.02, 0.14, L * 0.86, mat(s.stripe), 0, cl + bh * 0.5, 0, g);
+
+    const ex = s.extras;
+    if (ex.includes('rails')) for (const sx of [-1, 1]) box(0.05, 0.07, (uC - uD) * 0.95, METAL, sx * W * 0.37, roofY + 0.03, -(uC + uD) / 2, g);
+    if (ex.includes('spare')) { const sp = wheel(wr * 0.9, 0.28); sp.rotation.y = Math.PI / 2; sp.position.set(0, cl + bh * 0.62, zR + 0.15); g.add(sp); }
+    if (ex.includes('spoiler')) {
+      box(W * 0.88, 0.05, 0.3, BLACK, 0, top + 0.3, L / 2 - 0.25, g);
+      for (const sx of [-1, 1]) box(0.05, 0.28, 0.06, BLACK, sx * W * 0.3, top + 0.14, L / 2 - 0.25, g);
+    }
+    if (ex.includes('taxi')) box(0.8, 0.22, 0.35, mat(0xffe066), 0, roofY + 0.11, -(uC + uD) / 2, g);
+    if (ex.includes('cargo')) { const len = uB - 0.15 + L / 2; box(W * 1.02, 2.3, len, mat(0x8a6d4b), 0, top + 1.15, -(uB - 0.15 - L / 2) / 2, g); }
+    if (ex.includes('bed')) {
+      const len = uB - 0.05 + L / 2, zc = -(uB - 0.05 - L / 2) / 2;
+      for (const sx of [-1, 1]) box(0.08, 0.45, len, body, sx * (W / 2 - 0.04), top + 0.22, zc, g);
+      box(W, 0.45, 0.08, body, 0, top + 0.22, L / 2 - 0.04, g);
     }
     const blink = [];
-    if (s.extra === 'police' || s.extra === 'ambulance') {
-      const z = s.extra === 'police' ? s.cabZ : s.cabZ - s.cabLen / 2 + 0.3;
+    if (ex.includes('police') || ex.includes('ambulance')) {
+      const z = ex.includes('police') ? -(uC + uD) / 2 : -(uC - 0.3);
       const red = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.16, 0.3), new THREE.MeshBasicMaterial({ color: 0xff2a2a }));
-      const blue = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.16, 0.3), new THREE.MeshBasicMaterial({ color: s.extra === 'police' ? 0x2a6bff : 0xff2a2a }));
+      const blue = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.16, 0.3), new THREE.MeshBasicMaterial({ color: ex.includes('police') ? 0x2a6bff : 0xff2a2a }));
       red.position.set(-0.3, roofY + 0.08, z); blue.position.set(0.3, roofY + 0.08, z);
+      red.userData.own = blue.userData.own = true;
       g.add(red, blue); blink.push(red, blue);
     }
-    for (const sx of [-1, 1]) {
-      box(0.38, 0.16, 0.06, HEAD, sx * W * 0.32, cl + bh * 0.65, -L / 2 - 0.02, g);
-      box(0.38, 0.16, 0.06, TAIL, sx * W * 0.32, cl + bh * 0.65, L / 2 + 0.02, g);
-    }
+
     const inset = Math.min(0.7, L * 0.12);
     const zf = -L / 2 + wr + inset, zr = L / 2 - wr - inset;
     const wheels = [], fronts = [];
     for (const sx of [-1, 1]) {
       const pivot = new THREE.Group(); pivot.position.set(sx * (W / 2 - 0.12), wr, zf); g.add(pivot);
-      const wf = wheel(wr, 0.34); pivot.add(wf); wheels.push(wf); fronts.push(pivot);
-      const rw = wheel(wr, 0.34); rw.position.set(sx * (W / 2 - 0.12), wr, zr); g.add(rw); wheels.push(rw);
+      const wf = wheel(wr, 0.32); pivot.add(wf); wheels.push(wf); fronts.push(pivot);
+      const rw = wheel(wr, 0.32); rw.position.set(sx * (W / 2 - 0.12), wr, zr); g.add(rw); wheels.push(rw);
     }
     return { mesh: g, wheels, fronts, blink, seat: null, wr };
   }
@@ -554,41 +732,56 @@
   function buildBike(s, col) {
     const g = new THREE.Group();
     const st = s.style, wr = st === 'scooter' ? 0.3 : 0.36, wb = st === 'cruiser' ? 0.85 : 0.68;
-    const cm = mat(col);
+    const cm = paint(col);
     const pivot = new THREE.Group(); pivot.position.set(0, wr, -wb); g.add(pivot);
     const fw = wheel(wr, 0.14); pivot.add(fw);
-    box(0.06, 0.8, 0.06, METAL, 0, 0.38, 0.04, pivot);
+    box(0.06, 0.8, 0.06, CHROME, 0, 0.38, 0.04, pivot);
     box(0.75, 0.05, 0.05, BLACK, 0, 0.76, 0.12, pivot);
-    box(0.18, 0.14, 0.08, HEAD, 0, 0.55, -0.06, pivot);
+    box(0.2, 0.15, 0.08, HEAD, 0, 0.55, -0.06, pivot);
     const rw = wheel(wr, 0.16); rw.position.set(0, wr, wb); g.add(rw);
-    let seat;
+    let seat, tank;
     if (st === 'scooter') {
       box(0.42, 0.08, 0.9, cm, 0, wr + 0.02, 0, g);
       box(0.48, 0.85, 0.14, cm, 0, wr + 0.42, -wb + 0.22, g);
       box(0.46, 0.42, 0.75, cm, 0, wr + 0.32, wb - 0.3, g);
       box(0.36, 0.1, 0.62, BLACK, 0, wr + 0.58, wb - 0.35, g);
+      badge(pivot, 0, 0.32, -0.16, 'front', true);
+      for (const sx of [-1, 1]) badge(g, sx * 0.235, wr + 0.38, wb - 0.3, sx < 0 ? 'left' : 'right', true);
       seat = { y: wr + 0.63, z: wb - 0.4 };
     } else if (st === 'sport') {
       box(0.16, 0.2, wb * 2 - 0.2, METAL, 0, wr + 0.3, 0, g);
       const fair = box(0.5, 0.45, 0.75, cm, 0, wr + 0.55, -0.35, g); fair.rotation.x = -0.35;
-      box(0.42, 0.26, 0.5, cm, 0, wr + 0.62, 0.05, g);
+      tank = { w: 0.42, y: wr + 0.62, z: 0.05 };
       const tail = box(0.3, 0.18, 0.6, cm, 0, wr + 0.68, 0.55, g); tail.rotation.x = 0.2;
       box(0.3, 0.1, 0.45, BLACK, 0, wr + 0.72, 0.32, g);
       box(0.3, 0.3, 0.45, METAL, 0, wr + 0.1, 0, g);
+      for (const sx of [-1, 1]) badge(g, sx * 0.26, wr + 0.5, -0.45, sx < 0 ? 'left' : 'right', true);
       seat = { y: wr + 0.75, z: 0.35 };
+    } else if (st === 'naked') {
+      box(0.16, 0.2, wb * 2 - 0.2, cm, 0, wr + 0.3, 0, g);
+      tank = { w: 0.44, y: wr + 0.6, z: -0.15 };
+      const tail = box(0.24, 0.14, 0.55, cm, 0, wr + 0.66, 0.5, g); tail.rotation.x = 0.25;
+      box(0.3, 0.1, 0.5, BLACK, 0, wr + 0.7, 0.28, g);
+      box(0.32, 0.32, 0.42, METAL, 0, wr + 0.1, 0, g);
+      seat = { y: wr + 0.73, z: 0.3 };
     } else if (st === 'cruiser') {
       box(0.18, 0.2, 1.5, METAL, 0, wr + 0.2, 0, g);
-      box(0.38, 0.28, 0.55, cm, 0, wr + 0.55, -0.3, g);
+      tank = { w: 0.38, y: wr + 0.55, z: -0.3 };
       box(0.38, 0.12, 0.6, BLACK, 0, wr + 0.42, 0.3, g);
-      box(0.3, 0.35, 0.5, METAL, 0, wr + 0.1, -0.05, g);
+      box(0.3, 0.35, 0.5, CHROME, 0, wr + 0.1, -0.05, g);
       box(0.24, 0.1, 0.7, cm, 0, wr + 0.42, wb, g);
+      box(0.08, 0.08, 1.0, CHROME, 0.2, wr - 0.05, 0.5, g);
       seat = { y: wr + 0.48, z: 0.3 };
     } else {
       box(0.16, 0.2, wb * 2 - 0.2, cm, 0, wr + 0.3, 0, g);
-      box(0.36, 0.26, 0.5, cm, 0, wr + 0.55, -0.25, g);
+      tank = { w: 0.36, y: wr + 0.55, z: -0.25 };
       box(0.3, 0.1, 0.65, BLACK, 0, wr + 0.55, 0.3, g);
       box(0.3, 0.3, 0.4, METAL, 0, wr + 0.08, 0, g);
       seat = { y: wr + 0.6, z: 0.25 };
+    }
+    if (tank) {
+      box(tank.w, 0.26, 0.5, cm, 0, tank.y, tank.z, g);
+      for (const sx of [-1, 1]) badge(g, sx * (tank.w / 2 + 0.006), tank.y, tank.z, sx < 0 ? 'left' : 'right', true);
     }
     box(0.12, 0.08, 0.05, TAIL, 0, wr + 0.5, wb + 0.2, g);
     return { mesh: g, wheels: [fw, rw], fronts: [pivot], blink: [], seat, wr };
@@ -596,15 +789,17 @@
 
   function buildAuto(s, col) {
     const g = new THREE.Group();
-    const wr = 0.28, yel = mat(0xf2c94c);
-    box(1.3, 0.55, 2.3, mat(col), 0, 0.62, 0.15, g);
+    const wr = 0.28, yel = paint(0xf2c94c);
+    box(1.3, 0.55, 2.3, paint(col), 0, 0.62, 0.15, g);
     box(0.75, 0.7, 0.55, yel, 0, 0.62, -1.25, g);
     box(1.0, 0.6, 0.05, GLASS, 0, 1.3, -1.0, g);
     box(1.36, 0.08, 2.3, BLACK, 0, 1.78, 0.1, g);
     for (const [x, z] of [[-0.62, -0.95], [0.62, -0.95], [-0.62, 1.15], [0.62, 1.15]]) box(0.06, 0.9, 0.06, BLACK, x, 1.33, z, g);
     box(1.3, 0.85, 0.06, yel, 0, 1.33, 1.2, g);
     box(0.9, 0.12, 0.5, BLACK, 0, 0.95, 0.65, g);
-    box(0.2, 0.14, 0.06, HEAD, 0, 0.75, -1.54, g);
+    box(0.2, 0.14, 0.06, HEAD, 0, 0.82, -1.54, g);
+    badge(g, 0, 0.55, -1.56, 'front', true);
+    badge(g, 0, 1.0, 1.24, 'back', true);
     const pivot = new THREE.Group(); pivot.position.set(0, wr, -1.25); g.add(pivot);
     const fw = wheel(wr, 0.16); pivot.add(fw);
     const wheels = [fw];
@@ -614,14 +809,14 @@
 
   function buildVehicle(s, col) {
     const b = s.kind === 'bike' ? buildBike(s, col) : s.kind === 'auto' ? buildAuto(s, col) : buildCar(s, col);
-    b.mesh.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+    b.mesh.traverse((o) => { if (o.isMesh && o.material !== BADGE) o.castShadow = true; });
     return b;
   }
 
   const vehicles = [];
   function createVehicle(s, x, z, h, opts = {}) {
     const b = buildVehicle(s, opts.color ?? s.color);
-    const v = Object.assign(b, { spec: s, x, z, h, speed: 0, steer: 0, lean: 0, r: Math.max(s.wid * 0.6, s.len * 0.42), drop: null, home: !!opts.home, called: !!opts.called });
+    const v = Object.assign(b, { spec: s, x, z, h, speed: 0, steer: 0, lean: 0, r: Math.max(s.wid * 0.6, s.len * 0.42), drop: null, home: !!opts.home, called: !!opts.called, mission: false });
     v.mesh.position.set(x, 0, z); v.mesh.rotation.y = h;
     scene.add(v.mesh);
     vehicles.push(v);
@@ -633,10 +828,23 @@
     vehicles.splice(vehicles.indexOf(v), 1);
   }
 
-  // ================= Player =================
+  // ================= People =================
+  const skin = mat(0xc68863), pants = mat(0x26324a);
+  function makePerson(shirtColor, seated) {
+    const g = new THREE.Group();
+    const c = mat(shirtColor);
+    box(0.5, 0.65, 0.28, c, 0, 1.25, 0, g);
+    const h = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 8), skin); h.position.y = 1.78; h.userData.own = true; g.add(h);
+    box(0.42, 0.1, 0.42, mat(0x1f1a17), 0, 1.95, 0.02, g);
+    if (seated) box(0.4, 0.2, 0.7, pants, 0, 0.92, -0.3, g);
+    else { box(0.18, 0.9, 0.2, pants, -0.13, 0.45, 0, g); box(0.18, 0.9, 0.2, pants, 0.13, 0.45, 0, g); }
+    g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+    return g;
+  }
+
   const player = new THREE.Group();
-  const skin = mat(0xc68863), shirt = mat(0xe85d3f), pants = mat(0x26324a);
-  function limb(w, h, d, m, x, y) { const p = new THREE.Group(); p.position.set(x, y, 0); const b = box(w, h, d, m, 0, -h / 2, 0, p); b.userData.own = false; player.add(p); return p; }
+  const shirt = mat(0xe85d3f);
+  function limb(w, h, d, m, x, y) { const p = new THREE.Group(); p.position.set(x, y, 0); box(w, h, d, m, 0, -h / 2, 0, p); player.add(p); return p; }
   const legL = limb(0.2, 0.9, 0.22, pants, -0.14, 0.9), legR = limb(0.2, 0.9, 0.22, pants, 0.14, 0.9);
   const armL = limb(0.14, 0.65, 0.14, shirt, -0.36, 1.55), armR = limb(0.14, 0.65, 0.14, shirt, 0.36, 1.55);
   box(0.55, 0.7, 0.3, shirt, 0, 1.25, 0, player);
@@ -648,26 +856,23 @@
   let mode = 'foot', current = null;
 
   function sitPose(on) {
-    const a = on ? 1.45 : 0;
-    legL.rotation.x = legR.rotation.x = a;
+    legL.rotation.x = legR.rotation.x = on ? 1.45 : 0;
     armL.rotation.x = armR.rotation.x = on ? 1.1 : 0;
   }
-
   function enter(v) {
     mode = 'drive'; current = v; v.speed = 0;
     if (v.seat) { v.mesh.add(player); player.position.set(0, v.seat.y - 0.9 + 0.05, v.seat.z); player.rotation.set(0, 0, 0); player.visible = true; sitPose(true); }
     else player.visible = false;
-    toast(v.spec.name + ' chalao. E dabake utro.');
+    toast('Driving the ' + v.spec.name + '. Press E to get out.');
   }
   function exit(force) {
     const v = current;
-    if (!force && Math.abs(v.speed) > 3) { toast('Pehle gaadi roko (S dabao)'); return; }
+    if (!force && Math.abs(v.speed) > 3) { toast('Stop the vehicle first (hold S).'); return; }
     v.speed = 0; v.steer = 0;
     const f = fwd(v.h), side = v.spec.wid / 2 + 0.9;
     let pos = null;
     for (const sgn of [1, -1]) {
-      const tx = v.x + f.z * side * sgn, tz = v.z - f.x * side * sgn;
-      const r = resolve(tx, tz, 0.4);
+      const r = resolve(v.x + f.z * side * sgn, v.z - f.x * side * sgn, 0.4);
       if (!r.hit) { pos = r; break; }
     }
     pos = pos || resolve(v.x - f.x * (v.spec.len / 2 + 1), v.z - f.z * (v.spec.len / 2 + 1), 0.4);
@@ -687,37 +892,28 @@
 
   // ================= Traffic =================
   const traffic = [];
-  const TRAFFIC_SPECS = SPECS.filter((s) => !s.extra || s.extra === 'taxi' || s.extra === 'bed');
-  const TRAFFIC_COLORS = [0xd63b3b, 0xf0f0ee, 0x2563c9, 0x34383f, 0x9aa3ad, 0x2f5d4a, 0xe8b33a, 0x7b2d42];
+  const TRAFFIC_SPECS = SPECS.filter((s) => s.group !== 'Emergency');
+  const focus = () => (mode === 'drive' ? { x: current.x, z: current.z, h: current.h } : { x: P.x, z: P.z, h: P.h });
   function placeTraffic(t, near) {
     const alongZ = Math.random() < 0.5, dir = Math.random() < 0.5 ? 1 : -1, k = Math.floor(Math.random() * 5) - 2;
     const f = alongZ ? { x: 0, z: dir } : { x: dir, z: 0 };
     const left = { x: f.z, z: -f.x };
     const d = (near ? 40 + Math.random() * 120 : 140 + Math.random() * 40) * (Math.random() < 0.5 ? 1 : -1);
-    const fx = focus().x, fz = focus().z;
-    if (alongZ) { t.x = Math.round(fx / CH) * CH + k * CH + left.x * 3.5; t.z = fz + d; }
-    else { t.z = Math.round(fz / CH) * CH + k * CH + left.z * 3.5; t.x = fx + d; }
+    const F = focus();
+    if (alongZ) { t.x = Math.round(F.x / CH) * CH + k * CH + left.x * 3.5; t.z = F.z + d; }
+    else { t.z = Math.round(F.z / CH) * CH + k * CH + left.z * 3.5; t.x = F.x + d; }
     t.f = f; t.h = Math.atan2(-f.x, -f.z); t.speed = t.cruise;
   }
   function spawnTraffic(n) {
     for (let i = 0; i < n; i++) {
       const s = TRAFFIC_SPECS[Math.floor(Math.random() * TRAFFIC_SPECS.length)];
-      const col = s.kind === 'car' && !s.extra ? TRAFFIC_COLORS[Math.floor(Math.random() * TRAFFIC_COLORS.length)] : s.color;
-      const b = buildVehicle(s, col);
-      const t = Object.assign(b, { spec: s, cruise: Math.min(s.max * 0.5, 9 + Math.random() * 6), r: Math.max(s.wid * 0.6, s.len * 0.42) });
+      const b = buildVehicle(s, s.color);
+      const t = Object.assign(b, { spec: s, cruise: Math.min(s.max * 0.45, 9 + Math.random() * 6), r: Math.max(s.wid * 0.6, s.len * 0.42) });
       placeTraffic(t, true);
-      if (b.seat) { const d = makeDriver(); d.position.set(0, b.seat.y - 0.9 + 0.05, b.seat.z); b.mesh.add(d); }
+      if (b.seat) { const d = makePerson([0x3d7dd8, 0x8c4bd1, 0x3aa86b, 0xd8a03d][Math.floor(Math.random() * 4)], true); d.position.set(0, b.seat.y - 0.9 + 0.05, b.seat.z); b.mesh.add(d); }
       scene.add(b.mesh);
       traffic.push(t);
     }
-  }
-  function makeDriver() {
-    const g = new THREE.Group();
-    const c = mat([0x3d7dd8, 0x8c4bd1, 0x3aa86b, 0xd8a03d][Math.floor(Math.random() * 4)]);
-    box(0.5, 0.65, 0.28, c, 0, 1.25, 0, g);
-    const h = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 8), skin); h.position.y = 1.78; g.add(h);
-    const l = box(0.4, 0.2, 0.7, pants, 0, 0.92, -0.3, g); l.userData.own = false;
-    return g;
   }
 
   // ================= Input =================
@@ -732,15 +928,17 @@
       if (/^[0-9*#]$/.test(e.key)) dialPush(e.key);
       else if (k === 'backspace') dialDel();
       else if (k === 'enter') dialCall();
-      else if (k === 'escape' || k === 'p') togglePhone(false);
+      else if (k === 'escape' || k === 'p' || k === 'm') togglePhone(false);
       e.preventDefault();
       return;
     }
     if (KEYMAP[k]) { keys[KEYMAP[k]] = 1; e.preventDefault(); return; }
     if (k === 'e') action();
     else if (k === 'p') togglePhone(true);
+    else if (k === 'm') { togglePhone(true); setTab('missions'); }
     else if (k === 'c') camFar = !camFar;
     else if (k === 'h') horn();
+    else if (k === 'n') setNight(!save.night);
   });
   window.addEventListener('keyup', (e) => { const m = KEYMAP[e.key.toLowerCase()]; if (m) keys[m] = 0; });
   window.addEventListener('blur', () => { for (const k in keys) keys[k] = 0; });
@@ -759,34 +957,63 @@
   function action() {
     if (!started || phoneOpen) return;
     if (mode === 'drive') exit(false);
-    else { const v = nearestVehicle(); if (v) enter(v); else toast('Paas mein koi gaadi nahi. Phone se bulao (P).'); }
+    else { const v = nearestVehicle(); if (v) enter(v); else toast('No vehicle nearby. Call one with your phone (P).'); }
   }
 
-  let audio = null;
-  function horn() {
+  // ================= Sound =================
+  let audio = null, engine = null;
+  function initAudio() {
     try {
       audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-      const t = audio.currentTime, gain = audio.createGain();
-      gain.gain.setValueAtTime(0.0001, t); gain.gain.exponentialRampToValueAtTime(0.18, t + 0.02); gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
-      gain.connect(audio.destination);
-      for (const fr of [392, 494]) { const o = audio.createOscillator(); o.type = 'square'; o.frequency.value = fr; o.connect(gain); o.start(t); o.stop(t + 0.46); }
+      if (!engine) {
+        const osc = audio.createOscillator(), osc2 = audio.createOscillator(), filter = audio.createBiquadFilter(), gain = audio.createGain();
+        osc.type = 'sawtooth'; osc2.type = 'square'; filter.type = 'lowpass'; filter.frequency.value = 380; gain.gain.value = 0;
+        osc.connect(filter); osc2.connect(filter); filter.connect(gain); gain.connect(audio.destination);
+        osc.start(); osc2.start();
+        engine = { osc, osc2, gain };
+      }
     } catch (e) {}
   }
+  function updateEngine() {
+    if (!engine) return;
+    const on = save.sound && mode === 'drive' && started && !phoneOpen;
+    const r = on ? Math.abs(current.speed) / current.spec.max : 0;
+    const base = current && current.spec.kind === 'bike' ? 70 : 42;
+    const t = audio.currentTime;
+    engine.osc.frequency.setTargetAtTime(base + r * 140 + (keys.up ? 12 : 0), t, 0.1);
+    engine.osc2.frequency.setTargetAtTime((base + r * 140) * 0.5, t, 0.1);
+    engine.gain.gain.setTargetAtTime(on ? 0.035 + r * 0.03 : 0, t, 0.15);
+  }
+  function beep(freqs, dur = 0.45, type = 'square', vol = 0.16) {
+    try {
+      initAudio();
+      const t = audio.currentTime, gain = audio.createGain();
+      gain.gain.setValueAtTime(0.0001, t); gain.gain.exponentialRampToValueAtTime(vol, t + 0.02); gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      gain.connect(audio.destination);
+      freqs.forEach((fr, i) => { const o = audio.createOscillator(); o.type = type; o.frequency.value = fr; o.connect(gain); o.start(t + (type === 'sine' ? i * 0.09 : 0)); o.stop(t + dur + 0.01); });
+    } catch (e) {}
+  }
+  function horn() { beep([392, 494]); }
 
   let toastTimer = 0;
-  function toast(msg, ms = 2400) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, ms); }
+  function toast(msg, kind = '', ms = 2600) {
+    const t = $('toast'); t.textContent = msg; t.className = 'toast' + (kind ? ' ' + kind : ''); t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, ms);
+  }
 
   // ================= Phone =================
   let dial = '', calling = false;
   function setTab(name) {
     for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('on', b.dataset.tab === name);
-    for (const p of ['dialer', 'code', 'home']) $('pane-' + p).hidden = p !== name;
+    for (const p of ['dialer', 'garage', 'missions', 'home']) $('pane-' + p).hidden = p !== name;
+    if (name === 'missions') renderMissions();
+    if (name === 'home') renderHome();
   }
   document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));
   function renderDial() {
     $('dialDisplay').textContent = dial;
     const s = byNum.get(dial);
-    $('dialName').textContent = s ? s.name : dial ? '' : 'Code tab mein number dekho';
+    $('dialName').textContent = s ? s.name : dial ? '' : 'Find vehicle numbers in the Garage tab';
   }
   function dialPush(k) { if (calling || dial.length >= 10) return; dial += k; renderDial(); }
   function dialDel() { if (calling) return; dial = dial.slice(0, -1); renderDial(); }
@@ -794,11 +1021,11 @@
     if (calling || !dial) return;
     const num = dial, s = byNum.get(num);
     calling = true;
-    $('calling').hidden = false; $('cNum').textContent = num; $('cName').textContent = s ? s.name : 'Anjaan number';
-    $('cState').textContent = 'Ring ho raha hai...';
+    $('calling').hidden = false; $('cNum').textContent = num; $('cName').textContent = s ? s.name : 'Unknown number';
+    $('cState').textContent = 'Ringing...';
+    beep([440, 480], 0.6, 'sine', 0.08);
     setTimeout(() => {
-      if (!s) { $('cState').textContent = 'Ye number maujood nahi hai.'; }
-      else { $('cState').textContent = 'Haan ji! Gaadi bhej rahe hain.'; }
+      $('cState').textContent = s ? 'Sure! Sending it to you now.' : 'This number does not exist.';
       setTimeout(() => {
         calling = false; $('calling').hidden = true;
         if (s) { togglePhone(false); deliver(s); dial = ''; renderDial(); }
@@ -835,23 +1062,31 @@
   function updateClock() { const d = new Date(); $('clock').textContent = d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); }
   setInterval(updateClock, 15000);
 
+  function renderHome() {
+    $('statCash').textContent = money(save.cash);
+    $('statDone').textContent = save.done;
+    $('nightToggle').setAttribute('aria-pressed', String(save.night));
+    $('soundToggle').setAttribute('aria-pressed', String(save.sound));
+  }
   $('goHome').addEventListener('click', () => {
-    if (mode === 'drive') {
-      const v = current; v.x = -15; v.z = -21; v.h = -Math.PI / 2; v.speed = 0;
-    } else { P.x = HOME_SPAWN.x; P.z = HOME_SPAWN.z; P.h = HOME_SPAWN.h; }
-    snapCam = true; togglePhone(false); toast('Ghar aa gaye!');
+    if (mode === 'drive') { const v = current; v.x = -15; v.z = -21; v.h = -Math.PI / 2; v.speed = 0; }
+    else { P.x = HOME_SPAWN.x; P.z = HOME_SPAWN.z; P.h = HOME_SPAWN.h; }
+    snapCam = true; togglePhone(false); toast('Welcome home!');
   });
   $('clearCars').addEventListener('click', () => {
-    for (const v of vehicles.slice()) if (v.called && v !== current) removeVehicle(v);
-    toast('Bulayi hui gaadiyan wapas chali gayin.');
+    for (const v of vehicles.slice()) if (v.called && !v.mission && v !== current) removeVehicle(v);
+    toast('Called vehicles have been sent back.');
   });
+  $('nightToggle').addEventListener('click', () => setNight(!save.night));
+  $('soundToggle').addEventListener('click', () => { save.sound = !save.sound; persist(); renderHome(); initAudio(); });
 
   // Called vehicle drops in beside you.
   function deliver(s) {
     const F = focus(), f = fwd(F.h);
     const right = { x: -f.z, z: f.x };
     const base = mode === 'drive' ? current.spec.wid / 2 + 1 : 1;
-    const tries = [[right, base + s.wid / 2 + 1], [{ x: -right.x, z: -right.z }, base + s.wid / 2 + 1], [f, (mode === 'drive' ? current.spec.len / 2 : 1) + s.len / 2 + 3], [{ x: -f.x, z: -f.z }, (mode === 'drive' ? current.spec.len / 2 : 1) + s.len / 2 + 3]];
+    const along = (mode === 'drive' ? current.spec.len / 2 : 1) + s.len / 2 + 3;
+    const tries = [[right, base + s.wid / 2 + 1], [{ x: -right.x, z: -right.z }, base + s.wid / 2 + 1], [f, along], [{ x: -f.x, z: -f.z }, along]];
     let spot = null;
     for (const [d, dist] of tries) {
       const x = F.x + d.x * dist, z = F.z + d.z * dist;
@@ -860,23 +1095,219 @@
       spot = { x, z }; break;
     }
     if (!spot) spot = { x: F.x + right.x * (base + 3), z: F.z + right.z * (base + 3) };
-    const called = vehicles.filter((v) => v.called && v !== current);
+    const called = vehicles.filter((v) => v.called && !v.mission && v !== current);
     if (called.length >= 8) removeVehicle(called[0]);
     const v = createVehicle(s, spot.x, spot.z, F.h, { called: true });
     v.drop = { t: 0 };
     v.mesh.position.y = 14;
-    toast(s.name + ' aa gayi! Paas jaake E dabao.');
+    toast('Your ' + s.name + ' has arrived! Walk up and press E.');
+    return v;
+  }
+
+  // ================= Day / night =================
+  function setNight(on) {
+    save.night = on; persist();
+    const fogC = on ? 0x141a28 : 0xd8e4ea;
+    scene.fog.color.setHex(fogC); scene.background.setHex(fogC);
+    skyU.top.value.setHex(on ? 0x03060e : 0x4a95e6); skyU.bottom.value.setHex(fogC);
+    hemi.intensity = on ? 0.28 : 0.72;
+    sun.intensity = on ? 0.18 : 0.85;
+    sun.color.setHex(on ? 0x8fa8ff : 0xfff0d6);
+    for (const m of BUILD_MATS) m.emissiveIntensity = on ? 0.9 : 0;
+    if (!phoneOpen && started) toast(on ? 'Night falls over the city.' : 'Good morning!');
+    renderHome();
+  }
+
+  // ================= Missions =================
+  const MISSIONS = [
+    { id: 'taxi', title: 'Taxi Rush', desc: 'Pick up a passenger and drop them across town before the meter runs out.', reward: 600, needs: 'car', give: '1006' },
+    { id: 'pizza', title: 'Hot Pizza Delivery', desc: 'Grab the pizza from the shop and get it to the customer while it is still hot.', reward: 450, needs: 'vehicle', give: '2002' },
+    { id: 'race', title: 'Checkpoint Race', desc: 'Blast through 6 checkpoints across the city against the clock.', reward: 1200, needs: 'vehicle', give: '1301' },
+    { id: 'rescue', title: 'Emergency Rescue', desc: 'Drive the ambulance to an injured person, then rush them to hospital.', reward: 900, needs: '3002', give: '3002' },
+    { id: 'patrol', title: 'Police Patrol', desc: 'Take the police Bolero on a 5-point patrol of the city.', reward: 800, needs: '3001', give: '3001' },
+    { id: 'showroom', title: 'Supercar Delivery', desc: 'A customer left a Ferrari F8 across town. Bring it to your driveway. Three crashes and the deal is off.', reward: 1500, needs: '1302' },
+  ];
+  const needLabel = (n) => n === 'car' ? 'Any car' : n === 'vehicle' ? 'Any vehicle' : byNum.get(n).name;
+  function meetsNeed(n) {
+    if (mode !== 'drive') return false;
+    if (n === 'vehicle') return true;
+    if (n === 'car') return current.spec.kind === 'car';
+    return current.spec.num === n;
+  }
+  const needText = (n) => n === 'car' ? 'Get in a car' : n === 'vehicle' ? 'Get on a vehicle' : 'You need the ' + byNum.get(n).name + ' (call ' + n + ')';
+
+  let mission = null;
+  const marker = (() => {
+    const g = new THREE.Group();
+    const beamMat = new THREE.MeshBasicMaterial({ color: 0xffc93c, transparent: true, opacity: 0.28, depthWrite: false, fog: false, side: THREE.DoubleSide });
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0xffc93c, transparent: true, opacity: 0.85, depthWrite: false, fog: false, side: THREE.DoubleSide });
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 40, 28, 1, true), beamMat); beam.position.y = 20;
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.85, 1, 40).rotateX(-Math.PI / 2), ringMat); ring.position.y = 0.06;
+    g.add(beam, ring); g.visible = false; scene.add(g);
+    return { g, beamMat, ringMat, ring };
+  })();
+  function showMarker(x, z, r, color) {
+    marker.g.visible = true; marker.g.position.set(x, 0, z); marker.g.scale.set(r, 1, r);
+    marker.beamMat.color.setHex(color); marker.ringMat.color.setHex(color);
+  }
+
+  function roadPoint(from, minD, maxD) {
+    const a = Math.random() * Math.PI * 2, d = minD + Math.random() * (maxD - minD);
+    let x = from.x + Math.cos(a) * d, z = from.z + Math.sin(a) * d;
+    const rx = Math.round(x / CH) * CH, rz = Math.round(z / CH) * CH;
+    const side = Math.random() < 0.5 ? -3.5 : 3.5;
+    if (Math.abs(x - rx) < Math.abs(z - rz)) { x = rx + side; if (Math.abs(z - rz) < 12) z = rz + 20 * Math.sign(z - rz || 1); }
+    else { z = rz + side; if (Math.abs(x - rx) < 12) x = rx + 20 * Math.sign(x - rx || 1); }
+    return { x, z, alongZ: Math.abs(x - rx) <= 4 };
+  }
+
+  function makeProp(type) {
+    if (type === 'pizza') {
+      const g = new THREE.Group();
+      box(0.8, 0.18, 0.8, mat(0xc0392b), 0, 0, 0, g);
+      box(0.5, 0.02, 0.3, mat(0xfff3d6), 0, 0.1, 0, g);
+      g.userData.spin = true; g.position.y = 1.3;
+      return g;
+    }
+    return makePerson(type === 'patient' ? 0xf4f4f4 : 0x2a9d8f, false);
+  }
+
+  function startMission(def) {
+    if (mission) { toast('Finish or quit your current mission first.'); return; }
+    const F = focus();
+    const m = { def, i: 0, crashes: 0, time: 0, timed: true, steps: [], prop: null };
+    let prev = F, total = 0;
+    const add = (step, minD, maxD) => {
+      const p = roadPoint(prev, minD, maxD);
+      total += Math.hypot(p.x - prev.x, p.z - prev.z); prev = p;
+      m.steps.push(Object.assign({ p }, step));
+    };
+    if (def.id === 'taxi') {
+      add({ text: 'Pick up the passenger', stop: true, prop: 'ped', color: 0x3ccf7a, done: 'Passenger on board. Step on it!' }, 120, 220);
+      add({ text: 'Drop the passenger off', stop: true, color: 0xffc93c }, 280, 420);
+      m.time = total / 11 + 25;
+    } else if (def.id === 'pizza') {
+      add({ text: 'Collect the pizza from the shop', prop: 'pizza', color: 0x3ccf7a, done: 'Pizza collected. Keep it hot!' }, 80, 150);
+      add({ text: 'Deliver the pizza to the customer', stop: true, color: 0xffc93c }, 250, 380);
+      m.time = total / 10 + 20;
+    } else if (def.id === 'race') {
+      for (let k = 0; k < 6; k++) add({ text: 'Checkpoint ' + (k + 1) + ' of 6', color: 0x4aa3ff, r: 9, done: 'Checkpoint!' }, 110, 190);
+      m.time = total / 22 + 15;
+    } else if (def.id === 'rescue') {
+      add({ text: 'Reach the injured person', stop: true, prop: 'patient', color: 0x3ccf7a, done: 'Patient loaded. Get to the hospital!' }, 150, 240);
+      add({ text: 'Rush the patient to hospital', stop: true, color: 0xff5c5c }, 300, 420);
+      m.time = total / 13 + 30;
+    } else if (def.id === 'patrol') {
+      for (let k = 0; k < 5; k++) add({ text: 'Patrol point ' + (k + 1) + ' of 5', color: 0x4aa3ff, r: 9, done: 'Area clear.' }, 110, 180);
+      m.time = total / 15 + 30;
+    } else if (def.id === 'showroom') {
+      const p = roadPoint(F, 150, 240);
+      const v = createVehicle(byNum.get('1302'), p.x, p.z, p.alongZ ? 0 : Math.PI / 2, { called: true });
+      v.mission = true;
+      m.steps.push({ text: 'Find the Ferrari F8 and get in', vehicle: v, color: 0x3ccf7a, done: 'Nice ride. Now get it home in one piece.' });
+      m.steps.push({ text: 'Park it in your driveway', p: { x: -19, z: -15.5 }, stop: true, r: 4, color: 0xffc93c });
+      m.timed = false;
+    }
+    if (def.give && !meetsNeed(def.needs)) deliver(byNum.get(def.give));
+    mission = m;
+    activateStep();
+    togglePhone(false);
+    toast('Mission started: ' + def.title);
+    renderMissions();
+  }
+
+  function activateStep() {
+    const m = mission, st = m.steps[m.i];
+    if (m.prop) { scene.remove(m.prop); m.prop = null; }
+    if (st.vehicle) showMarker(st.vehicle.x, st.vehicle.z, 4, st.color);
+    else showMarker(st.p.x, st.p.z, st.r || 5, st.color);
+    if (st.prop) { m.prop = makeProp(st.prop); m.prop.position.x = st.p.x + (st.prop === 'pizza' ? 0 : 5.5 * Math.sign(st.p.x - Math.round(st.p.x / CH) * CH || 1)); m.prop.position.z = st.p.z; scene.add(m.prop); }
+  }
+  function advance() {
+    const m = mission, st = m.steps[m.i];
+    m.i++;
+    if (m.i >= m.steps.length) { endMission(true); return; }
+    if (st.done) toast(st.done);
+    beep([660, 880], 0.25, 'sine', 0.08);
+    activateStep();
+  }
+  function endMission(win, reason) {
+    const m = mission;
+    if (m.prop) scene.remove(m.prop);
+    marker.g.visible = false;
+    mission = null;
+    if (win) {
+      const bonus = m.timed ? Math.round(m.time * 10) : 0;
+      save.cash += m.def.reward + bonus; save.done++; persist();
+      toast('Mission passed! +' + money(m.def.reward) + (bonus ? ' and ' + money(bonus) + ' time bonus' : ''), 'win', 4200);
+      beep([523, 659, 784, 1047], 0.6, 'sine', 0.1);
+    } else {
+      toast('Mission failed: ' + reason, 'fail', 4000);
+      beep([300, 200], 0.6, 'sawtooth', 0.08);
+    }
+    for (const v of vehicles) if (v.mission && v !== current) v.mission = false;
+    $('missionBox').hidden = true;
+    renderMissions();
+  }
+  let missionNote = '';
+  function updateMission(dt) {
+    if (!mission) return;
+    const m = mission, st = m.steps[m.i];
+    if (m.timed) { m.time -= dt; if (m.time <= 0) { endMission(false, 'Time is up!'); return; } }
+    missionNote = '';
+    const pulse = 1 + Math.sin(performance.now() / 250) * 0.06;
+    marker.ring.scale.set(pulse, 1, pulse);
+    if (m.prop && m.prop.userData.spin) m.prop.rotation.y += dt * 2;
+    if (st.vehicle) {
+      marker.g.position.set(st.vehicle.x, 0, st.vehicle.z);
+      if (current === st.vehicle) advance();
+      return;
+    }
+    const F = focus();
+    const d = Math.hypot(F.x - st.p.x, F.z - st.p.z);
+    if (d < (st.r || 5) + (mode === 'drive' ? current.spec.len * 0.3 : 0)) {
+      if (!meetsNeed(m.def.needs)) { missionNote = needText(m.def.needs); return; }
+      if (st.stop && Math.abs(current.speed) > 2.5) { missionNote = 'Slow down and stop inside the marker'; return; }
+      advance();
+    }
+  }
+  function onCrash() {
+    if (!mission || mission.def.id !== 'showroom' || mission.i !== 1 || !current || !current.mission) return;
+    mission.crashes++;
+    if (mission.crashes >= 3) endMission(false, 'The Ferrari is wrecked.');
+    else toast('Careful! Damage ' + mission.crashes + ' of 3', 'fail');
+  }
+  function targetPos() {
+    if (!mission) return null;
+    const st = mission.steps[mission.i];
+    return st.vehicle ? { x: st.vehicle.x, z: st.vehicle.z } : st.p;
+  }
+  function renderMissions() {
+    const list = $('missionList');
+    list.innerHTML = '';
+    for (const def of MISSIONS) {
+      const active = mission && mission.def === def;
+      const c = document.createElement('div');
+      c.className = 'm-card' + (active ? ' active' : '');
+      c.innerHTML = '<div class="top"><h3></h3><span class="reward"></span></div><p></p><span class="need"></span><button></button>';
+      c.querySelector('h3').textContent = def.title;
+      c.querySelector('.reward').textContent = money(def.reward);
+      c.querySelector('p').textContent = def.desc;
+      c.querySelector('.need').textContent = 'Vehicle: ' + needLabel(def.needs);
+      const b = c.querySelector('button');
+      if (active) { b.textContent = 'Quit mission'; b.className = 'quit'; b.addEventListener('click', () => { endMission(false, 'You quit.'); }); }
+      else { b.textContent = 'Start'; b.disabled = !!mission; b.style.opacity = mission ? 0.4 : 1; b.addEventListener('click', () => startMission(def)); }
+      list.appendChild(c);
+    }
   }
 
   // ================= Update =================
-  const focus = () => (mode === 'drive' ? { x: current.x, z: current.z, h: current.h } : { x: P.x, z: P.z, h: P.h });
-
   function updateFoot(dt) {
     const spd = keys.shift ? 9 : 4.8;
     P.h += (keys.left - keys.right) * 2.6 * dt;
     const mv = keys.up - keys.down * 0.6;
     const f = fwd(P.h);
-    let r = resolve(P.x + f.x * mv * spd * dt, P.z + f.z * mv * spd * dt, 0.4);
+    const r = resolve(P.x + f.x * mv * spd * dt, P.z + f.z * mv * spd * dt, 0.4);
     for (const o of vehicles.concat(traffic)) {
       const dx = r.x - o.x, dz = r.z - o.z, d = Math.hypot(dx, dz), min = o.r * 0.8 + 0.4;
       if (d < min && d > 1e-4) { r.x = o.x + (dx / d) * min; r.z = o.z + (dz / d) * min; }
@@ -896,15 +1327,20 @@
     return out;
   }
 
+  let nitro = 1, crashCool = 0;
   function updateDrive(v, dt) {
     const s = v.spec;
-    if (keys.up) v.speed += s.acc * dt * (v.speed < 0 ? 2.5 : 1);
+    const boosting = keys.shift && nitro > 0 && keys.up;
+    nitro = boosting ? Math.max(0, nitro - dt * 0.35) : Math.min(1, nitro + dt * 0.1);
+    const max = s.max * (boosting ? 1.3 : 1), acc = s.acc * (boosting ? 2 : 1);
+    if (keys.up) v.speed += acc * dt * (v.speed < 0 ? 2.5 : 1);
     if (keys.down) v.speed -= (v.speed > 0.5 ? s.acc * 2.2 : s.acc * 0.6) * dt;
     if (!keys.up && !keys.down) { v.speed *= 1 - 0.45 * dt; if (Math.abs(v.speed) < 0.15) v.speed = 0; }
     if (keys.space) v.speed *= Math.max(0, 1 - 3 * dt);
-    v.speed = clamp(v.speed, -s.max * 0.3, s.max);
+    if (v.speed > max) v.speed = Math.max(max, v.speed - s.acc * 1.5 * dt);
+    v.speed = Math.max(v.speed, -s.max * 0.3);
     v.steer += ((keys.left - keys.right) - v.steer) * Math.min(1, dt * 6);
-    const turnF = clamp(v.speed / 6, -1, 1) / (1 + Math.abs(v.speed) / 45);
+    const turnF = clamp(v.speed / 6, -1, 1) / (1 + Math.abs(v.speed) / 45) * (keys.space ? 1.5 : 1);
     v.h += v.steer * s.turn * turnF * dt;
     const f = fwd(v.h);
     v.x += f.x * v.speed * dt; v.z += f.z * v.speed * dt;
@@ -919,7 +1355,12 @@
       const dx = v.x - o.x, dz = v.z - o.z, d = Math.hypot(dx, dz), min = v.r + o.r * 0.9;
       if (d < min && d > 1e-4) { v.x = o.x + (dx / d) * min; v.z = o.z + (dz / d) * min; hit = true; }
     }
-    if (hit) { if (Math.abs(v.speed) > 6) shake = Math.min(0.6, Math.abs(v.speed) / 40); v.speed *= -0.2; }
+    crashCool -= dt;
+    if (hit) {
+      if (Math.abs(v.speed) > 8 && crashCool <= 0) { crashCool = 1; onCrash(); beep([90, 70], 0.25, 'sawtooth', 0.1); }
+      if (Math.abs(v.speed) > 6) shake = Math.min(0.6, Math.abs(v.speed) / 40);
+      v.speed *= -0.2;
+    }
   }
 
   function poseVehicle(v, dt) {
@@ -955,34 +1396,83 @@
     }
   }
 
-  // ================= HUD =================
+  // ================= HUD & minimap =================
+  const mapCv = $('map'), mapCtx = mapCv.getContext('2d');
+  function drawMap(F) {
+    const W = mapCv.width, c = W / 2, scale = W / 2 / 110; // 110 m radius
+    const g = mapCtx;
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.fillStyle = save.night ? '#0e121b' : '#2a3140'; g.fillRect(0, 0, W, W);
+    g.save();
+    g.translate(c, c); g.rotate(F.h); g.scale(scale, scale); g.translate(-F.x, -F.z);
+    g.strokeStyle = '#6b7385'; g.lineWidth = 14;
+    const x0 = Math.floor((F.x - 160) / CH), x1 = Math.ceil((F.x + 160) / CH), z0 = Math.floor((F.z - 160) / CH), z1 = Math.ceil((F.z + 160) / CH);
+    g.beginPath();
+    for (let i = x0; i <= x1; i++) { g.moveTo(i * CH, F.z - 170); g.lineTo(i * CH, F.z + 170); }
+    for (let i = z0; i <= z1; i++) { g.moveTo(F.x - 170, i * CH); g.lineTo(F.x + 170, i * CH); }
+    g.stroke();
+    g.fillStyle = '#74a957'; g.fillRect(-40, -40, 29, 29);
+    g.restore();
+    const f = fwd(F.h);
+    const toMap = (x, z, clampR) => {
+      const dx = x - F.x, dz = z - F.z;
+      let mx = (dx * -f.z + dz * f.x) * scale, my = -(dx * f.x + dz * f.z) * scale;
+      const len = Math.hypot(mx, my);
+      if (clampR && len > clampR) { mx *= clampR / len; my *= clampR / len; }
+      return [c + mx, c + my];
+    };
+    g.fillStyle = '#c9ced8';
+    for (const t of traffic) { const [mx, my] = toMap(t.x, t.z, 0); if (Math.hypot(mx - c, my - c) < c) { g.fillRect(mx - 3, my - 3, 6, 6); } }
+    const dotAt = (x, z, color, r) => { const [mx, my] = toMap(x, z, c - 14); g.fillStyle = '#12161f'; g.beginPath(); g.arc(mx, my, r + 3, 0, 7); g.fill(); g.fillStyle = color; g.beginPath(); g.arc(mx, my, r, 0, 7); g.fill(); };
+    dotAt(HOME_SPAWN.x, HOME_SPAWN.z, '#ffc93c', 9);
+    const tp = targetPos();
+    if (tp) dotAt(tp.x, tp.z, '#' + mission.steps[mission.i].color.toString(16).padStart(6, '0'), 9);
+    g.fillStyle = '#ffffff'; g.strokeStyle = '#12161f'; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(c, c - 14); g.lineTo(c + 10, c + 11); g.lineTo(c, c + 5); g.lineTo(c - 10, c + 11); g.closePath(); g.stroke(); g.fill();
+  }
+
   let hintText = '';
   function setHint(html) { if (html === hintText) return; hintText = html; $('hint').hidden = !html; $('hint').innerHTML = html; }
   let lastHud = 0;
   function updateHud(now) {
     if (now - lastHud < 80) return;
     lastHud = now;
-    const F = focus(), f = fwd(F.h);
-    const dx = HOME_SPAWN.x - F.x, dz = HOME_SPAWN.z - F.z;
-    const dist = Math.hypot(dx, dz);
-    const lx = dx * -f.z + dz * f.x, ly = dx * f.x + dz * f.z;
-    $('homeArrow').style.transform = 'rotate(' + Math.atan2(lx, ly) + 'rad)';
-    $('homeDist').textContent = dist < 1000 ? Math.round(dist) + ' m' : (dist / 1000).toFixed(1) + ' km';
-    $('homeInfo').textContent = 'Ghar yahan se ' + $('homeDist').textContent + ' door hai.';
+    const F = focus();
+    drawMap(F);
+    const dist = Math.hypot(HOME_SPAWN.x - F.x, HOME_SPAWN.z - F.z);
+    $('homeDist').textContent = 'Home ' + fmtDist(dist);
+    $('homeInfo').textContent = 'Home is ' + fmtDist(dist) + ' away.';
+    $('cash').textContent = money(save.cash);
+    const tp = targetPos();
+    $('tgtLegend').hidden = !tp;
+    if (mission) {
+      const td = Math.hypot(tp.x - F.x, tp.z - F.z);
+      $('missionBox').hidden = false;
+      $('mTitle').textContent = mission.def.title + (mission.def.id === 'showroom' ? ' · damage ' + mission.crashes + '/3' : '');
+      $('mObj').textContent = mission.steps[mission.i].text;
+      $('mTimeWrap').hidden = !mission.timed;
+      const t = Math.max(0, mission.time);
+      $('mTime').textContent = Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+      $('mTime').classList.toggle('low', t < 15);
+      $('mDist').textContent = fmtDist(td);
+      $('tgtDist').textContent = 'Target ' + fmtDist(td);
+      $('mNote').hidden = !missionNote; $('mNote').textContent = missionNote;
+    }
     if (mode === 'drive') {
       $('modeLabel').textContent = current.spec.num + ' · ' + current.spec.group;
       $('modeValue').textContent = current.spec.name;
       $('speedo').hidden = false;
       $('speed').textContent = Math.round(Math.abs(current.speed) * 3.6);
-      setHint(Math.abs(current.speed) < 1 ? '<kbd>E</kbd> utro · <kbd>P</kbd> phone · <kbd>C</kbd> camera' : '');
-      $('tAct').textContent = 'Utro';
+      $('nitroBar').style.transform = 'scaleX(' + nitro.toFixed(2) + ')';
+      setHint(Math.abs(current.speed) < 1 ? '<kbd>E</kbd> get out · <kbd>Shift</kbd> nitro · <kbd>M</kbd> missions' : '');
+      $('tAct').textContent = 'Exit';
     } else {
-      $('modeLabel').textContent = 'Paidal';
-      $('modeValue').textContent = dist < 30 ? 'Ghar ke paas' : 'Shehar mein';
+      $('modeLabel').textContent = 'On foot';
+      $('modeValue').textContent = dist < 30 ? 'Outside your home' : 'Exploring the city';
       $('speedo').hidden = true;
       const v = nearestVehicle();
-      setHint(v ? '<kbd>E</kbd> ' + v.spec.name + ' mein baitho' : dist < 30 && !vehicles.some((x) => x.called) ? 'Garage ke paas gaadi khadi hai, ya <kbd>P</kbd> dabake phone se bulao' : '');
-      $('tAct').textContent = 'Baitho';
+      setHint(v ? '<kbd>E</kbd> drive the ' + v.spec.name : dist < 30 && !mission ? 'Your Fortuner and Thar are parked outside. <kbd>M</kbd> for missions' : '');
+      $('tAct').textContent = 'Enter';
     }
   }
 
@@ -1003,9 +1493,19 @@
     else camera.position.lerp(want, 1 - Math.exp(-dt * (mode === 'drive' ? 4.5 : 6)));
     if (shake > 0) { camera.position.x += (Math.random() - 0.5) * shake; camera.position.y += (Math.random() - 0.5) * shake; shake = Math.max(0, shake - dt * 1.5); }
     camera.lookAt(F.x + f.x * 3, 1.4, F.z + f.z * 3);
+    const baseFov = window.innerWidth / window.innerHeight < 0.8 ? 78 : 65;
+    const sp = mode === 'drive' ? Math.abs(current.speed) : 0;
+    const fov = baseFov + Math.min(14, sp * 0.18);
+    if (Math.abs(camera.fov - fov) > 0.05) { camera.fov += (fov - camera.fov) * Math.min(1, dt * 3); camera.updateProjectionMatrix(); }
     sky.position.copy(camera.position);
     sun.position.set(F.x + 45, 90, F.z + 30);
     sun.target.position.set(F.x, 0, F.z);
+    if (save.night && mode === 'drive') {
+      const len = current.spec.len / 2;
+      headlight.intensity = 2.2;
+      headlight.position.set(F.x + f.x * len, 1.1, F.z + f.z * len);
+      headlight.target.position.set(F.x + f.x * (len + 14), 0, F.z + f.z * (len + 14));
+    } else headlight.intensity = 0;
   }
 
   function resize() {
@@ -1018,18 +1518,22 @@
   window.addEventListener('resize', resize);
   resize();
 
-  // Starting world: home chunk, the family car and bike in the driveway.
+  // Starting world: home chunk, the Fortuner in the driveway, the Thar on the side pad, the Royal Enfield by the path.
   updateChunks(P.x, P.z);
-  createVehicle(byNum.get('1001'), -19, -15.5, -Math.PI / 2, { home: true });
-  createVehicle(byNum.get('2001'), -17, -21.5, -Math.PI / 2, { home: true });
+  createVehicle(byNum.get('1101'), -19, -15.5, -Math.PI / 2, { home: true });
+  createVehicle(byNum.get('1102'), -17, -33, -Math.PI / 2, { home: true });
+  createVehicle(byNum.get('2003'), -17, -21.5, -Math.PI / 2, { home: true });
   player.position.set(P.x, 0, P.z); player.rotation.y = P.h;
   spawnTraffic(window.innerWidth < 700 ? 8 : 14);
+  if (save.night) setNight(true);
+  renderHome();
 
   function start() {
     if (started) return;
     started = true;
     $('overlay').hidden = true;
-    toast('Ghar ke bahar aa gaye. Gaadi ke paas jaake E dabao.');
+    initAudio();
+    toast('Walk to the Fortuner and press E. Press M for missions.', '', 3500);
   }
   $('startBtn').addEventListener('click', start);
 
@@ -1056,17 +1560,17 @@
     const blinkOn = Math.floor(now / 250) % 2 === 0;
     for (const v of vehicles) if (v.blink.length) { v.blink[0].visible = blinkOn; v.blink[1].visible = !blinkOn; }
     updateTraffic(dt);
+    if (started && !phoneOpen) updateMission(dt);
     const F = focus();
     updateChunks(F.x, F.z);
-    if (started) updateCamera(dt);
+    if (started) { updateCamera(dt); updateHud(now); updateEngine(); }
     else {
       introT += dt * 0.15;
-      camera.position.set(-23 + Math.cos(introT) * 22, 9, -24 + Math.sin(introT) * 22);
-      camera.lookAt(-27, 2, -24);
+      camera.position.set(-20 + Math.cos(introT) * 20, 7, -24 + Math.sin(introT) * 20);
+      camera.lookAt(-22, 1.5, -22);
       sky.position.copy(camera.position);
       sun.position.set(F.x + 45, 90, F.z + 30); sun.target.position.set(F.x, 0, F.z);
     }
-    if (started) updateHud(now);
     renderer.render(scene, camera);
     requestAnimationFrame(tick);
   }
