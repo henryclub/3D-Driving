@@ -48,7 +48,8 @@ On phones and tablets you get on-screen buttons: steering, gas, brake, nitro, FI
 | 1003 | Hyundai Creta | 1303 | Porsche 911 |
 | 1004 | Tata Nexon | 1304 | Ford Mustang GT |
 | 1005 | Toyota Innova Crysta | 1305 | Bugatti Chiron |
-| 1006 | Maruti Dzire Taxi | 2001 | Hero Splendor Plus |
+| 1006 | Maruti Dzire Taxi | 1306 | Koenigsegg Jesko (1990 km/h, 2100+ on nitro) |
+| | | 2001 | Hero Splendor Plus |
 | 1101 | Toyota Fortuner | 2002 | Honda Activa |
 | 1102 | Mahindra Thar | 2003 | Royal Enfield Classic 350 |
 | 1103 | Mahindra Scorpio-N | 2004 | KTM Duke 390 |
