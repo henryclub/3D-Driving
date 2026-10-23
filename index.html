@@ -435,7 +435,7 @@
         </section>
         <section>
           <h3>Calling a vehicle</h3>
-          <p>Open the <b>Garage</b> tab to see every vehicle and its number, such as 1101 for the Toyota Fortuner or 1301 for the Lamborghini Huracán. The fastest is the Koenigsegg Jesko (1306): 1990 km/h, over 2100 km/h on nitro. Tap a vehicle, or type its number in the <b>Dialer</b> and press <b>Call</b>. It drops in right beside you. You can have up to 8 called vehicles at once.</p>
+          <p>Open the <b>Garage</b> tab to see every vehicle and its number, such as 1101 for the Toyota Fortuner or 1301 for the Lamborghini Huracán. The fastest is the Koenigsegg Jesko (1306): 1990 km/h, over 2100 km/h on nitro. It is bulletproof and can never be damaged or blown up, and nothing can hurt you while you sit in it. Tap a vehicle, or type its number in the <b>Dialer</b> and press <b>Call</b>. It drops in right beside you. You can have up to 8 called vehicles at once.</p>
         </section>
         <section>
           <h3>Stealing a car</h3>
@@ -607,6 +607,7 @@
   BADGE.map.wrapS = BADGE.map.wrapT = THREE.ClampToEdgeWrapping;
   const POLICE_TXT = textMat('POLICE', '#1d4fbf', null, 256, 64, 46);
   const AMB_TXT = textMat('AMBULANCE', '#d62828', null, 320, 64, 40);
+  const VIP_TXT = textMat('VIP', '#d4a017', null, 256, 102, 92);
 
   // Facade: 4 x 4 window tiles covering 16 m. Lit texture glows at night.
   const winTex = canvasTex(128, 128, (g) => {
@@ -857,7 +858,7 @@
     car('1304', 'Ford Mustang GT', 'Supercars', 'muscle', 0xf5c400, [4.789, 1.916, 1.381, 2.72, 0.35, 0.14], 'mustang', { tail: 'tri', rim: 0x2a2a2e, max: 66, acc: 16 }),
     car('1305', 'Bugatti Chiron', 'Supercars', 'super', 0x1d3f8f, [4.544, 2.038, 1.212, 2.711, 0.36, 0.11], 'chiron', { roof: 0x111111, tail: 'bar', max: 94, acc: 25, turn: 2.2 }),
     // Game-only hypercar: 1990 km/h flat out, past 2100 km/h on nitro
-    car('1306', 'Koenigsegg Jesko', 'Supercars', 'super', 0xf4f4f4, [4.61, 2.03, 1.21, 2.7, 0.36, 0.1], 'koenigsegg', { roof: 0x111111, rim: 0x1a1a1a, tail: 'round', extras: ['spoiler'], max: 1990 / 3.6, nos: 1.06, acc: 75, turn: 2.6 }),
+    car('1306', 'Koenigsegg Jesko', 'Supercars', 'super', 0xf4f4f4, [4.61, 2.03, 1.21, 2.7, 0.36, 0.1], 'koenigsegg', { roof: 0x111111, rim: 0x1a1a1a, tail: 'round', extras: ['spoiler'], max: 1990 / 3.6, nos: 1.06, acc: 75, turn: 2.6, invincible: true }),
     bike('2001', 'Hero Splendor Plus', 'commuter', 0x1b1b1f, { max: 28, acc: 8 }),
     bike('2002', 'Honda Activa', 'scooter', 0xb5b9bf, { len: 1.83, max: 24, acc: 8, turn: 2.8 }),
     bike('2003', 'Royal Enfield Classic 350', 'cruiser', 0x6b1d1d, { len: 2.145, wid: 0.8, max: 36, acc: 9, turn: 2.3 }),
@@ -982,7 +983,7 @@
     };
     const onHood = (mesh, x, uf, lift = 0.01) => {
       const y = bodyAt(uf), slope = Math.atan2(bodyAt(uf - 0.01) - bodyAt(uf + 0.01), 0.02 * L);
-      mesh.position.set(x, y + lift, -uf * L); mesh.rotation.x = -slope; g.add(mesh);
+      mesh.position.set(x, y + bev + lift, -uf * L); mesh.rotation.x = -slope; g.add(mesh);
       return slope;
     };
     const hoodLamp = (x, uf, w, d, rotY = 0) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.03, d), HEAD); m.userData.own = true; onHood(m, x, uf); m.rotation.y = rotY; };
@@ -1093,7 +1094,13 @@
         F(W * 0.78, fh * 0.55, BLACK, 0, fm - 0.03, 0.05); // full-width lower intake
         F(W * 0.5, 0.03, mat(0xff6a00), 0, fm + fh * 0.25, 0.06); // orange splitter accent
         for (const sx of [-1, 1]) hoodLamp(sx * W * 0.37, 0.44, W * 0.22, 0.08, -sx * 0.15);
-        hoodBadge(0.47); by = null; break;
+        hoodBadge(0.47); by = null;
+        { // "VIP" across the bonnet, readable from the driver's seat and the chase camera
+          const vip = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.38), VIP_TXT); vip.userData.own = true;
+          const slope = onHood(vip, 0, 0.3, 0.02);
+          vip.rotation.set(-Math.PI / 2 - slope, 0, 0);
+        }
+        break;
       case 'bolero':
         F(W * 0.42, fh * 0.3, BLACK, 0, faceTop - 0.18, 0.05);
         for (let i = 0; i < 5; i++) F(0.025, fh * 0.28, CHROME, (i - 2) * W * 0.08, faceTop - 0.18, 0.07);
@@ -1177,10 +1184,14 @@
     // Wheels in black arches
     const zf = -s.wb / 2, zr = s.wb / 2;
     const wheels = [], fronts = [];
+    // Dark wheel wells on each side only, kept below the bonnet line so they never show on top
     for (const za of [zf, zr]) {
-      const archR = Math.max(wr * 1.03, Math.min(wr * 1.14, bodyAt(-za / L) - wr - 0.03));
-      const arch = new THREE.Mesh(new THREE.CylinderGeometry(archR, archR, W + 0.014, 20).rotateZ(Math.PI / 2), BLACK);
-      arch.position.set(0, wr, za); arch.userData.own = true; g.add(arch);
+      const archR = Math.min(wr * 1.14, bodyAt(-za / L) + bev - wr - 0.04);
+      if (archR < wr * 1.02) continue;
+      for (const sx of [-1, 1]) {
+        const arch = new THREE.Mesh(new THREE.CylinderGeometry(archR, archR, 0.04, 20).rotateZ(Math.PI / 2), BLACK);
+        arch.position.set(sx * (W / 2 - 0.005), wr, za); arch.userData.own = true; g.add(arch);
+      }
     }
     for (const sx of [-1, 1]) {
       const pivot = new THREE.Group(); pivot.position.set(sx * (W / 2 - 0.135), wr, zf); g.add(pivot);
@@ -1386,7 +1397,7 @@
 
   // ================= Traffic =================
   const traffic = [];
-  const TRAFFIC_SPECS = SPECS.filter((s) => s.group !== 'Emergency');
+  const TRAFFIC_SPECS = SPECS.filter((s) => s.group !== 'Emergency' && s.num !== '1306'); // the Jesko is yours alone
   const focus = () => (mode === 'drive' ? { x: current.x, z: current.z, h: current.h } : { x: P.x, z: P.z, h: P.h });
   function placeTraffic(t, near) {
     const alongZ = Math.random() < 0.5, dir = Math.random() < 0.5 ? 1 : -1, k = Math.floor(Math.random() * 5) - 2;
@@ -1587,7 +1598,7 @@
     if (blastT > 0) { blastT -= dt; blastLight.intensity = Math.max(0, blastT * 10); }
   }
   function damageVehicle(v, dmg, byPlayer) {
-    if (v.dead) return;
+    if (v.dead || v.spec.invincible) return; // the Jesko never takes damage or explodes
     v.hp -= dmg;
     if (v.panic !== undefined) v.panic = 6;
     if (v.hp <= 0) explodeVehicle(v, byPlayer);
@@ -1974,6 +1985,7 @@
   // ================= Health & wasted =================
   function damagePlayer(d) {
     if (wastedT >= 0) return;
+    if (mode === 'drive' && current.spec.invincible) return; // bullets and blasts cannot reach you inside the Jesko
     hp -= d; lastHurt = performance.now() / 1000;
     if (mode === 'drive') damageVehicle(current, d * 0.8, false);
     $('hurt').style.opacity = 1; setTimeout(() => { $('hurt').style.opacity = 0; }, 120);
