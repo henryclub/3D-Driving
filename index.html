@@ -2639,7 +2639,7 @@
       $('modeValue').textContent = dist < 30 ? 'Outside your home' : 'Exploring the city';
       $('speedo').hidden = true;
       const v = nearestVehicle(), t = v ? null : nearestTraffic();
-      setHint(v ? '<kbd>E</kbd> drive the ' + v.spec.name : t ? '<kbd>E</kbd> steal the ' + t.spec.name : dist < 30 && !mission && stars === 0 ? 'Your Fortuner and Thar are parked outside. <kbd>M</kbd> for missions' : '');
+      setHint(v ? '<kbd>E</kbd> drive the ' + v.spec.name : t ? '<kbd>E</kbd> steal the ' + t.spec.name : dist < 30 && !mission && stars === 0 ? 'Your Fortuner and Koenigsegg are parked outside. <kbd>M</kbd> for missions' : '');
       $('tAct').textContent = t && !v ? 'Steal' : 'Enter';
     }
   }
@@ -2705,10 +2705,10 @@
   window.addEventListener('resize', resize);
   resize();
 
-  // Starting world: home chunk, the Fortuner in the driveway, the Thar on the side pad, the Royal Enfield by the path.
+  // Starting world: home chunk, the Fortuner in the driveway, the Koenigsegg Jesko on the side pad, the Royal Enfield by the path.
   function spawnHomeVehicles() {
     createVehicle(byNum.get('1101'), -19, -15.5, -Math.PI / 2, { home: true });
-    createVehicle(byNum.get('1102'), -17, -33, -Math.PI / 2, { home: true });
+    createVehicle(byNum.get('1306'), -17, -33, -Math.PI / 2, { home: true });
     createVehicle(byNum.get('2003'), -17, -21.5, -Math.PI / 2, { home: true });
   }
   updateChunks(P.x, P.z);

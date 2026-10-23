@@ -1,6 +1,6 @@
 # 3D Driving
 
-A 3D open-world driving and action game that runs in the browser and on Android. Your home sits in the middle of an endless city. Step outside, take the Fortuner or the Thar from your driveway, call any car or bike with your phone, run missions for cash, or cause trouble and outrun the police.
+A 3D open-world driving and action game that runs in the browser and on Android. Your home sits in the middle of an endless city. Step outside, take the Fortuner or the Koenigsegg Jesko from your driveway, call any car or bike with your phone, run missions for cash, or cause trouble and outrun the police.
 
 Built with [Three.js](https://threejs.org/). The game is a single `index.html` plus a local copy of `three.min.js`, so it also works offline.
 
@@ -10,7 +10,7 @@ Every push to `main` builds a fresh APK automatically. Open the repo's **Release
 ## Features
 - **Main menu and pause menu.** The game opens on a main menu with a Play button. In game, the ☰ button (or `Esc`) pauses with Resume, Restart and Leave to main menu. Full instructions are in the phone's **Help** tab.
 - **Endless city.** Roads, buildings, parks and street lights keep generating as you drive, with traffic on the roads.
-- **Your home.** It has a garage, a driveway and a "MY HOME" sign. A Toyota Fortuner, a Mahindra Thar and a Royal Enfield are parked outside.
+- **Your home.** It has a garage, a driveway and a "MY HOME" sign. A Toyota Fortuner, a Koenigsegg Jesko and a Royal Enfield are parked outside.
 - **34 real-world vehicles at real size.** Cars are built from their real length, width, height and wheelbase, with curved bodies and each car's own front: BMW twin round headlights and kidney grille, Porsche round "frog-eye" lamps, Thar round lamps and slotted grille, G 63 round lamps with fender indicators, Audi's big single-frame grille, the Bugatti horseshoe, and more. Each one wears an **AZARR** badge where the maker's logo would be.
 - **Weapons.** Pistol, machine gun, assault rifle, sniper rifle (with scope) and grenade launcher, picked from the bar at the top of the screen. Shoot or blast any car until it explodes.
 - **Police and wanted stars.** Every crime adds a star (up to 5), shown just above your health bar. Police cars chase you for 2 minutes after your last crime. If you stop or get out, officers jump out and shoot. An officer goes down after 5 pistol shots.
