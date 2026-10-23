@@ -456,7 +456,7 @@
         </section>
         <section>
           <h3>Police and wanted stars</h3>
-          <p>Shooting a car, hurting a person, running someone over or shooting the police is a crime. Each crime adds a star above your health bar, up to 5. Five police cars will chase you.</p>
+          <p>Shooting a car, shooting a person or shooting the police is a crime. Bumping into people with a car is not: they just jump out of the way. Each crime adds a star above your health bar, up to 5. Five police cars will chase you.</p>
           <p>If you stop or get out, officers jump out of their cars and shoot. Each officer goes down after 5 pistol shots. The timer next to the stars shows how long until the police give up, about 2 minutes after your last crime. Keep driving and avoid new crimes to lose them.</p>
         </section>
         <section>
@@ -1480,21 +1480,31 @@
       p.h = Math.atan2(-mx, -mz);
       p.phase += dt * sp * 2.2;
       animWalk(p.hum, p.phase, sp > 3 ? 0.9 : 0.55);
-      p.hum.g.position.set(p.x, 0, p.z); p.hum.g.rotation.y = p.h;
+      p.hum.g.position.set(p.x, 0, p.z); p.hum.g.rotation.y = p.h; stumble(p, dt);
     }
   }
   // Moving vehicles knock people down
+  // A moving vehicle shoves people out of the way: they stumble to the side and carry on. No injury, no crime.
   function runOver(v) {
-    if (!v) return;
-    if (Math.abs(v.speed) < 5) return;
-    const R = v.r * 0.75 + 0.3;
-    for (const list of v.police ? [peds] : [peds, cops]) for (const o of list) {
+    if (!v || Math.abs(v.speed) < 1) return;
+    const f = fwd(v.h), right = { x: -f.z, z: f.x };
+    const half = v.spec.wid / 2 + 0.9, R = v.r * 0.75 + 0.3;
+    for (const list of [peds, cops]) for (const o of list) {
       if (o.state === 'dead' || o.inCar) continue;
-      if (Math.hypot(o.x - v.x, o.z - v.z) < R) {
-        killHuman(o);
-        if (v === current) { addCrime(); panic(o.x, o.z, 30); }
-      }
+      const dx = o.x - v.x, dz = o.z - v.z;
+      if (Math.hypot(dx, dz) >= R) continue;
+      const along = dx * f.x + dz * f.z, side = dx * right.x + dz * right.z;
+      if (Math.abs(along) > v.spec.len / 2 + 0.4 || Math.abs(side) > half) continue;
+      const s = Math.sign(side) || 1;
+      const r = resolve(v.x + f.x * along + right.x * s * half, v.z + f.z * along + right.z * s * half, 0.3);
+      o.x = r.x; o.z = r.z;
+      o.knock = 0.7; o.knockDir = s;
     }
+  }
+  function stumble(o, dt) {
+    if (!o.knock || o.knock <= 0) { o.hum.g.rotation.z = 0; return; }
+    o.knock -= dt;
+    o.hum.g.rotation.z = -o.knockDir * Math.sin(Math.max(0, o.knock) / 0.7 * Math.PI) * 0.6;
   }
 
   // ================= Particles, tracers, explosions =================
@@ -1948,7 +1958,7 @@
         o.x = r.x; o.z = r.z; o.h = Math.atan2(-mx, -mz);
         o.phase += dt * speed * 2.2; animWalk(o.hum, o.phase, 0.9);
       } else { o.hum.legL.rotation.x = o.hum.legR.rotation.x = 0; }
-      o.hum.g.position.set(o.x, 0, o.z); o.hum.g.rotation.y = o.h;
+      o.hum.g.position.set(o.x, 0, o.z); o.hum.g.rotation.y = o.h; stumble(o, dt);
     }
   }
   function updateWanted(dt) {
