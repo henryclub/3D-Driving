@@ -8,6 +8,7 @@ Built with [Three.js](https://threejs.org/). The game is a single `index.html` p
 Every push to `main` builds a fresh APK automatically. Open the repo's **Releases** page, download `3D-Driving.apk` from the newest release, and open it on your phone. Android will ask you to allow installing from this source the first time.
 
 ## Features
+- **Main menu and pause menu.** The game opens on a main menu with a Play button. In game, the ☰ button (or `Esc`) pauses with Resume, Restart and Leave to main menu. Full instructions are in the phone's **Help** tab.
 - **Endless city.** Roads, buildings, parks and street lights keep generating as you drive, with traffic on the roads.
 - **Your home.** It has a garage, a driveway and a "MY HOME" sign. A Toyota Fortuner, a Mahindra Thar and a Royal Enfield are parked outside.
 - **34 real-world vehicles at real size.** Cars are built from their real length, width, height and wheelbase, with curved bodies and each car's own front: BMW twin round headlights and kidney grille, Porsche round "frog-eye" lamps, Thar round lamps and slotted grille, G 63 round lamps with fender indicators, Audi's big single-frame grille, the Bugatti horseshoe, and more. Each one wears an **AZARR** badge where the maker's logo would be.
@@ -28,7 +29,8 @@ Every push to `main` builds a fresh APK automatically. Open the repo's **Release
 | Left click / `F` | Shoot |
 | Right click (hold) / `Z` | Aim; with the sniper this opens the scope |
 | `1`-`5`, `Q`, mouse wheel | Change weapon |
-| `P` | Phone |
+| `P` | Phone (the Help tab explains every control) |
+| `Esc` | Pause menu |
 | `M` | Missions |
 | `Shift` | Nitro while driving, run on foot |
 | `Space` | Handbrake |

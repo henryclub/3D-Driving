@@ -181,8 +181,8 @@
   .toggle .sw2::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); transition: transform 0.15s; }
   .toggle[aria-pressed="true"] .sw2 { background: var(--go); }
   .toggle[aria-pressed="true"] .sw2::after { transform: translateX(16px); }
-  .tabs { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); }
-  .tabs button { background: none; border: 0; padding: 12px 2px 14px; font-weight: 800; font-size: 12.5px; color: var(--muted); cursor: pointer; }
+  .tabs { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--line); }
+  .tabs button { background: none; border: 0; padding: 12px 1px 14px; font-weight: 800; font-size: 11.5px; color: var(--muted); cursor: pointer; }
   .tabs button.on { color: var(--accent); }
   .calling { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(180deg, #1c3a2a, #0e1a14); text-align: center; padding: 20px; }
   .calling .c-num { font-family: var(--display); font-size: 36px; letter-spacing: 0.06em; }
@@ -191,18 +191,55 @@
   .ring { width: 72px; height: 72px; border-radius: 50%; background: var(--go); margin-bottom: 16px; animation: pulse 1s ease-out infinite; }
   @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(60,207,122,0.6); } 100% { box-shadow: 0 0 0 26px rgba(60,207,122,0); } }
 
-  /* ---------- Start card ---------- */
-  .overlay {
-    position: fixed; inset: 0; display: grid; place-items: center; background: linear-gradient(180deg, rgba(18,22,31,0.2), rgba(18,22,31,0.82)); z-index: 7;
-    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
-    overflow-y: auto; padding-block: 16px;
+  /* ---------- Main menu: the city orbits behind a left-aligned title block ---------- */
+  .menu {
+    position: fixed; inset: 0; z-index: 7; display: flex; flex-direction: column; justify-content: center;
+    padding-left: max(28px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px;
+    background: linear-gradient(90deg, rgba(10,12,18,0.92) 0%, rgba(10,12,18,0.7) 38%, rgba(10,12,18,0.1) 75%), linear-gradient(0deg, rgba(10,12,18,0.7), transparent 40%);
   }
-  .card { width: min(520px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 24px 22px; display: flex; flex-direction: column; gap: 12px; }
-  .card h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(36px, 10vw, 54px); line-height: 0.95; color: var(--accent); }
-  .card .brand { font-size: 11px; font-weight: 800; letter-spacing: 0.3em; color: var(--muted); }
-  .card p { margin: 0; color: var(--muted); line-height: 1.5; }
-  .controls { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 7px 10px; font-size: 13.5px; align-items: center; }
-  @media (max-width: 520px) { .controls { grid-template-columns: auto 1fr; } }
+  .menu .brand { font-size: clamp(10px, 1.6vw, 13px); font-weight: 800; letter-spacing: 0.34em; color: var(--muted); animation: rise 0.7s ease-out both; }
+  .menu h1 { margin: 6px 0 0; font-family: var(--display); font-weight: 400; line-height: 0.86; text-transform: uppercase; animation: rise 0.7s 0.08s ease-out both; }
+  .menu h1 .big { display: block; font-size: clamp(72px, min(22vw, 30vh), 190px); color: var(--accent); text-shadow: 0 6px 0 rgba(0,0,0,0.35); }
+  .menu h1 .word { display: block; font-size: clamp(34px, min(9vw, 13vh), 84px); color: var(--ink); letter-spacing: 0.02em; }
+  .checker { width: min(340px, 60vw); height: 14px; margin: 14px 0 0; background: repeating-conic-gradient(var(--ink) 0 25%, #12161f 0 50%) 0 0 / 14px 14px; border-radius: 2px; opacity: 0.9; animation: rise 0.7s 0.16s ease-out both; }
+  .play {
+    margin-top: clamp(18px, 5vh, 34px); align-self: flex-start; display: inline-flex; align-items: center; gap: 14px;
+    border: 0; border-radius: 16px; padding: 16px 38px 16px 30px; cursor: pointer;
+    background: var(--accent); color: #1b1606; font-family: var(--display); font-size: clamp(24px, 4vw, 34px); letter-spacing: 0.06em;
+    box-shadow: 0 6px 0 #b8860b, 0 14px 30px rgba(0,0,0,0.45); animation: rise 0.7s 0.24s ease-out both, glow 2.4s 1s ease-in-out infinite;
+    transition: transform 0.08s ease;
+  }
+  .play svg { width: 0.8em; height: 0.8em; fill: currentColor; }
+  .play:hover { transform: translateY(-2px); }
+  .play:active { transform: translateY(4px); box-shadow: 0 2px 0 #b8860b, 0 8px 18px rgba(0,0,0,0.45); }
+  .play:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+  .menu .tip { margin-top: 16px; font-size: 13px; color: var(--muted); font-weight: 600; animation: rise 0.7s 0.32s ease-out both; }
+  .menu .tip b { color: var(--ink); }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+  @keyframes glow { 50% { box-shadow: 0 6px 0 #b8860b, 0 14px 40px rgba(255,201,60,0.45); } }
+
+  /* ---------- How to play (phone tab) ---------- */
+  .help { gap: 12px; }
+  .help section { display: flex; flex-direction: column; gap: 6px; }
+  .help h3 { margin: 6px 0 0; font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  .help p { font-size: 12.5px; }
+  .help dl { margin: 0; display: flex; flex-direction: column; font-size: 12.5px; }
+  .help dt { font-weight: 800; color: var(--ink); margin-top: 6px; }
+  .help dd { margin: 2px 0 0; color: var(--muted); line-height: 1.4; }
+
+  /* ---------- In-game ☰ menu ---------- */
+  .lrow { display: flex; gap: 8px; align-items: flex-start; }
+  .pause-btn { pointer-events: auto; flex: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); display: grid; place-items: center; cursor: pointer; padding: 0; }
+  .pause-btn svg { width: 22px; height: 22px; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
+  .pause { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; background: rgba(10,12,18,0.72); backdrop-filter: blur(4px);
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .pcard { width: min(320px, 100%); display: flex; flex-direction: column; gap: 10px; }
+  .pcard h2 { margin: 0 0 6px; font-family: var(--display); font-weight: 400; font-size: 34px; color: var(--accent); text-align: center; letter-spacing: 0.04em; }
+  .pcard .big-btn { font-size: 16px; padding: 13px; }
+  .pcard .warn { color: var(--stop); }
+  body.menu-open :is(.hud-top, .weapons, .vitals, .speedo, .hint, .phone-btn, .tbtns, .touch, .fire-btn, .side-btn) { display: none !important; }
+  @media (pointer: coarse) { .pause-btn { width: 36px; height: 36px; } .pause-btn svg { width: 18px; height: 18px; } }
+  .help kbd { font-size: 11px; }
 
   /* ---------- Touch controls ---------- */
   .touch { position: fixed; left: 0; right: 0; bottom: 0; display: none; justify-content: space-between; align-items: flex-end; pointer-events: none;
@@ -271,9 +308,21 @@
 <div class="scope" id="scope" hidden></div>
 <div class="cross" id="cross" hidden></div>
 
+<div class="pause" id="pause" hidden>
+  <div class="pcard">
+    <h2>Paused</h2>
+    <button class="big-btn" id="resumeBtn">Resume</button>
+    <button class="big-btn ghost" id="restartBtn">Restart</button>
+    <button class="big-btn ghost warn" id="leaveBtn">Leave to main menu</button>
+  </div>
+</div>
+
 <div class="hud-top">
   <div class="col">
-    <div class="chip"><span class="label" id="modeLabel">On foot</span><span class="value" id="modeValue">Outside your home</span></div>
+    <div class="lrow">
+      <button class="pause-btn" id="pauseBtn" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="chip"><span class="label" id="modeLabel">On foot</span><span class="value" id="modeValue">Outside your home</span></div>
+    </div>
     <div class="chip mission" id="missionBox" hidden>
       <span class="label" id="mTitle">Mission</span>
       <span class="obj" id="mObj"></span>
@@ -365,6 +414,75 @@
       <button class="toggle" id="soundToggle" aria-pressed="true">Sound <span class="sw2"></span></button>
     </div>
 
+    <div class="pane help" id="pane-help" hidden>
+      <h2>How to Play</h2>
+      <div class="scroll">
+        <section>
+          <h3>The goal</h3>
+          <p>Explore an endless city from your home, drive any car you like, finish missions for cash, or cause trouble and escape the police. There is no wrong way to play.</p>
+        </section>
+        <section>
+          <h3>Walking and driving</h3>
+          <dl>
+            <dt>Move</dt><dd>Phone: <b>Gas</b> walks or drives forward, <b>Brake</b> slows down and reverses, <b>◀ ▶</b> turn. Keyboard: <kbd>W</kbd> <kbd>S</kbd> <kbd>A</kbd> <kbd>D</kbd> or the arrow keys.</dd>
+            <dt>Get in / out</dt><dd>Walk up to a vehicle and tap <b>Enter</b> (or press <kbd>E</kbd>). Tap <b>Exit</b> to get out. Stop first, you cannot jump out at speed.</dd>
+            <dt>Nitro</dt><dd>Hold <b>NOS</b> (or <kbd>Shift</kbd>) while accelerating. The blue bar under the speedometer refills on its own.</dd>
+            <dt>Handbrake</dt><dd><kbd>Space</kbd> for sharp turns and drifts.</dd>
+            <dt>Run</dt><dd>On foot, hold <kbd>Shift</kbd> to sprint.</dd>
+            <dt>Camera</dt><dd>Tap <b>Cam</b> (or press <kbd>C</kbd>) to switch between close and far views.</dd>
+            <dt>Vehicle health</dt><dd>The yellow bar under the speedometer. Big crashes and gunfire wear it down. At zero the vehicle explodes, so get out early if it starts smoking.</dd>
+          </dl>
+        </section>
+        <section>
+          <h3>Calling a vehicle</h3>
+          <p>Open the <b>Garage</b> tab to see every vehicle and its number, such as 1101 for the Toyota Fortuner or 1301 for the Lamborghini Huracán. Tap a vehicle, or type its number in the <b>Dialer</b> and press <b>Call</b>. It drops in right beside you. You can have up to 8 called vehicles at once.</p>
+        </section>
+        <section>
+          <h3>Stealing a car</h3>
+          <p>Stand in front of a car in traffic and it will stop. Walk to its side and tap <b>Enter</b> (or <kbd>E</kbd>) to pull the driver out and take it. If the police see you do it, you get a star.</p>
+        </section>
+        <section>
+          <h3>Weapons</h3>
+          <dl>
+            <dt>Pick a gun</dt><dd>Tap a weapon in the bar at the top of the screen (or press <kbd>1</kbd>-<kbd>5</kbd>). Tap it again to put it away. You start with no gun out.</dd>
+            <dt>Shoot</dt><dd>Hold <b>FIRE</b> (or left-click / <kbd>F</kbd>). Shots aim at the nearest target in front of you. You can also shoot from inside a vehicle.</dd>
+            <dt>Zoom</dt><dd>Tap <b>Zoom</b> (or hold right-click / press <kbd>Z</kbd>), then drag your finger or move the mouse to aim at the crosshair. With the sniper rifle this opens the scope. Tap <b>Unzoom</b> to stop.</dd>
+            <dt>1 Pistol</dt><dd>Accurate, one shot at a time.</dd>
+            <dt>2 Machine Gun</dt><dd>Very fast, sprays bullets.</dd>
+            <dt>3 Assault Rifle</dt><dd>Fast and stronger, longer range.</dd>
+            <dt>4 Sniper Rifle</dt><dd>One shot takes out a person or nearly any car. Best with Zoom.</dd>
+            <dt>5 Grenade Launcher</dt><dd>Fires a grenade in an arc that explodes on impact and blows up cars around it.</dd>
+          </dl>
+        </section>
+        <section>
+          <h3>Police and wanted stars</h3>
+          <p>Shooting a car, hurting a person, running someone over or shooting the police is a crime. Each crime adds a star above your health bar, up to 5. Five police cars will chase you.</p>
+          <p>If you stop or get out, officers jump out of their cars and shoot. Each officer goes down after 5 pistol shots. The timer next to the stars shows how long until the police give up, about 2 minutes after your last crime. Keep driving and avoid new crimes to lose them.</p>
+        </section>
+        <section>
+          <h3>Health and WASTED</h3>
+          <p>Your HP bar is at the bottom of the screen and heals slowly when you avoid damage. If it reaches zero you see <b>WASTED</b>, wake up at home, lose your stars and pay a ₹500 hospital bill.</p>
+        </section>
+        <section>
+          <h3>Missions and cash</h3>
+          <p>Open the <b>Missions</b> tab (or press <kbd>M</kbd>) and tap <b>Start</b>. Follow the coloured beam of light and the dot on the minimap. Finish before the timer ends for a cash bonus. If a mission needs a special vehicle, it is delivered to you.</p>
+        </section>
+        <section>
+          <h3>Map and home</h3>
+          <p>The minimap shows roads, your home (yellow dot), your target, traffic and police (flashing red and blue). The <b>Home</b> tab takes you home when you are not wanted, and has night mode and sound.</p>
+        </section>
+        <section>
+          <h3>Other keys</h3>
+          <dl>
+            <dt><kbd>P</kbd></dt><dd>Open or close the phone</dd>
+            <dt><kbd>H</kbd></dt><dd>Horn</dd>
+            <dt><kbd>N</kbd></dt><dd>Day or night</dd>
+            <dt><kbd>Q</kbd> / wheel</dt><dd>Next weapon</dd>
+          </dl>
+        </section>
+      </div>
+    </div>
+
     <div class="calling" id="calling" hidden>
       <div class="ring"></div>
       <div class="c-num" id="cNum"></div>
@@ -376,30 +494,18 @@
       <button data-tab="dialer" class="on">Dialer</button>
       <button data-tab="garage">Garage</button>
       <button data-tab="missions">Missions</button>
+      <button data-tab="help">Help</button>
       <button data-tab="home">Home</button>
     </nav>
   </div>
 </div>
 
-<div class="overlay" id="overlay">
-  <div class="card">
-    <span class="brand">AZARR MOTORS PRESENTS</span>
-    <h1>3D Driving</h1>
-    <p>Your home sits in the middle of an endless city. Take the Fortuner or the Thar, call any car with your phone, run missions, or cause trouble. Every crime earns a star and the police will come for you.</p>
-    <div class="controls">
-      <kbd>W A S D</kbd><span>Walk, drive, steer</span>
-      <kbd>E</kbd><span>Enter, exit, steal a car</span>
-      <kbd>Click / F</kbd><span>Shoot</span>
-      <kbd>Right-click / Z</kbd><span>Aim (sniper scope)</span>
-      <kbd>1 - 5 / Q</kbd><span>Change weapon</span>
-      <kbd>Shift</kbd><span>Nitro / run</span>
-      <kbd>P</kbd><span>Phone</span>
-      <kbd>M</kbd><span>Missions</span>
-      <kbd>Space</kbd><span>Handbrake</span>
-      <kbd>C · H · N</kbd><span>Camera · horn · night</span>
-    </div>
-    <button class="big-btn" id="startBtn">Step outside</button>
-  </div>
+<div class="menu" id="overlay">
+  <span class="brand">AZARR MOTORS PRESENTS</span>
+  <h1><span class="big">3D</span><span class="word">Driving</span></h1>
+  <div class="checker"></div>
+  <button class="play" id="startBtn"><svg viewBox="0 0 24 24"><path d="M6 3l15 9-15 9z"/></svg>PLAY</button>
+  <p class="tip">New here? Open the <b>Phone</b> in game and tap <b>Help</b>.</p>
 </div>
 
 <script src="three.min.js"></script>
@@ -1882,6 +1988,8 @@
   window.addEventListener('keydown', (e) => {
     const k = e.key.toLowerCase();
     if (!started) { if (k === 'enter') start(); return; }
+    if (k === 'escape' && !phoneOpen) { togglePause(!paused); e.preventDefault(); return; }
+    if (paused) return;
     if (phoneOpen) {
       if (/^[0-9*#]$/.test(e.key)) dialPush(e.key);
       else if (k === 'backspace') dialDel();
@@ -2038,7 +2146,7 @@
   let dial = '', calling = false;
   function setTab(name) {
     for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('on', b.dataset.tab === name);
-    for (const p of ['dialer', 'garage', 'missions', 'home']) $('pane-' + p).hidden = p !== name;
+    for (const p of ['dialer', 'garage', 'missions', 'help', 'home']) $('pane-' + p).hidden = p !== name;
     if (name === 'missions') renderMissions();
     if (name === 'home') renderHome();
   }
@@ -2594,25 +2702,70 @@
   resize();
 
   // Starting world: home chunk, the Fortuner in the driveway, the Thar on the side pad, the Royal Enfield by the path.
+  function spawnHomeVehicles() {
+    createVehicle(byNum.get('1101'), -19, -15.5, -Math.PI / 2, { home: true });
+    createVehicle(byNum.get('1102'), -17, -33, -Math.PI / 2, { home: true });
+    createVehicle(byNum.get('2003'), -17, -21.5, -Math.PI / 2, { home: true });
+  }
   updateChunks(P.x, P.z);
-  createVehicle(byNum.get('1101'), -19, -15.5, -Math.PI / 2, { home: true });
-  createVehicle(byNum.get('1102'), -17, -33, -Math.PI / 2, { home: true });
-  createVehicle(byNum.get('2003'), -17, -21.5, -Math.PI / 2, { home: true });
+  spawnHomeVehicles();
   player.position.set(P.x, 0, P.z); player.rotation.y = P.h;
   spawnTraffic(isTouch ? 8 : 14);
   for (let i = 0; i < PED_N; i++) placePed(spawnPed(0, 0), true);
   setWeapon(-1);
   if (save.night) setNight(true);
   renderHome();
+  document.body.classList.add('menu-open');
 
   function start() {
     if (started) return;
     started = true;
     $('overlay').hidden = true;
+    document.body.classList.remove('menu-open');
     initAudio();
     toast('Walk to the Fortuner and press E. Press M for missions.', '', 3500);
   }
   $('startBtn').addEventListener('click', start);
+
+  // ---------- ☰ menu: resume, restart, leave ----------
+  let paused = false;
+  function togglePause(on) {
+    if (!started) return;
+    if (on && phoneOpen) togglePhone(false);
+    paused = on;
+    $('pause').hidden = !on;
+    for (const k in keys) keys[k] = 0;
+    trigger = false; triggerPressed = false; setAim(false);
+    if (on) $('resumeBtn').focus();
+  }
+  // Put the player back at home with a clean slate. Cash and missions passed are kept.
+  function resetWorld() {
+    if (mode === 'drive') exit(true);
+    if (mission) { if (mission.prop) scene.remove(mission.prop); marker.g.visible = false; mission = null; $('missionBox').hidden = true; }
+    for (const v of vehicles.slice()) removeVehicle(v);
+    for (const o of cops) { scene.remove(o.hum.g); if (o.blood) scene.remove(o.blood); }
+    cops.length = 0;
+    for (const g of grenades) scene.remove(g.m);
+    grenades.length = 0;
+    spawnHomeVehicles();
+    for (const p of peds) placePed(p, true);
+    stars = 0; wantedT = 0; hp = MAX_HP; nitro = 1; wastedT = -1;
+    $('wasted').hidden = true; $('stage').classList.remove('dead');
+    P.x = HOME_SPAWN.x; P.z = HOME_SPAWN.z; P.h = HOME_SPAWN.h;
+    player.rotation.set(0, P.h, 0); player.position.set(P.x, 0, P.z); player.visible = true; sitPose(false);
+    setWeapon(-1);
+    snapCam = true;
+  }
+  $('pauseBtn').addEventListener('click', () => togglePause(true));
+  $('resumeBtn').addEventListener('click', () => togglePause(false));
+  $('restartBtn').addEventListener('click', () => { resetWorld(); togglePause(false); toast('Restarted at home.'); });
+  $('leaveBtn').addEventListener('click', () => {
+    resetWorld(); togglePause(false);
+    started = false;
+    $('overlay').hidden = false;
+    document.body.classList.add('menu-open');
+    $('toast').hidden = true;
+  });
 
   if (location.hash === '#debug') window.__dbg = { P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; } };
 
@@ -2620,6 +2773,7 @@
   let introT = 0;
   function tick(now) {
     const raw = clock.getDelta(), realDt = Math.min(raw, 0.05);
+    if (paused) { renderer.render(scene, camera); requestAnimationFrame(tick); return; }
     let dt = realDt;
     if (wastedT >= 0) { wastedT += Math.min(raw, 0.5); dt = realDt * 0.35; if (wastedT > 5) respawn(); }
     const live = started && !phoneOpen && wastedT < 0;
