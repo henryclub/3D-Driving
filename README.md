@@ -4,8 +4,10 @@ A 3D open-world driving and action game that runs in the browser and on Android.
 
 Built with [Three.js](https://threejs.org/). The game is a single `index.html` plus a local copy of `three.min.js`, so it also works offline.
 
-## Download the Android APK
-Every push to `main` builds a fresh APK automatically. Open the repo's **Releases** page, download `3D-Driving.apk` from the newest release, and open it on your phone. Android will ask you to allow installing from this source the first time.
+## Download the game
+Every push to `main` builds fresh downloads automatically. Open the repo's **Releases** page and take the newest release:
+- **Android:** `3D-Driving.apk`. Open it on your phone to install. Android will ask you to allow installing from this source the first time.
+- **Windows PC:** `3D-Driving.exe`. Double-click it and the game opens in its own window, no install needed. Press `F11` for fullscreen. Because the file is not code-signed, Windows may show "Windows protected your PC": click **More info**, then **Run anyway**.
 
 ## Features
 - **Main menu and pause menu.** The game opens on a main menu with a Play button. In game, the ☰ button (or `Esc`) pauses with Resume, Restart and Leave to main menu. Full instructions are in the phone's **Help** tab.
@@ -65,7 +67,7 @@ On phones and tablets you get on-screen buttons: steering, gas, brake, nitro, FI
 
 ## Run it
 - **Locally:** open `index.html` in a browser.
-- **Android:** see *Download the Android APK* above. The build is defined in `.github/workflows/android-apk.yml` (it wraps the game with Capacitor).
+- **Android and Windows:** see *Download the game* above. Both are built by `.github/workflows/build-release.yml`: the APK wraps the game with Capacitor, and the EXE wraps it with Electron (see `desktop/`).
 - **GitHub Pages:** go to **Settings → Pages**, set Source to **Deploy from a branch**, pick branch `main` and folder `/ (root)`, then save. The game will be live at `https://kainatmirza329-beep.github.io/3D-Driving/`.
 
 ## Add your own vehicle

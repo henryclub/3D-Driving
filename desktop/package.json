@@ -1,0 +1,19 @@
+{
+  "name": "3d-driving",
+  "productName": "3D Driving",
+  "version": "1.0.0",
+  "description": "3D Driving by AZARR Motors",
+  "author": "AZARR",
+  "main": "main.js",
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.azarr.driving3d",
+    "productName": "3D Driving",
+    "files": ["main.js", "index.html", "three.min.js"],
+    "win": { "target": "portable" },
+    "portable": { "artifactName": "3D-Driving.exe" }
+  }
+}
