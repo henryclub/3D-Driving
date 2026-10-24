@@ -12,6 +12,7 @@ Every push to `main` builds fresh downloads automatically. Open the repo's **Rel
 ## Features
 - **Main menu and pause menu.** The game opens on a main menu with a Play button. In game, the ☰ button (or `Esc`) pauses with Resume, Restart and Leave to main menu. Full instructions are in the phone's **Help** tab.
 - **Endless city.** Roads, buildings, parks and street lights keep generating as you drive, with traffic on the roads.
+- **Tesla Roadster flying car (1307).** Tap **FLY** to open the map, drag a green dotted line from your car to any spot and let go: it lifts off on thrusters, flies there at 2,000 km/h and lands on that exact spot, even on a rooftop. Drive up to a building and tap **CLIMB** to drive up the wall onto the roof.
 - **Your home.** It has a garage, a driveway and a "MY HOME" sign. A Toyota Fortuner, a Koenigsegg Jesko and a Royal Enfield are parked outside.
 - **34 real-world vehicles at real size.** Cars are built from their real length, width, height and wheelbase, with curved bodies and each car's own front: BMW twin round headlights and kidney grille, Porsche round "frog-eye" lamps, Thar round lamps and slotted grille, G 63 round lamps with fender indicators, Audi's big single-frame grille, the Bugatti horseshoe, and more. Each one wears an **AZARR** badge where the maker's logo would be.
 - **Weapons.** Pistol, machine gun, assault rifle, sniper rifle (with scope) and grenade launcher, picked from the bar at the top of the screen. Shoot or blast any car until it explodes.
@@ -51,6 +52,7 @@ On phones and tablets you get on-screen buttons: steering, gas, brake, nitro, FI
 | 1004 | Tata Nexon | 1304 | Ford Mustang GT |
 | 1005 | Toyota Innova Crysta | 1305 | Bugatti Chiron |
 | 1006 | Maruti Dzire Taxi | 1306 | Koenigsegg Jesko (VIP: 1990 km/h, 2100+ on nitro, bulletproof, never explodes) |
+| | | 1307 | Tesla Roadster (flying car: 10,000 km/h on the ground, flies at 2,000 km/h, climbs walls, never explodes) |
 | | | 2001 | Hero Splendor Plus |
 | 1101 | Toyota Fortuner | 2002 | Honda Activa |
 | 1102 | Mahindra Thar | 2003 | Royal Enfield Classic 350 |

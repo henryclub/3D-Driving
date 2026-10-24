@@ -237,7 +237,7 @@
   .pcard h2 { margin: 0 0 6px; font-family: var(--display); font-weight: 400; font-size: 34px; color: var(--accent); text-align: center; letter-spacing: 0.04em; }
   .pcard .big-btn { font-size: 16px; padding: 13px; }
   .pcard .warn { color: var(--stop); }
-  body.menu-open :is(.hud-top, .weapons, .vitals, .speedo, .hint, .phone-btn, .tbtns, .touch, .fire-btn, .side-btn) { display: none !important; }
+  body.menu-open :is(.hud-top, .weapons, .vitals, .speedo, .hint, .phone-btn, .tbtns, .touch, .fire-btn, .side-btn, .fly-btns) { display: none !important; }
   @media (pointer: coarse) { .pause-btn { width: 36px; height: 36px; } .pause-btn svg { width: 18px; height: 18px; } }
   .help kbd { font-size: 11px; }
 
@@ -256,6 +256,18 @@
   .nos-btn { background: rgba(74,163,255,0.4); }
   .zoom-btn { background: var(--panel); }
   .zoom-btn.on { background: rgba(255,201,60,0.35); border-color: var(--accent); }
+  /* Flying-car controls (Tesla Roadster) */
+  .fly-btns { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); top: 46%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 4; }
+  .fly-btn { width: 76px; height: 76px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); font-family: var(--display); font-size: 17px; letter-spacing: 0.04em; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.45); }
+  .fly-btn.fly { background: radial-gradient(circle at 50% 35%, #7fd7ff, #1f6fd1); color: #fff; }
+  .fly-btn.climb { background: radial-gradient(circle at 50% 35%, #9af5bd, #1f8a57); color: #06210f; }
+  .flymap { position: fixed; inset: 0; z-index: 9; background: #0e1420; touch-action: none; }
+  .flymap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; }
+  .fm-top { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; pointer-events: none; }
+  .fm-top b { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 9px 14px; font-size: 14px; max-width: 70%; }
+  .fm-top button { pointer-events: auto; }
+  .fm-zoom { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 8px; }
+  .fm-zoom button { width: 50px; height: 50px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); font-size: 26px; font-weight: 800; cursor: pointer; }
   .tbtns { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); display: none; flex-direction: row; gap: 6px; }
   .tbtns button { height: 32px; padding: 0 11px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font-weight: 800; font-size: 12px; }
   @media (pointer: coarse) {
@@ -357,6 +369,12 @@
 
 <button class="phone-btn" id="phoneBtn" aria-label="Open phone"><svg viewBox="0 0 24 24"><path d="M7 1h10a2 2 0 012 2v18a2 2 0 01-2 2H7a2 2 0 01-2-2V3a2 2 0 012-2zm0 3v14h10V4zm5 15.5a1 1 0 100 2 1 1 0 000-2z"/></svg>Phone <kbd>P</kbd></button>
 
+<div class="fly-btns"><button class="fly-btn fly" id="flyBtn" hidden>FLY</button><button class="fly-btn climb" id="climbBtn" hidden>CLIMB</button></div>
+<div class="flymap" id="flyMap" hidden>
+  <canvas id="flyCanvas"></canvas>
+  <div class="fm-top"><b id="fmHint">Drag a line from your car to where you want to land</b><button class="big-btn ghost" id="fmClose">Close</button></div>
+  <div class="fm-zoom"><button id="fmIn" aria-label="Zoom in">+</button><button id="fmOut" aria-label="Zoom out">&minus;</button></div>
+</div>
 <div class="tbtns" id="tbtns">
   <button id="tAct">Enter</button>
   <button id="tPhone">Phone</button>
@@ -436,6 +454,14 @@
         <section>
           <h3>Calling a vehicle</h3>
           <p>Open the <b>Garage</b> tab to see every vehicle and its number, such as 1101 for the Toyota Fortuner or 1301 for the Lamborghini Huracán. The fastest is the Koenigsegg Jesko (1306): 1990 km/h, over 2100 km/h on nitro. It is bulletproof and can never be damaged or blown up, and nothing can hurt you while you sit in it. Tap a vehicle, or type its number in the <b>Dialer</b> and press <b>Call</b>. It drops in right beside you. You can have up to 8 called vehicles at once.</p>
+        </section>
+        <section>
+          <h3>Tesla Roadster (flying car)</h3>
+          <p>Call <b>1307</b>. On the ground it reaches <b>10,000 km/h</b>. It never takes damage, never explodes, and nothing can hurt you inside it.</p>
+          <dl>
+            <dt>FLY</dt><dd>Tap <b>FLY</b> (or press <kbd>G</kbd>) to open the map. Put your finger on your car and drag a green dotted line to any spot, then let go. The Roadster lifts off on its thrusters, flies there at 2,000 km/h and lands on that exact spot. Drop the line on a building to land on its roof.</dd>
+            <dt>CLIMB</dt><dd>Drive right up to a building wall and <b>CLIMB</b> appears (or press <kbd>V</kbd>). The car drives straight up the wall and onto the roof. You can drive around the roof, then use FLY to come down.</dd>
+          </dl>
         </section>
         <section>
           <h3>Stealing a car</h3>
@@ -577,6 +603,7 @@
   const TAIL = new THREE.MeshBasicMaterial({ color: 0xd61f2c });
   const AMBER = new THREE.MeshBasicMaterial({ color: 0xffa31a });
   const PLATE = mat(0xf4f2ea);
+  const FLAME = new THREE.MeshBasicMaterial({ color: 0x7fd7ff, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending });
   const BURNT = mat(0x1b1816);
 
   function canvasTex(w, h, draw) {
@@ -732,16 +759,35 @@
       cols.push({ minX: ox + px - 0.25, maxX: ox + px + 0.25, minZ: oz + pz - 0.25, maxZ: oz + pz + 0.25, h: 6.5 });
     }
 
-    const rnd = mulberry(((cx * 73856093) ^ (cz * 19349663)) + 7);
-    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
-      if (cx === 0 && cz === 0 && sx === -1 && sz === -1) { buildHome(g, cols); continue; }
-      const t = rnd();
-      const lot = new THREE.Mesh(G.lot, mat(t < 0.15 ? 0x74a957 : 0x9c9a92));
-      lot.position.set(sx * 25.5, 0.01, sz * 25.5); lot.receiveShadow = true; g.add(lot);
-      if (t < 0.15) {
-        for (let i = 0; i < 5; i++) addTree(g, cols, ox, oz, sx * (14 + rnd() * 23), sz * (14 + rnd() * 23));
-        continue;
+    for (const lot of chunkLayout(cx, cz)) {
+      const { sx, sz } = lot;
+      if (lot.home) { buildHome(g, cols); continue; }
+      const lm = new THREE.Mesh(G.lot, mat(lot.park ? 0x74a957 : 0x9c9a92));
+      lm.position.set(sx * 25.5, 0.01, sz * 25.5); lm.receiveShadow = true; g.add(lm);
+      if (lot.park) { for (const [x, z] of lot.trees) addTree(g, cols, ox, oz, x, z); continue; }
+      for (const bd of lot.buildings) {
+        const m = new THREE.Mesh(buildingGeo(bd.w, bd.h, bd.d), BUILD_MATS[bd.mi]);
+        m.position.set(bd.x, bd.h / 2, bd.z); m.castShadow = true; m.receiveShadow = true; m.userData.own = true; g.add(m);
+        if (bd.top) box(bd.w * 0.4, 3, bd.d * 0.4, mat(0x7d828c), bd.x, bd.h + 1.5, bd.z, g);
+        cols.push({ minX: ox + bd.x - bd.w / 2, maxX: ox + bd.x + bd.w / 2, minZ: oz + bd.z - bd.d / 2, maxZ: oz + bd.z + bd.d / 2, h: bd.h });
       }
+    }
+    scene.add(g);
+    return { g, cols };
+  }
+
+  // The same seeded layout the chunk builder uses, so the fly map can show buildings that are not loaded yet
+  const layoutCache = new Map();
+  function chunkLayout(cx, cz) {
+    const k = key(cx, cz);
+    if (layoutCache.has(k)) return layoutCache.get(k);
+    const rnd = mulberry(((cx * 73856093) ^ (cz * 19349663)) + 7);
+    const lots = [];
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+      if (cx === 0 && cz === 0 && sx === -1 && sz === -1) { lots.push({ sx, sz, home: true }); continue; }
+      const t = rnd();
+      const lot = { sx, sz, park: t < 0.15, trees: [], buildings: [] };
+      if (lot.park) { for (let i = 0; i < 5; i++) lot.trees.push([sx * (14 + rnd() * 23), sz * (14 + rnd() * 23)]); lots.push(lot); continue; }
       let rects, hMin, hVar;
       if (t < 0.45) { rects = [[13, 38, 13, 38]]; hMin = 18; hVar = 55; }
       else if (t < 0.75) { rects = rnd() < 0.5 ? [[13, 24.5, 13, 38], [26.5, 38, 13, 38]] : [[13, 38, 13, 24.5], [13, 38, 26.5, 38]]; hMin = 12; hVar = 38; }
@@ -749,26 +795,44 @@
       for (const [a0, a1, b0, b1] of rects) {
         const w = a1 - a0, d = b1 - b0, h = Math.round((hMin + rnd() * hVar) / 4) * 4;
         const x = sx * (a0 + a1) / 2, z = sz * (b0 + b1) / 2;
-        const m = new THREE.Mesh(buildingGeo(w, h, d), BUILD_MATS[Math.floor(rnd() * BUILD_MATS.length)]);
-        m.position.set(x, h / 2, z); m.castShadow = true; m.receiveShadow = true; m.userData.own = true; g.add(m);
-        if (h > 30 && rnd() < 0.6) box(w * 0.4, 3, d * 0.4, mat(0x7d828c), x, h + 1.5, z, g);
-        cols.push({ minX: ox + x - w / 2, maxX: ox + x + w / 2, minZ: oz + z - d / 2, maxZ: oz + z + d / 2, h });
+        const mi = Math.floor(rnd() * BUILD_MATS.length);
+        const top = h > 30 && rnd() < 0.6;
+        lot.buildings.push({ x, z, w, d, h, mi, top });
       }
+      lots.push(lot);
     }
-    scene.add(g);
-    return { g, cols };
+    if (layoutCache.size > 800) layoutCache.clear();
+    layoutCache.set(k, lots);
+    return lots;
+  }
+  const HOME_COLS = [{ minX: -36, maxX: -26, minZ: -32, maxZ: -20, h: 8.6 }, { minX: -34.5, maxX: -27.5, minZ: -19, maxZ: -12, h: 4.3 }];
+  function layoutCols(cx, cz) {
+    const out = [];
+    for (const lot of chunkLayout(cx, cz)) {
+      if (lot.home) { out.push(...HOME_COLS); continue; }
+      for (const b of lot.buildings) out.push({ minX: cx * CH + b.x - b.w / 2, maxX: cx * CH + b.x + b.w / 2, minZ: cz * CH + b.z - b.d / 2, maxZ: cz * CH + b.z + b.d / 2, h: b.h });
+    }
+    return out;
   }
 
   let lastChunk = '';
+  const RING = [];
+  for (let dx = -VIEW_R; dx <= VIEW_R; dx++) for (let dz = -VIEW_R; dz <= VIEW_R; dz++) RING.push([dx, dz]);
+  RING.sort((a, b) => Math.max(Math.abs(a[0]), Math.abs(a[1])) - Math.max(Math.abs(b[0]), Math.abs(b[1])));
   function updateChunks(x, z) {
     const ccx = Math.round(x / CH), ccz = Math.round(z / CH);
+    // Build missing chunks nearest first. The 3x3 around you always loads at once; farther ones a few per frame,
+    // so even 10,000 km/h never stalls the game.
+    let built = 0;
+    for (const [dx, dz] of RING) {
+      const kk = key(ccx + dx, ccz + dz);
+      if (chunks.has(kk)) continue;
+      if (built >= 2 && Math.max(Math.abs(dx), Math.abs(dz)) > 1) break;
+      chunks.set(kk, buildChunk(ccx + dx, ccz + dz)); built++;
+    }
     const k = key(ccx, ccz);
     if (k === lastChunk) return;
     lastChunk = k;
-    for (let dx = -VIEW_R; dx <= VIEW_R; dx++) for (let dz = -VIEW_R; dz <= VIEW_R; dz++) {
-      const kk = key(ccx + dx, ccz + dz);
-      if (!chunks.has(kk)) chunks.set(kk, buildChunk(ccx + dx, ccz + dz));
-    }
     for (const [kk, c] of chunks) {
       const [a, b] = kk.split(',').map(Number);
       if (Math.abs(a - ccx) > VIEW_R + 1 || Math.abs(b - ccz) > VIEW_R + 1) { scene.remove(c.g); disposeTree(c.g); chunks.delete(kk); }
@@ -822,6 +886,7 @@
     mpv:     { smooth: true, glassW: 0.88, body: [[0.5, 0.17], [0.5, 0.43], [0.45, 0.52], [0.26, 0.56], [0.2, 0.58], [-0.46, 0.6], [-0.5, 0.55], [-0.5, 0.2]], glass: [[0.21, 0.58], [0.04, 0.93], [-0.1, 0.99], [-0.45, 0.97], [-0.49, 0.6]], pillars: 2 },
     super:   { smooth: true, glassW: 0.78, body: [[0.5, 0.11], [0.5, 0.3], [0.42, 0.41], [0.26, 0.47], [0.12, 0.55], [-0.3, 0.62], [-0.48, 0.62], [-0.5, 0.5], [-0.5, 0.14]], glass: [[0.13, 0.55], [-0.02, 0.9], [-0.12, 0.99], [-0.22, 0.96], [-0.36, 0.74], [-0.44, 0.62]], pillars: 0 },
     porsche: { smooth: true, glassW: 0.8, body: [[0.5, 0.13], [0.5, 0.3], [0.44, 0.42], [0.3, 0.48], [0.16, 0.55], [-0.18, 0.6], [-0.4, 0.56], [-0.5, 0.44], [-0.5, 0.15]], glass: [[0.17, 0.55], [0.04, 0.88], [-0.07, 0.99], [-0.2, 0.96], [-0.35, 0.72], [-0.43, 0.56]], pillars: 1 },
+    roadster: { smooth: false, glassW: 0.8, body: [[0.5, 0.1], [0.5, 0.2], [0.44, 0.26], [0.06, 0.5], [-0.42, 0.55], [-0.5, 0.5], [-0.5, 0.14]], glass: [[0.08, 0.5], [-0.12, 0.97], [-0.27, 0.96], [-0.46, 0.57]], pillars: 0 },
     muscle:  { smooth: true, glassW: 0.82, body: [[0.5, 0.15], [0.5, 0.42], [0.46, 0.5], [0.25, 0.55], [0.08, 0.6], [-0.35, 0.62], [-0.48, 0.62], [-0.5, 0.5], [-0.5, 0.17]], glass: [[0.08, 0.6], [-0.05, 0.9], [-0.15, 0.99], [-0.26, 0.96], [-0.4, 0.67], [-0.44, 0.62]], pillars: 0 },
     van:     { smooth: false, glassW: 0.95, bodyGlass: true, body: [[0.5, 0.12], [0.5, 0.36], [0.45, 0.41], [0.38, 0.42], [-0.5, 0.42], [-0.5, 0.14]], glass: [[0.38, 0.42], [0.27, 0.78], [0.25, 0.99], [-0.5, 0.99], [-0.5, 0.42]], pillars: 0 },
     pickup:  { smooth: false, glassW: 0.92, body: [[0.5, 0.17], [0.5, 0.5], [0.47, 0.55], [0.28, 0.57], [0.2, 0.6], [-0.5, 0.6], [-0.5, 0.2]], glass: [[0.21, 0.6], [0.13, 0.97], [-0.1, 0.97], [-0.12, 0.6]], pillars: 1 },
@@ -859,6 +924,8 @@
     car('1305', 'Bugatti Chiron', 'Supercars', 'super', 0x1d3f8f, [4.544, 2.038, 1.212, 2.711, 0.36, 0.11], 'chiron', { roof: 0x111111, tail: 'bar', max: 94, acc: 25, turn: 2.2 }),
     // Game-only hypercar: 1990 km/h flat out, past 2100 km/h on nitro
     car('1306', 'Koenigsegg Jesko', 'Supercars', 'super', 0xf4f4f4, [4.61, 2.03, 1.21, 2.7, 0.36, 0.1], 'koenigsegg', { roof: 0x111111, rim: 0x1a1a1a, tail: 'round', extras: ['spoiler'], max: 1990 / 3.6, nos: 1.06, acc: 75, turn: 2.6, invincible: true }),
+    // Game-only flying car: 10,000 km/h on the ground, flies at 2,000 km/h, can climb walls, indestructible
+    car('1307', 'Tesla Roadster', 'Supercars', 'roadster', 0x9a9ea5, [4.6, 2.0, 1.12, 2.65, 0.36, 0.11], 'tesla', { roof: 0x2a2d33, rim: 0x1e1f23, tail: 'bar', max: 10000 / 3.6, nos: 1.0, acc: 420, turn: 2.8, invincible: true, flyer: true }),
     bike('2001', 'Hero Splendor Plus', 'commuter', 0x1b1b1f, { max: 28, acc: 8 }),
     bike('2002', 'Honda Activa', 'scooter', 0xb5b9bf, { len: 1.83, max: 24, acc: 8, turn: 2.8 }),
     bike('2003', 'Royal Enfield Classic 350', 'cruiser', 0x6b1d1d, { len: 2.145, wid: 0.8, max: 36, acc: 9, turn: 2.3 }),
@@ -1101,6 +1168,10 @@
           vip.rotation.set(-Math.PI / 2 - slope, 0, 0);
         }
         break;
+      case 'tesla': // second-generation Roadster: razor-thin light bar across the nose, small intake below
+        F(W * 0.92, 0.035, DRL, 0, faceTop - 0.02, 0.05);
+        F(W * 0.5, fh * 0.35, BLACK, 0, faceBot + fh * 0.3);
+        hoodBadge(0.44); by = null; break;
       case 'bolero':
         F(W * 0.42, fh * 0.3, BLACK, 0, faceTop - 0.18, 0.05);
         for (let i = 0; i < 5; i++) F(0.025, fh * 0.28, CHROME, (i - 2) * W * 0.08, faceTop - 0.18, 0.07);
@@ -1126,7 +1197,7 @@
         for (const sx of [-1, 1]) F(W * 0.22, 0.12, HEAD, sx * W * 0.34, faceTop - 0.1);
     }
     if (by != null) badge(g, 0, by, zF - 0.035, 'front');
-    if (!['super', 'porsche'].includes(s.tpl) && s.front !== 'bus') F(0.5, 0.11, PLATE, 0, faceBot + 0.07, 0.03);
+    if (!['super', 'porsche', 'roadster'].includes(s.tpl) && s.front !== 'bus') F(0.5, 0.11, PLATE, 0, faceBot + 0.07, 0.03);
 
     // Rear lamps
     const ty = rearTop - 0.1;
@@ -1143,7 +1214,7 @@
         break;
       default: for (const sx of [-1, 1]) R(W * 0.22, 0.11, TAIL, sx * W * 0.35, ty);
     }
-    R(0.52, 0.12, PLATE, 0, rearBot + 0.16, 0.03);
+    if (s.tpl !== 'roadster') R(0.52, 0.12, PLATE, 0, rearBot + 0.16, 0.03);
     badge(g, 0, Math.max(rearBot + 0.34, rearTop - 0.24), zR + 0.03, 'back', true);
     if (['super', 'porsche', 'muscle'].includes(s.tpl)) for (const sx of [-1, 1]) {
       const ex = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.14, 12).rotateX(Math.PI / 2), CHROME); ex.position.set(sx * 0.25, rearBot + 0.05, zR - 0.02); ex.userData.own = true; g.add(ex);
@@ -1199,7 +1270,15 @@
       const rw = wheel(wr, 0.26, s.rim); rw.position.set(sx * (W / 2 - 0.135), wr, zr); g.add(rw); wheels.push(rw);
       if (s.tpl === 'truck' || s.tpl === 'bus') { const r2 = wheel(wr, 0.26); r2.position.set(sx * (W / 2 - 0.135), wr, zr + wr * 2.3); g.add(r2); wheels.push(r2); }
     }
-    return { mesh: g, wheels, fronts, blink, seat: null, wr };
+    // SpaceX-style thrusters under the floor; the blue flames only show in flight
+    const flames = [];
+    if (s.flyer) {
+      for (const [x, z] of [[-0.55, -1.05], [0.55, -1.05], [-0.55, 1.15], [0.55, 1.15]]) {
+        const n = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 0.24, 12), METAL); n.position.set(x, cl + 0.02, z); n.userData.own = true; g.add(n);
+        const fl = new THREE.Mesh(new THREE.ConeGeometry(0.22, 2.2, 12).rotateX(Math.PI), FLAME); fl.position.set(x, cl - 1.05, z); fl.visible = false; fl.userData.own = true; g.add(fl); flames.push(fl);
+      }
+    }
+    return { mesh: g, wheels, fronts, blink, seat: null, wr, flames };
   }
 
   function buildBike(s, col) {
@@ -1287,7 +1366,7 @@
 
   function buildVehicle(s, col) {
     const b = s.kind === 'bike' ? buildBike(s, col) : s.kind === 'auto' ? buildAuto(s, col) : buildCar(s, col);
-    b.mesh.traverse((o) => { if (o.isMesh && o.material !== BADGE) o.castShadow = true; });
+    b.mesh.traverse((o) => { if (o.isMesh && o.material !== BADGE && o.material !== FLAME) o.castShadow = true; });
     return b;
   }
 
@@ -1363,7 +1442,10 @@
   }
   function exit(force) {
     const v = current;
+    if (!force && (v.flight || v.climb)) { toast('Wait until you land.'); return; }
+    if (!force && v.roof) { toast('You are on a roof. Use FLY to come down first.'); return; }
     if (!force && Math.abs(v.speed) > 3) { toast('Stop the vehicle first (hold S).'); return; }
+    if (v.roof || v.flight || v.climb) { v.roof = null; v.flight = null; v.climb = null; v.y = 0; v.pitch = 0; for (const f of v.flames || []) f.visible = false; }
     v.speed = 0; v.steer = 0;
     const f = fwd(v.h), side = v.spec.wid / 2 + 0.9;
     let pos = null;
@@ -1397,8 +1479,8 @@
 
   // ================= Traffic =================
   const traffic = [];
-  const TRAFFIC_SPECS = SPECS.filter((s) => s.group !== 'Emergency' && s.num !== '1306'); // the Jesko is yours alone
-  const focus = () => (mode === 'drive' ? { x: current.x, z: current.z, h: current.h } : { x: P.x, z: P.z, h: P.h });
+  const TRAFFIC_SPECS = SPECS.filter((s) => s.group !== 'Emergency' && s.num !== '1306' && s.num !== '1307'); // the Jesko and Roadster are yours alone
+  const focus = () => (mode === 'drive' ? { x: current.x, z: current.z, h: current.h, y: current.y || 0 } : { x: P.x, z: P.z, h: P.h, y: 0 });
   function placeTraffic(t, near) {
     const alongZ = Math.random() < 0.5, dir = Math.random() < 0.5 ? 1 : -1, k = Math.floor(Math.random() * 5) - 2;
     const f = alongZ ? { x: 0, z: dir } : { x: dir, z: 0 };
@@ -2014,6 +2096,7 @@
   window.addEventListener('keydown', (e) => {
     const k = e.key.toLowerCase();
     if (!started) { if (k === 'enter') start(); return; }
+    if (mapOpen) { if (k === 'escape' || k === 'g') closeFlyMap(); e.preventDefault(); return; }
     if (k === 'escape' && !phoneOpen) { togglePause(!paused); e.preventDefault(); return; }
     if (paused) return;
     if (phoneOpen) {
@@ -2035,6 +2118,8 @@
     else if (k === 'c') camFar = !camFar;
     else if (k === 'h') horn();
     else if (k === 'n') setNight(!save.night);
+    else if (k === 'g') openFlyMap();
+    else if (k === 'v') { if (current) startClimb(); }
   });
   window.addEventListener('keyup', (e) => { const k = e.key.toLowerCase(); const m = KEYMAP[k]; if (m) keys[m] = 0; if (k === 'f') trigger = false; });
   window.addEventListener('blur', () => { for (const k in keys) keys[k] = 0; trigger = false; });
@@ -2466,6 +2551,7 @@
     const f = fwd(P.h);
     const r = resolve(P.x + f.x * mv * spd * dt, P.z + f.z * mv * spd * dt, 0.4);
     for (const o of vehicles.concat(traffic)) {
+      if (o.y > 1 || o.roof) continue;
       const dx = r.x - o.x, dz = r.z - o.z, d = Math.hypot(dx, dz), min = o.r * 0.8 + 0.4;
       if (d < min && d > 1e-4) { r.x = o.x + (dx / d) * min; r.z = o.z + (dz / d) * min; }
     }
@@ -2490,6 +2576,7 @@
   function updateDrive(v, dt, inp, isPlayer) {
     const s = v.spec;
     if (v.dead) { v.speed = 0; return; }
+    if (v.flight || v.climb) return; // the flight and climb animations move the car
     const boosting = isPlayer && inp.boost && nitro > 0 && inp.up;
     if (isPlayer) nitro = boosting ? Math.max(0, nitro - dt * 0.35) : Math.min(1, nitro + dt * 0.1);
     const max = s.max * (boosting ? s.nos || 1.3 : 1) * (inp.maxF || 1), acc = s.acc * (boosting ? 2 : 1);
@@ -2498,7 +2585,7 @@
     if (!inp.up && !inp.down) { v.speed *= 1 - 0.45 * dt; if (Math.abs(v.speed) < 0.15) v.speed = 0; }
     if (inp.brake) v.speed *= Math.max(0, 1 - 3 * dt);
     if (v.speed > max) v.speed = Math.max(max, v.speed - s.acc * 1.5 * dt);
-    v.speed = Math.max(v.speed, -s.max * 0.3);
+    v.speed = Math.max(v.speed, s.flyer ? -30 : -s.max * 0.3);
     v.steer += (inp.steer - v.steer) * Math.min(1, dt * 6);
     const turnF = clamp(v.speed / 6, -1, 1) / (1 + Math.abs(v.speed) / 45) * (inp.brake && isPlayer ? 1.5 : 1);
     v.h += v.steer * s.turn * turnF * dt;
@@ -2506,12 +2593,22 @@
     v.x += f.x * v.speed * dt; v.z += f.z * v.speed * dt;
 
     let hit = false;
+    if (v.roof) {
+      // On a rooftop the roof edge is the wall
+      const b = v.roof;
+      for (const c of circlesFor(v)) {
+        const nx = clamp(c.x, b.minX + c.r, b.maxX - c.r), nz = clamp(c.z, b.minZ + c.r, b.maxZ - c.r);
+        if (nx !== c.x || nz !== c.z) { v.x += nx - c.x; v.z += nz - c.z; hit = true; }
+      }
+      if (hit) v.speed *= -0.2;
+      return;
+    }
     for (const c of circlesFor(v)) {
       const r = resolve(c.x, c.z, c.r);
       if (r.hit) { v.x += r.x - c.x; v.z += r.z - c.z; hit = true; }
     }
     for (const o of vehicles.concat(traffic)) {
-      if (o === v) continue;
+      if (o === v || o.y > 1 || o.roof) continue;
       const dx = v.x - o.x, dz = v.z - o.z, d = Math.hypot(dx, dz), min = v.r + o.r * 0.9;
       if (d < min && d > 1e-4) { v.x = o.x + (dx / d) * min; v.z = o.z + (dz / d) * min; hit = true; }
     }
@@ -2530,8 +2627,194 @@
     for (const p of v.fronts) p.rotation.y = v.steer * (v.spec.kind === 'car' ? 0.5 : 0.35);
     if (v.spec.kind === 'bike' && !v.fly) v.lean += (v.steer * clamp(Math.abs(v.speed) / 18, 0, 1) * 0.38 - v.lean) * Math.min(1, dt * 6);
     v.mesh.position.x = v.x; v.mesh.position.z = v.z;
-    v.mesh.rotation.set(0, v.h, v.lean || 0);
+    if (v.spec.flyer) v.mesh.position.y = v.y || 0;
+    v.mesh.rotation.set(v.pitch || 0, v.h, v.lean || 0, 'YXZ');
   }
+
+  // ================= Tesla Roadster: flight, wall climbing, rooftops =================
+  const FLY_V = 2000 / 3.6, FLY_ALT = 140, CLIMB_V = 38;
+  function roofAt(x, z) {
+    const cx = Math.round(x / CH), cz = Math.round(z / CH), c = chunks.get(key(cx, cz));
+    for (const b of c ? c.cols : layoutCols(cx, cz)) if (b.maxX - b.minX > 2 && b.h > 3 && x > b.minX && x < b.maxX && z > b.minZ && z < b.maxZ) return b;
+    return null;
+  }
+  function launchTo(tx, tz) {
+    const v = current;
+    if (!v || !v.spec.flyer || v.flight || v.climb) return;
+    const roof = roofAt(tx, tz);
+    if (roof) { const m = v.spec.len / 2 + 0.8; tx = clamp(tx, roof.minX + m, roof.maxX - m); tz = clamp(tz, roof.minZ + m, roof.maxZ - m); }
+    v.flight = { phase: 'lift', tx, tz, ty: roof ? roof.h : 0, roof, kmh: 0 };
+    v.roof = null; v.speed = 0; v.steer = 0;
+    beep([110, 165], 0.9, 'sawtooth', 0.07);
+    toast(roof ? 'Thrusters on. Flying to the rooftop!' : 'Thrusters on. Flying to your spot!');
+  }
+  function updateFlight(v, dt) {
+    const fl = v.flight, dx = fl.tx - v.x, dz = fl.tz - v.z, dist = Math.hypot(dx, dz);
+    if (dist > 0.5) v.h += wrapAngle(Math.atan2(-dx, -dz) - v.h) * Math.min(1, dt * 3);
+    if (fl.phase === 'lift') {
+      v.y = (v.y || 0) + 60 * dt; fl.kmh = 216; v.pitch = 0.06;
+      if (v.y >= FLY_ALT) { v.y = FLY_ALT; fl.phase = 'cruise'; }
+    } else if (fl.phase === 'cruise') {
+      const step = FLY_V * dt;
+      if (dist <= step) { v.x = fl.tx; v.z = fl.tz; fl.phase = 'descend'; }
+      else { v.x += dx / dist * step; v.z += dz / dist * step; }
+      fl.kmh = 2000; v.pitch = -0.1;
+    } else {
+      v.y -= 55 * dt; fl.kmh = 198; v.pitch = 0;
+      if (v.y <= fl.ty) {
+        v.y = fl.ty; v.roof = fl.roof; v.flight = null; v.pitch = 0;
+        shake = 0.35;
+        for (let i = 0; i < 18; i++) emit(v.x + rand(-2, 2), v.y + 0.3, v.z + rand(-2, 2), { color: 0xcccccc, vx: rand(-5, 5), vy: rand(0.5, 2), vz: rand(-5, 5), life: 1.2, size: 1.2, grow: 1.5, op: 0.5 });
+        toast(v.roof ? 'Landed on the roof. Use FLY to come down.' : 'Landed!');
+      }
+    }
+    const on = !!v.flight;
+    for (const f of v.flames) { f.visible = on; if (on) f.scale.set(1, 0.8 + Math.random() * 0.5, 1); }
+    if (on && Math.random() < 0.7) emit(v.x + rand(-0.6, 0.6), v.y - 1.4, v.z + rand(-1.2, 1.2), { color: pick([0x9fe3ff, 0xffffff, 0x6fb8ff]), vy: -rand(4, 9), life: 0.35, size: 0.6, grow: 2.5, add: true, op: 0.6 });
+  }
+  function climbTarget(v) {
+    if (!v || !v.spec.flyer || v.flight || v.climb || v.roof) return null;
+    let best = null, bd = v.spec.wid / 2 + 2.6;
+    const ccx = Math.round(v.x / CH), ccz = Math.round(v.z / CH);
+    for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
+      const c = chunks.get(key(ccx + dx, ccz + dz));
+      if (!c) continue;
+      for (const b of c.cols) {
+        if (b.maxX - b.minX < 4 || b.maxZ - b.minZ < 4 || b.h < 5) continue;
+        const qx = clamp(v.x, b.minX, b.maxX), qz = clamp(v.z, b.minZ, b.maxZ), d = Math.hypot(v.x - qx, v.z - qz);
+        if (d < bd && d > 0.01) { bd = d; best = { b, qx, qz }; }
+      }
+    }
+    return best;
+  }
+  function startClimb() {
+    const v = current, t = climbTarget(v);
+    if (!t) return;
+    const b = t.b, dx = v.x - t.qx, dz = v.z - t.qz;
+    const n = Math.abs(dx) > Math.abs(dz) ? { x: Math.sign(dx), z: 0 } : { x: 0, z: Math.sign(dz) };
+    const half = v.spec.wid / 2 + 0.4;
+    // Wheels on the wall: the car's underside sits on the wall plane, facing straight up
+    const wx = n.x ? (n.x > 0 ? b.maxX : b.minX) + n.x * 0.03 : clamp(v.x, b.minX + half, b.maxX - half);
+    const wz = n.z ? (n.z > 0 ? b.maxZ : b.minZ) + n.z * 0.03 : clamp(v.z, b.minZ + half, b.maxZ - half);
+    v.climb = { phase: 'turn', t: 0, b, n, wx, wz, sx: v.x, sz: v.z, sh: v.h, th: Math.atan2(n.x, n.z) };
+    v.speed = 0; v.steer = 0;
+    beep([220, 330], 0.3, 'square', 0.06);
+  }
+  function updateClimb(v, dt) {
+    const c = v.climb, L = v.spec.len;
+    c.t += dt;
+    if (c.phase === 'turn') {
+      // swing round to face the wall, slide onto it and tip the nose up
+      const k = Math.min(1, c.t / 0.6), e = k * k * (3 - 2 * k);
+      v.h = c.sh + wrapAngle(c.th - c.sh) * e;
+      v.x = c.sx + (c.wx - c.sx) * e; v.z = c.sz + (c.wz - c.sz) * e;
+      v.pitch = e * Math.PI / 2; v.y = e * (L / 2 + 0.05);
+      if (k >= 1) { c.phase = 'up'; c.t = 0; }
+    } else if (c.phase === 'up') {
+      v.y += CLIMB_V * dt; v.speed = CLIMB_V;
+      if (v.y + L / 2 >= c.b.h) { v.y = c.b.h - L / 2; c.phase = 'over'; c.t = 0; c.oy = v.y; c.ox = v.x; c.oz = v.z; }
+    } else {
+      // roll over the parapet onto the roof
+      const k = Math.min(1, c.t / 0.55), e = k * k * (3 - 2 * k), inset = L / 2 + 1;
+      v.pitch = (1 - e) * Math.PI / 2;
+      v.y = c.oy + (c.b.h - c.oy) * e;
+      v.x = c.ox - c.n.x * inset * e; v.z = c.oz - c.n.z * inset * e;
+      v.speed = CLIMB_V * (1 - e);
+      if (k >= 1) { v.climb = null; v.pitch = 0; v.y = c.b.h; v.roof = c.b; v.speed = 0; toast('On the roof! Drive around, or use FLY to come down.'); }
+    }
+  }
+
+  // ---------- Fly map ----------
+  let mapOpen = false;
+  const FM = { scale: 0.9, drag: null };
+  const fmCv = $('flyCanvas'), fmCtx = fmCv.getContext('2d');
+  function openFlyMap() {
+    if (!current || !current.spec.flyer || current.flight || current.climb || !started || wastedT >= 0) return;
+    mapOpen = true; $('flyMap').hidden = false;
+    for (const k in keys) keys[k] = 0;
+    trigger = false; setAim(false);
+    $('fmHint').textContent = 'Drag a line from your car to where you want to land';
+    drawFlyMap();
+  }
+  function closeFlyMap() { mapOpen = false; $('flyMap').hidden = true; FM.drag = null; }
+  function fmToScreen(x, z) { const w = fmCv.clientWidth, h = fmCv.clientHeight; return [w / 2 + (x - current.x) * FM.scale, h / 2 + (z - current.z) * FM.scale]; }
+  function fmToWorld(sx, sy) { const w = fmCv.clientWidth, h = fmCv.clientHeight; return [current.x + (sx - w / 2) / FM.scale, current.z + (sy - h / 2) / FM.scale]; }
+  function drawFlyMap() {
+    if (!mapOpen || !current) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2), w = fmCv.clientWidth, h = fmCv.clientHeight;
+    if (fmCv.width !== Math.round(w * dpr)) { fmCv.width = Math.round(w * dpr); fmCv.height = Math.round(h * dpr); }
+    const g = fmCtx;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.fillStyle = '#4f6b45'; g.fillRect(0, 0, w, h);
+    const s = FM.scale, spanX = w / 2 / s + CH, spanZ = h / 2 / s + CH;
+    const cx0 = Math.floor((current.x - spanX) / CH), cx1 = Math.ceil((current.x + spanX) / CH);
+    const cz0 = Math.floor((current.z - spanZ) / CH), cz1 = Math.ceil((current.z + spanZ) / CH);
+    // pavements, then roads
+    g.fillStyle = '#8f8a80';
+    for (let i = cx0; i <= cx1; i++) for (let j = cz0; j <= cz1; j++) { const [x, y] = fmToScreen(i * CH - CH / 2, j * CH - CH / 2); g.fillRect(x, y, CH * s, CH * s); }
+    g.fillStyle = '#3a3d44';
+    for (let i = cx0; i <= cx1; i++) { const [x] = fmToScreen(i * CH - 7, 0); g.fillRect(x, 0, 14 * s, h); }
+    for (let j = cz0; j <= cz1; j++) { const [, y] = fmToScreen(0, j * CH - 7); g.fillRect(0, y, w, 14 * s); }
+    // buildings, shaded by height
+    for (let i = cx0; i <= cx1; i++) for (let j = cz0; j <= cz1; j++) {
+      for (const lot of chunkLayout(i, j)) {
+        if (lot.park) { const [x, y] = fmToScreen(i * CH + lot.sx * 25.5 - 14.5, j * CH + lot.sz * 25.5 - 14.5); g.fillStyle = '#5f8f45'; g.fillRect(x, y, 29 * s, 29 * s); }
+      }
+      for (const b of layoutCols(i, j)) {
+        const [x, y] = fmToScreen(b.minX, b.minZ), bw = (b.maxX - b.minX) * s, bh = (b.maxZ - b.minZ) * s;
+        const l = Math.round(clamp(110 + b.h * 1.8, 110, 235));
+        g.fillStyle = 'rgb(' + l + ',' + l + ',' + (l + 10) + ')'; g.fillRect(x, y, bw, bh);
+        g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, bw - 1, bh - 1);
+      }
+    }
+    // home
+    const [hx, hy] = fmToScreen(HOME_SPAWN.x, HOME_SPAWN.z);
+    g.fillStyle = '#ffc93c'; g.beginPath(); g.arc(hx, hy, 8, 0, 7); g.fill();
+    g.fillStyle = '#12161f'; g.font = 'bold 12px sans-serif'; g.textAlign = 'center'; g.fillText('HOME', hx, hy - 12);
+    // route
+    const [cxs, cys] = fmToScreen(current.x, current.z);
+    if (FM.drag) {
+      const [tx, tz] = fmToWorld(FM.drag.x, FM.drag.y), roof = roofAt(tx, tz);
+      g.save(); g.setLineDash([12, 9]); g.lineWidth = 5; g.lineCap = 'round'; g.strokeStyle = '#3dff86';
+      g.shadowColor = 'rgba(0,0,0,0.6)'; g.shadowBlur = 4;
+      g.beginPath(); g.moveTo(cxs, cys); g.lineTo(FM.drag.x, FM.drag.y); g.stroke(); g.restore();
+      g.strokeStyle = '#3dff86'; g.lineWidth = 3; g.beginPath(); g.arc(FM.drag.x, FM.drag.y, 14, 0, 7); g.stroke();
+      g.fillStyle = 'rgba(61,255,134,0.35)'; g.beginPath(); g.arc(FM.drag.x, FM.drag.y, 14, 0, 7); g.fill();
+      const dist = Math.hypot(tx - current.x, tz - current.z);
+      const label = (dist < 1000 ? Math.round(dist) + ' m' : (dist / 1000).toFixed(2) + ' km') + (roof ? ' · roof ' + roof.h + ' m' : '');
+      g.font = 'bold 14px sans-serif'; const tw = g.measureText(label).width;
+      g.fillStyle = 'rgba(18,22,31,0.9)'; g.fillRect(FM.drag.x - tw / 2 - 8, FM.drag.y - 44, tw + 16, 24);
+      g.fillStyle = '#ffffff'; g.fillText(label, FM.drag.x, FM.drag.y - 27);
+    }
+    // the car: a silver arrow pointing the way it faces
+    const f = fwd(current.h), ang = Math.atan2(f.z, f.x);
+    g.save(); g.translate(cxs, cys); g.rotate(ang + Math.PI / 2);
+    g.fillStyle = '#d7dade'; g.strokeStyle = '#111'; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(0, -16); g.lineTo(11, 13); g.lineTo(0, 7); g.lineTo(-11, 13); g.closePath(); g.fill(); g.stroke();
+    g.restore();
+    g.strokeStyle = 'rgba(61,255,134,0.9)'; g.lineWidth = 2; g.beginPath(); g.arc(cxs, cys, 26, 0, 7); g.stroke();
+  }
+  fmCv.addEventListener('pointerdown', (e) => {
+    const r = fmCv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    const [cx, cy] = fmToScreen(current.x, current.z);
+    if (Math.hypot(x - cx, y - cy) > 48) { $('fmHint').textContent = 'Start the line on your car (the silver arrow in the green ring)'; return; }
+    FM.drag = { x, y }; fmCv.setPointerCapture(e.pointerId); drawFlyMap();
+  });
+  fmCv.addEventListener('pointermove', (e) => { if (!FM.drag) return; const r = fmCv.getBoundingClientRect(); FM.drag.x = e.clientX - r.left; FM.drag.y = e.clientY - r.top; drawFlyMap(); });
+  fmCv.addEventListener('pointerup', () => {
+    if (!FM.drag) return;
+    const [cx, cy] = fmToScreen(current.x, current.z), d = FM.drag;
+    FM.drag = null;
+    if (Math.hypot(d.x - cx, d.y - cy) < 24) { drawFlyMap(); return; }
+    const [tx, tz] = fmToWorld(d.x, d.y);
+    closeFlyMap(); launchTo(tx, tz);
+  });
+  $('fmClose').addEventListener('click', closeFlyMap);
+  $('fmIn').addEventListener('click', () => { FM.scale = Math.min(4, FM.scale * 1.5); drawFlyMap(); });
+  $('fmOut').addEventListener('click', () => { FM.scale = Math.max(0.15, FM.scale / 1.5); drawFlyMap(); });
+  window.addEventListener('resize', drawFlyMap);
+  $('flyBtn').addEventListener('click', openFlyMap);
+  $('climbBtn').addEventListener('click', () => { if (current && !phoneOpen && !mapOpen) startClimb(); });
 
   function updateTraffic(dt) {
     const F = focus();
@@ -2651,7 +2934,9 @@
       $('modeLabel').textContent = current.spec.num + ' · ' + current.spec.group;
       $('modeValue').textContent = current.spec.name;
       $('speedo').hidden = false;
-      $('speed').textContent = Math.round(Math.abs(current.speed) * 3.6);
+      $('speed').textContent = Math.round(current.flight ? current.flight.kmh : Math.abs(current.speed) * 3.6);
+      $('flyBtn').hidden = !(current.spec.flyer && !current.flight && !current.climb);
+      $('climbBtn').hidden = !climbTarget(current);
       $('nitroBar').style.transform = 'scaleX(' + nitro.toFixed(2) + ')';
       $('carHpBar').style.transform = 'scaleX(' + Math.max(0, current.hp / current.maxHp).toFixed(2) + ')';
       setHint(Math.abs(current.speed) < 1 ? '<kbd>E</kbd> get out · <kbd>Shift</kbd> nitro · <kbd>Click</kbd> shoot' : '');
@@ -2693,15 +2978,16 @@
       const m = camFar ? 1.7 : 1;
       let back = dist * m;
       // Pull the camera in front of any wall between it and the player
-      for (let i = 1; i <= 16; i++) {
+      if (F.y < 1) for (let i = 1; i <= 16; i++) {
         const t = (back * i) / 16;
         if (insideWall(F.x - f.x * t, F.z - f.z * t)) { back = Math.max(1.5, t - 1); break; }
       }
-      const want = new THREE.Vector3(F.x - f.x * back, ht * (camFar ? 1.6 : 1), F.z - f.z * back);
-      if (snapCam || back < dist * m) { camera.position.copy(want); snapCam = false; }
+      const airborne = mode === 'drive' && (current.flight || current.climb);
+      const want = new THREE.Vector3(F.x - f.x * back * (airborne ? 1.6 : 1), F.y + ht * (camFar ? 1.6 : 1) * (airborne ? 1.5 : 1), F.z - f.z * back * (airborne ? 1.6 : 1));
+      if (snapCam || airborne || back < dist * m) { camera.position.copy(want); snapCam = false; }
       else camera.position.lerp(want, 1 - Math.exp(-dt * (mode === 'drive' ? 4.5 + Math.abs(current.speed) * 0.4 : 6)));
-      camera.lookAt(F.x + f.x * 3, 1.4, F.z + f.z * 3);
-      const sp = mode === 'drive' ? Math.abs(current.speed) : 0;
+      camera.lookAt(F.x + f.x * 3, F.y + 1.4, F.z + f.z * 3);
+      const sp = mode === 'drive' ? (current.flight ? 40 : Math.abs(current.speed)) : 0;
       fov = baseFov + Math.min(14, sp * 0.18);
     }
     if (shake > 0) { camera.position.x += (Math.random() - 0.5) * shake; camera.position.y += (Math.random() - 0.5) * shake; shake = Math.max(0, shake - dt * 1.5); }
@@ -2806,7 +3092,7 @@
     $('toast').hidden = true;
   });
 
-  if (location.hash === '#debug') window.__dbg = { P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; } };
+  if (location.hash === '#debug') window.__dbg = { P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
 
   const clock = new THREE.Clock();
   let introT = 0;
@@ -2820,15 +3106,17 @@
     if (paused) { renderer.render(scene, camera); return; }
     let dt = realDt;
     if (wastedT >= 0) { wastedT += Math.min(raw, 0.5); dt = realDt * 0.35; if (wastedT > 5) respawn(); }
-    const live = started && !phoneOpen && wastedT < 0;
+    const live = started && !phoneOpen && !mapOpen && wastedT < 0;
     if (live) {
       if (mode === 'foot') updateFoot(dt);
       else {
         // Split fast frames into short steps so very fast cars still hit walls instead of passing through
         const inp = { up: keys.up, down: keys.down, steer: keys.left - keys.right, brake: keys.space, boost: keys.shift };
-        const n = Math.min(40, Math.max(1, Math.ceil(Math.abs(current.speed) * dt / 1.2)));
+        if (current.flight) updateFlight(current, dt);
+        if (current.climb) updateClimb(current, dt);
+        const n = Math.min(current.spec.flyer ? 140 : 40, Math.max(1, Math.ceil(Math.abs(current.speed) * dt / 1.2)));
         for (let i = 0; i < n && current; i++) updateDrive(current, dt / n, inp, true);
-        if (current) runOver(current); // a crash can blow the car up and throw the player out
+        if (current && !(current.y > 1)) runOver(current); // a crash can blow the car up and throw the player out
       }
       playerStill = mode === 'foot' || !current || Math.abs(current.speed) < 3 ? playerStill + dt : 0;
       fireCool -= dt;
