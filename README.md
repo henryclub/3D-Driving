@@ -11,6 +11,11 @@ Every push to `main` builds fresh downloads automatically. Open the repo's **Rel
 
 ## Features
 - **Main menu and pause menu.** The game opens on a main menu with a Play button. In game, the ☰ button (or `Esc`) pauses with Resume, Restart and Leave to main menu. Full instructions are in the phone's **Help** tab.
+- **Dubai.** The endless city is dressed as Dubai, and the district name shows at the top left:
+  - **Sheikh Zayed Road** (the road just south of your home) runs east to west under the elevated **Dubai Metro**, with palm-lined medians, green overhead signs and stations every 160 m where silver trains stop and pull out.
+  - **Downtown Dubai** has the **Burj Khalifa** (a spiralling tiered tower with a spire), The Dubai Mall and the Dubai Fountain lake with dancing jets. **Emirates Towers**, the **Dubai Frame**, the **Museum of the Future** and the twisting **Cayan Tower** are around the city.
+  - **Jumeirah Beach** has the Arabian Gulf, beach umbrellas, lifeguard huts and resorts. A causeway leads out to the **Burj Al Arab** on its own island; at night its sail glows in changing colours. **Palm Jumeirah** and **Atlantis** are further along the coast (drive up the road at the east end of the beach).
+  - Jumeirah villas with walled gardens and pools, mosques with minarets, old Dubai with wind towers and dhows on **Dubai Creek**, Dubai Marina towers, and the desert with dunes, camels and tents beyond the city. Cash is in AED.
 - **Endless city.** Roads, buildings, parks and street lights keep generating as you drive, with traffic on the roads.
 - **Tesla Roadster flying car (1307).** Tap **FLY** to open the map, drag a green dotted line from your car to any spot and let go: it lifts off on thrusters, flies there at 2,000 km/h and lands on that exact spot, even on a rooftop. Drive up to a building and tap **CLIMB** to drive up the wall onto the roof.
 - **Your home.** It has a garage, a driveway and a "MY HOME" sign. A Toyota Fortuner, a Koenigsegg Jesko and a Royal Enfield are parked outside.
