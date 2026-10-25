@@ -4870,7 +4870,7 @@
     }
     return html + '</span>';
   }
-  const phoneBigPic = (p) => '<span class="ppw">' + phonePic(p, false) + (p.fold ? phonePic(p, true) : '') + '</span>';
+  let phoneBigPic = (p) => '<span class="ppw">' + phonePic(p, false) + (p.fold ? phonePic(p, true) : '') + '</span>';
 
   function phoneChips(sel, pick) {
     const row = document.createElement('div'); row.className = 'pchips';
@@ -4963,6 +4963,97 @@
     sizeFold();
   }
   // </PHONES2>
+  // <PHONEBACK>
+  // ---- the back of the phone: camera layout and logo of each real model ----
+  const pbStyle = document.createElement('style');
+  pbStyle.textContent = `
+    .phmini { display: inline-block; zoom: 0.4; vertical-align: middle; margin-right: 4px; }
+    #phoneBack { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; opacity: 0; pointer-events: none; transition: opacity .35s; z-index: 4; }
+    .phone.ph-back #phoneBack { opacity: 1; pointer-events: auto; }
+    .phone.ph-back .screen { visibility: hidden; }
+    #backBtn { position: absolute; z-index: 6; left: -15px; top: 50%; width: 26px; height: 64px; margin-top: -32px; border: 0; border-radius: 14px 0 0 14px; background: var(--accent); color: #1b1606; font-weight: 900; font-size: 11px; cursor: pointer; writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: .05em; }
+    .pbk { position: absolute; inset: 0; }
+    .pbk i { position: absolute; display: block; font-style: normal; }
+    .pbk .lz { aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #5a6a86 0, #12151c 38%, #05060a 70%); box-shadow: 0 0 0 2px rgba(255,255,255,0.18), inset 0 0 4px rgba(255,255,255,0.25); transform: translate(-50%, -50%); }
+    .pbk .md { background: rgba(255,255,255,0.13); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18); }
+    .pbk .bk { background: #0b0d12; }
+    .pbk .fl { aspect-ratio: 1; border-radius: 50%; background: #f6e7b8; transform: translate(-50%, -50%); }
+    .pbk .lg { transform: translate(-50%, -50%); font-weight: 800; white-space: nowrap; letter-spacing: .04em; }
+    .ppb { position: relative; display: inline-block; border: 2px solid; flex: none; overflow: hidden; }
+    .ppb .pbk .lg { font-size: 5px !important; letter-spacing: 0; }
+  `;
+  document.head.appendChild(pbStyle);
+  const lum = (hex) => { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
+  const BACK_NAME = { Apple: 'iPhone', Samsung: 'SAMSUNG', Google: 'Google', OnePlus: 'ONEPLUS', Oppo: 'OPPO', Vivo: 'vivo', Xiaomi: 'Xiaomi', Realme: 'realme', Nothing: 'NOTHING', Huawei: 'HUAWEI', Motorola: 'motorola', Honor: 'HONOR', Vertu: 'VERTU', AZARR: 'AZARR' };
+  function backType(p) {
+    const id = p.id, b = p.brand;
+    if (b === 'Apple') return id === 'ipse' ? 'apse' : id === 'ipfold' ? 'apfold' : /p$|pm$/.test(id) ? 'appro' : 'apstd';
+    if (b === 'Samsung') return p.fold === 'flip' ? 'flipcover' : id === 's25' ? 'sam4' : 'sam3';
+    if (b === 'Google') return 'pixel';
+    if (b === 'OnePlus') return 'round3';
+    if (b === 'Oppo') return 'round4';
+    if (b === 'Vivo') return 'roundL';
+    if (b === 'Xiaomi') return p.fold === 'flip' ? 'flipcover' : 'roundXL';
+    if (b === 'Realme') return 'round2';
+    if (b === 'Nothing') return 'nothing';
+    if (b === 'Huawei') return p.fold === 'tri' ? 'sam3' : 'ring4';
+    if (b === 'Motorola') return 'flipcover';
+    if (b === 'Honor') return 'roundL';
+    if (b === 'Vertu') return 'vertu';
+    return 'dual';
+  }
+  function backHTML(p) {
+    const t = backType(p), dark = lum(p.color) < 0.55, fg = dark ? 'rgba(255,255,255,0.8)' : 'rgba(20,20,26,0.75)';
+    const L = (x, y, d) => '<i class="lz" style="left:' + x + '%;top:' + y + '%;width:' + d + '%"></i>';
+    const F = (x, y, d) => '<i class="fl" style="left:' + x + '%;top:' + y + '%;width:' + d + '%"></i>';
+    const R = (cls, x, y, w, h, r, extra) => '<i class="' + cls + '" style="left:' + x + '%;top:' + y + '%;width:' + w + '%;height:' + h + '%;border-radius:' + r + ';' + (extra || '') + '"></i>';
+    let h = '';
+    const logo = (x, y, txt) => '<i class="lg" style="left:' + x + '%;top:' + y + '%;color:' + fg + ';font-size:' + (txt.length > 6 ? 13 : 16) + 'px">' + txt + '</i>';
+    const name = BACK_NAME[p.brand] || p.brand;
+    switch (t) {
+      case 'appro': h += R('md', 7, 4, 46, 22, '22%') + L(21, 10.5, 15) + L(21, 19.5, 15) + L(40, 15, 15) + F(46, 8, 4) + R('bk', 38, 7.3, 3, 2, '50%') + logo(50, 50, name); break;
+      case 'apstd': h += R('md', 7, 4, 40, 17, '30%') + L(18, 9, 17) + L(34, 15.5, 17) + F(40, 7, 4) + logo(50, 50, name); break;
+      case 'apse': h += L(18, 8, 14) + F(34, 6.5, 4) + logo(50, 50, name); break;
+      case 'apfold': h += R('md', 7, 4, 46, 17, '22%') + L(20, 10, 15) + L(38, 10, 15) + F(46, 7, 4) + logo(50, 50, name); break;
+      case 'sam3': h += L(18, 8, 15) + L(18, 16, 15) + L(18, 24, 15) + F(34, 8, 4) + logo(50, 52, name); break;
+      case 'sam4': h += L(18, 7, 15) + L(18, 15, 15) + L(18, 23, 15) + L(18, 31, 13) + F(34, 7, 4) + logo(50, 52, name); break;
+      case 'flipcover': h += R('bk', 8, 3, 52, 12, '24px') + L(20, 9, 15) + L(46, 9, 15) + R('bk', 8, 51, 84, 0.5, '0') + logo(50, 66, name); break;
+      case 'pixel': h += R('bk', 0, 11, 100, 10, '0', 'border-radius:0') + R('bk', 5, 10, 90, 12, '40px') + L(24, 16, 12) + L(40, 16, 12) + L(56, 16, 8) + F(72, 16, 4) + logo(50, 55, name); break;
+      case 'round3': h += R('md', 8, 4, 54, 25, '50%', 'aspect-ratio:1;height:auto;border-radius:50%;border:3px solid #cfd2d8') + L(26, 11, 17) + L(26, 20, 17) + L(40, 15.5, 17) + F(50, 11, 4) + logo(50, 55, name); break;
+      case 'round4': h += R('md', 8, 4, 50, 24, '50%', 'aspect-ratio:1;height:auto;border-radius:50%;border:3px solid #c8ccd2') + L(23, 10, 16) + L(37, 10, 16) + L(23, 19, 16) + L(37, 19, 16) + F(50, 9, 4) + logo(50, 55, name); break;
+      case 'roundL': h += R('md', 8, 4, 54, 26, '50%', 'aspect-ratio:1;height:auto;border-radius:50%;border:3px solid #aeb2b8') + L(26, 10, 18) + L(26, 21, 18) + L(42, 16, 18) + F(54, 8, 4) + logo(50, 55, name); break;
+      case 'roundXL': h += R('md', 14, 4, 72, 34, '50%', 'aspect-ratio:1;height:auto;border-radius:50%;border:3px solid #9ca0a8') + L(50, 13, 38) + L(30, 13, 11) + L(30, 24, 11) + F(70, 7, 4) + logo(50, 62, name); break;
+      case 'round2': h += R('md', 14, 4, 40, 18, '50%', 'aspect-ratio:1;height:auto;border-radius:50%;border:3px solid #cfd2d8') + L(26, 9, 15) + L(26, 17, 15) + F(46, 8, 4) + logo(50, 55, name); break;
+      case 'ring4': h += R('md', 14, 4, 72, 33, '50%', 'aspect-ratio:1;height:auto;border-radius:50%;border:4px solid #d1ad47') + L(36, 13, 18) + L(36, 25, 18) + L(55, 13, 18) + L(55, 25, 18) + F(72, 18, 5) + logo(50, 62, name); break;
+      case 'nothing': h += R('md', 6, 4, 60, 12, '30px') + L(18, 8.5, 14) + L(36, 8.5, 14) + R('md', 12, 26, 76, 0.8, '4px') + R('md', 12, 33, 76, 0.8, '4px') + R('md', 20, 40, 60, 0.8, '4px') + R('md', 30, 47, 40, 0.8, '4px') + '<i class="fl" style="left:76%;top:8%;width:4%;background:#ff4a3a"></i>' + logo(50, 80, name); break;
+      case 'vertu': h += L(20, 8, 12) + F(34, 7, 4) + logo(50, 50, name) + R('md', 10, 40, 80, 0.6, '2px') + R('md', 10, 60, 80, 0.6, '2px') + '<i class="lg" style="left:50%;top:66%;color:' + fg + ';font-size:9px;font-weight:600">SIGNATURE</i>'; break;
+      default: h += L(20, 9, 15) + L(20, 17, 15) + F(34, 9, 4) + logo(50, 52, name);
+    }
+    return '<div class="pbk">' + h + '</div>';
+  }
+  const backBg = (p) => 'linear-gradient(160deg,rgba(255,255,255,0.28),rgba(0,0,0,0.38)),' + p.color;
+  function ensureBackUI() {
+    const el = $('phone');
+    if ($('phoneBack')) return;
+    const b = document.createElement('div'); b.id = 'phoneBack'; el.appendChild(b);
+    const btn = document.createElement('button'); btn.id = 'backBtn'; btn.textContent = 'BACK ↻'; btn.setAttribute('aria-label', 'Turn the phone over'); el.appendChild(btn);
+    btn.addEventListener('click', () => { el.classList.toggle('ph-back'); btn.textContent = el.classList.contains('ph-back') ? 'FRONT ↻' : 'BACK ↻'; });
+  }
+  const applyPhoneFront = applyPhone;
+  applyPhone = function () {
+    applyPhoneFront();
+    ensureBackUI();
+    const p = phoneById.get(save.phone) || PHONES[0];
+    const b = $('phoneBack'); b.style.background = backBg(p); b.innerHTML = backHTML(p);
+    const pb = $('phoneBtn'); let mini = pb.querySelector('.phmini');
+    if (!mini) { mini = document.createElement('span'); mini.className = 'phmini'; const sv = pb.querySelector('svg'); if (sv) { sv.style.display = 'none'; pb.insertBefore(mini, sv); } else pb.prepend(mini); }
+    mini.innerHTML = phonePic(p, false);
+  };
+  // the shop rows also show the back
+  const phoneBigPicFront = phoneBigPic;
+  phoneBigPic = (p) => phoneBigPicFront(p) + '<span class="ppb" style="width:32px;height:62px;border-radius:' + Math.max(5, Math.round(p.corner / 3.4)) + 'px;border-color:' + p.frame + ';background:' + backBg(p) + '">' + backHTML(p) + '</span>';
+  // </PHONEBACK>
+  applyPhone();
 
   // ---- Per-frame life: clock, hunger, HUD ----
   let hungerWarn = 0;
