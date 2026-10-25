@@ -5209,7 +5209,7 @@
     return best;
   }
   function nearestDoor(x, z) {
-    if (WORLD.id === 'dubai' && Math.hypot(x - AIR.door.x, z - (AIR.door.z + 1.5)) < 5) return { kind: 'airport', name: 'Dubai International Airport' };
+    if (WORLD.id === 'dubai' && Math.hypot(x - AIR.door.x, z - (AIR.door.z + 3)) < 7) return { kind: 'airport', name: 'Dubai International Airport' };
     if (WORLD.id === 'dubai' && Math.hypot(x - BAA.x, z - (BAA.z + 21.4)) < 4.6) return { kind: 'baa', name: 'Burj Al Arab Jumeirah' };
     if (WORLD.id === 'dubai' && Math.hypot(x - BK.x, z - (BK.z + 33.4)) < 4.6) return { kind: 'bk', name: 'Burj Khalifa' };
     const ccx = Math.round(x / CH), ccz = Math.round(z / CH);
@@ -6578,7 +6578,8 @@
       sign(g, 12, 2.4, labelMat('AIRPORT  \u2708  7 km', '#ffffff', '#0b6b3a', 640, 128, 60), 720, 6.2, cz0 - 12, Math.PI);
     }
     // forecourt: palms, lamps, car park markings
-    for (let x = 600; x <= 840; x += 20) { addTree(g, [], 0, 0, x, -1068); addTree(g, [], 0, 0, x, -1102); }
+    // palms line the forecourt, but leave a clear walkway straight to the terminal doors
+    for (let x = 600; x <= 840; x += 20) if (Math.abs(x - 720) > 14) { addTree(g, [], 0, 0, x, -1068); addTree(g, [], 0, 0, x, -1102); }
     for (let x = 600; x <= 840; x += 40) plane(g, 0.3, 28, white, x, 0.1, -1072);
     mergeStatic(g);
     PALM_COLS.push(...[0, 1, 2, 3].map((i) => ({ minX: tx - 130 + i * 65, maxX: tx - 130 + (i + 1) * 65, minZ: tz - 40, maxZ: tz + 40, h: 24 })), { minX: 914, maxX: 927, minZ: -1137, maxZ: -1123, h: 60 });
@@ -6915,10 +6916,11 @@
     box(2.4, 0.3, 0.1, RED_LIGHT, 0, 0.9, 5.3, bus);
     bus.traverse((o) => { o.userData.keep = true; });
     it.g.add(bus); it.bus = bus; bus.position.set(-52, 0, 40); bus.rotation.y = Math.PI;
-    it.spawn = { x: -52, z: 40, h: 0 };
-    it.upd.push((dt) => { apronUpdate(it, dt); apronDone(it, dt); });
-    it.onEnter = () => { player.visible = false; };
-    it.onLeave = () => { player.visible = true; };
+    it.spawn = { x: -46, z: 40, h: -Math.PI / 2 };
+    it.spot(-48.5, 40, 3, () => (flight.t && flight.phase === 'waiting' ? 'sit in the airport bus (flight ' + flight.t.flightNo + ')' : 'the airport bus'), () => sitInBus(it), () => !(flight.t && flight.phase === 'waiting'));
+    it.spot(-21, 0, 3.2, () => 'board the plane (flight ' + (flight.t ? flight.t.flightNo : '') + ')', () => boardPlane(), () => flight.phase !== 'arrived');
+    it.spot(-100, -40, 4, 'back to the airport terminal', () => switchInterior(INTERIORS.get('airport:dubai') || buildAirportHall('dubai'), null), () => flight.phase === 'seated' || flight.phase === 'driving');
+    it.upd.push((dt) => apronUpdate(it, dt));
     return registerInterior(it);
   }
 
@@ -6979,29 +6981,50 @@
   // --- boarding, the flight itself and arriving ---
   function startBoarding(t) {
     const ap = INTERIORS.get('apron') || buildApronInterior();
-    flight.t = t; flight.phase = 'bus'; flight.seated = false; flight.timer = 0; flight.speed = 1; flight.busI = 0;
+    flight.t = t; flight.phase = 'waiting'; flight.seated = false; flight.timer = 0; flight.busI = 0;
     switchInterior(ap, null, () => {
-      INT.frozen = true; ap.bus.position.set(-52, 0, 40); ap.bus.rotation.y = Math.PI;
-      INT.camFn = () => { const b = ap.bus.position; return [ap.bx + b.x + 11, 4.5, ap.bz + b.z + 12, ap.bx + b.x, 1.6, ap.bz + b.z]; };
-      showBanner('Airport bus', 'Taking you to flight ' + t.flightNo + ' to ' + WORLD_DEFS[t.to].city);
-      toast('Boarding: the airport bus takes you to the plane.', 'win');
+      ap.bus.position.set(-52, 0, 40); ap.bus.rotation.y = Math.PI;
+      toast('Your airport bus is outside. Walk to it and press E to sit. It leaves 12 minutes before departure.', 'win', 6000);
     });
   }
   const BUS_PATH = [{ x: -52, z: 14 }, { x: -22, z: 9 }];
-  function apronUpdate(it, dt) {
-    player.visible = false;
-    if (flight.phase !== 'bus') return;
-    const b = it.bus, tgt = BUS_PATH[flight.busI];
-    if (!tgt) { flight.phase = 'bus_done'; flight.timer = 0; return; }
-    const dx = tgt.x - b.position.x, dz = tgt.z - b.position.z, d = Math.hypot(dx, dz);
-    if (d < 6 * dt + 0.05) { b.position.x = tgt.x; b.position.z = tgt.z; flight.busI++; return; }
-    b.position.x += dx / d * 6 * dt; b.position.z += dz / d * 6 * dt; b.rotation.y += wrapAngle(Math.atan2(dx, dz) - b.rotation.y) * Math.min(1, dt * 3);
-    flight.timer += dt;
+  const busLeavesAt = () => flight.t.depTotal - 12;
+  function sitInBus(it) {
+    if (flight.phase !== 'waiting' || !flight.t) return;
+    flight.phase = 'seated'; INT.frozen = true; player.visible = false;
+    const b = it.bus;
+    INT.camFn = () => { const p = b.position; return [it.bx + p.x + 11, 5, it.bz + p.z + 14, it.bx + p.x, 1.6, it.bz + p.z]; };
+    toast('Ladies and gentlemen, please remain seated. The bus will leave on time.', 'win', 4500);
   }
-  function apronDone(it, dt) {
-    if (flight.phase !== 'bus_done') return;
-    flight.timer += dt;
-    if (flight.timer > 1.5) { flight.phase = 'boarding_cabin'; hideBanner(); INT.camFn = null; INT.frozen = false; const cb = INTERIORS.get('cabin') || buildCabinInterior(); switchInterior(cb, null); }
+  function apronUpdate(it, dt) {
+    const f = flight;
+    if (!f.t || INT.active !== it) return;
+    if (f.phase === 'seated') {
+      const left = busLeavesAt() - GC.total;
+      showBanner('Seated on the airport bus', 'Flight ' + f.t.flightNo + ' to ' + WORLD_DEFS[f.t.to].city + ' · leaves in ' + fmtLeft(Math.max(0, left)));
+      if (left <= 0) { f.phase = 'driving'; f.busI = 0; toast('The bus is leaving for your plane.', 'win', 3500); }
+      return;
+    }
+    if (f.phase !== 'driving') return;
+    const b = it.bus, tgt = BUS_PATH[f.busI];
+    if (!tgt) { arriveAtPlane(it); return; }
+    const dx = tgt.x - b.position.x, dz = tgt.z - b.position.z, d = Math.hypot(dx, dz);
+    if (d < 6 * dt + 0.05) { b.position.x = tgt.x; b.position.z = tgt.z; f.busI++; return; }
+    b.position.x += dx / d * 6 * dt; b.position.z += dz / d * 6 * dt;
+    b.rotation.y += wrapAngle(Math.atan2(dx, dz) - b.rotation.y) * Math.min(1, dt * 3);
+  }
+  function arriveAtPlane(it) {
+    const f = flight;
+    f.phase = 'arrived'; INT.frozen = false; INT.camFn = null; player.visible = true;
+    P.x = it.bx - 22; P.z = it.bz + 12; P.h = Math.PI; player.position.set(P.x, 0, P.z); player.rotation.set(0, P.h, 0); snapCam = true;
+    showBanner('We have arrived at your plane', 'Flight ' + f.t.flightNo + ' to ' + WORLD_DEFS[f.t.to].city + ' · walk to the stairs and press E');
+    toast('Ladies and gentlemen, we have arrived at flight ' + f.t.flightNo + '. Please walk to the plane stairs and press E to board.', 'win', 7000);
+    beep([784, 988, 1175], 0.9, 'sine', 0.08);
+  }
+  function boardPlane() {
+    if (flight.phase !== 'arrived') return;
+    flight.phase = 'boarding_cabin'; hideBanner();
+    switchInterior(INTERIORS.get('cabin') || buildCabinInterior(), null);
   }
   function setWindowView(it, mode) {
     const g = it.winCv.getContext('2d');
@@ -8743,7 +8766,7 @@
     $('toast').hidden = true;
   });
 
-  if (location.hash === '#debug') window.__dbg = { life: { openPhoneShop, applyPhone, rideMarket, ride, enterStation, tickets, flight, startBoarding, enterAirport, openFlightBooking, flightsFor, nextDepTotal, finishArrival, switchWorld, WORLD, WORLD_DEFS, INT, GC, stay, meal, pray, prayed, save, get food() { return food; }, set food(v) { food = v; }, get wudu() { return wudu; }, set wudu(v) { wudu = v; }, enterHotel, enterRestaurant, enterMall, enterMosque, nearestSpot, lifeAction, closePanel, hotelRoom, hotelLobby, switchInterior, advanceClock, nearestDoor, rideLift, openBooking, openMenu, startWudu, startPrayer, tryLeave, payBill, INTERIORS, SPECS, mealUpdate, guards, prayUpdate, wuduUpdate, finishPrayer, chunkLayout, zoneOf, CH }, info: () => JSON.stringify({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries }), P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
+  if (location.hash === '#debug') window.__dbg = { life: { resolve, openPhoneShop, applyPhone, rideMarket, ride, enterStation, tickets, flight, startBoarding, enterAirport, openFlightBooking, flightsFor, nextDepTotal, finishArrival, switchWorld, WORLD, WORLD_DEFS, INT, GC, stay, meal, pray, prayed, save, get food() { return food; }, set food(v) { food = v; }, get wudu() { return wudu; }, set wudu(v) { wudu = v; }, enterHotel, enterRestaurant, enterMall, enterMosque, nearestSpot, lifeAction, closePanel, hotelRoom, hotelLobby, switchInterior, advanceClock, nearestDoor, rideLift, openBooking, openMenu, startWudu, startPrayer, tryLeave, payBill, INTERIORS, SPECS, mealUpdate, guards, prayUpdate, wuduUpdate, finishPrayer, chunkLayout, zoneOf, CH }, info: () => JSON.stringify({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries }), P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
 
   const clock = new THREE.Clock();
   let introT = 0;
