@@ -181,7 +181,7 @@
   .toggle .sw2::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); transition: transform 0.15s; }
   .toggle[aria-pressed="true"] .sw2 { background: var(--go); }
   .toggle[aria-pressed="true"] .sw2::after { transform: translateX(16px); }
-  .tabs { display: grid; grid-template-columns: repeat(6, 1fr); border-top: 1px solid var(--line); }
+  .tabs { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid var(--line); }
   .tabs button { background: none; border: 0; padding: 12px 1px 14px; font-weight: 800; font-size: 11.5px; color: var(--muted); cursor: pointer; }
   .tabs button.on { color: var(--accent); }
   .calling { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(180deg, #1c3a2a, #0e1a14); text-align: center; padding: 20px; }
@@ -372,6 +372,7 @@
   .srow button { width: 26px; height: 24px; border-radius: 6px; border: 0; font-weight: 800; font-size: 11px; background: rgba(243,241,234,0.16); color: inherit; cursor: pointer; }
   .srow button.x { background: #55303a; color: #8a6a70; cursor: not-allowed; }
   .srow button.on { background: #1ee06a; color: #06210f; }
+  #bagList h4, .code-group { margin: 10px 0 4px; font-size: 12px; opacity: .75; text-transform: uppercase; letter-spacing: .06em; }
   .tabs.six button { font-size: 10.5px; }
 </style>
 </head>
@@ -506,6 +507,11 @@
       <div class="scroll" id="ticketList"></div>
     </div>
 
+    <div class="pane" id="pane-bag" hidden>
+      <h2>Bag</h2>
+      <div class="scroll" id="bagList"></div>
+    </div>
+
     <div class="pane" id="pane-home" hidden>
       <h2>Settings</h2>
       <div class="stats">
@@ -628,6 +634,7 @@
       <button data-tab="missions">Missions</button>
       <button data-tab="store">Store</button>
       <button data-tab="travel">Travel</button>
+      <button data-tab="bag">Bag</button>
       <button data-tab="help">Help</button>
       <button data-tab="home">Settings</button>
     </nav>
@@ -661,7 +668,7 @@
   const isTouch = window.matchMedia('(pointer: coarse)').matches;
 
   const SAVE_KEY = 'azarr-3d-driving';
-  const save = { cash: 0, done: 0, night: false, sound: true, xp: 0, gems: 0, prayers: 0, outfit: 'casual', outfits: ['casual'], phone: 'basic', phones: ['basic'] };
+  const save = { cash: 0, done: 0, night: false, sound: true, xp: 0, gems: 0, prayers: 0, outfit: 'casual', outfits: ['casual'], phone: 'basic', phones: ['basic'], inventory: {} };
   try { Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')); } catch (e) {}
   const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
 
@@ -3635,10 +3642,11 @@
   let dial = '', calling = false;
   function setTab(name) {
     for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('on', b.dataset.tab === name);
-    for (const p of ['dialer', 'garage', 'missions', 'store', 'travel', 'help', 'home']) $('pane-' + p).hidden = p !== name;
+    for (const pn of document.querySelectorAll('#tabs button')) $('pane-' + pn.dataset.tab).hidden = pn.dataset.tab !== name;
     if (name === 'missions') renderMissions();
     if (name === 'store') renderStore();
     if (name === 'travel') renderTravel();
+    if (name === 'bag' && typeof renderBag === 'function') renderBag();
     if (name === 'home') renderHome();
   }
   document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));
@@ -5004,15 +5012,20 @@
   };
   const FOOD_COLORS = [0xd9a02e, 0xb85c2e, 0xc8102e, 0x6a9e4a, 0xe9d9ac, 0x8b5a2b, 0xe8e2d0];
 
-  const meal = { it: null, spot: null, seat: null, dir: null, tab: 0, state: 'none', food: 0, hp: 0, t: 0, plates: [], waiter: null, cuisine: 'arabic' };
+  const meal = { it: null, spot: null, seat: null, dir: null, tab: 0, lines: [], state: 'none', food: 0, hp: 0, t: 0, wb: -1, wFrom: null, plates: [], waiter: null, cuisine: 'arabic' };
   const guards = { phase: '', t: 0, hums: [], from: null, to: null, it: null };
 
+  // Table states: seated -> ordered -> served -> eating -> billing -> billed -> (paid) seated
   function mealLabel(spot) {
     if (meal.spot === spot) {
-      if (meal.state === 'ordered') return 'waiting for your food...';
-      if (meal.state === 'served') return 'eat your meal';
-      if (meal.state === 'eating') return 'eating...';
-      return 'order food' + (meal.tab ? ' (bill ' + fmtMoney(meal.tab) + ')' : '');
+      switch (meal.state) {
+        case 'ordered': return 'waiting for your food...';
+        case 'served': return 'eat your meal';
+        case 'eating': return 'eating...';
+        case 'billing': return 'the waiter is bringing your bill...';
+        case 'billed': return 'pay your bill (' + fmtMoney(meal.tab) + ')';
+        default: return 'order food' + (meal.tab ? ' (bill ' + fmtMoney(meal.tab) + ')' : '');
+      }
     }
     return 'sit at this table and order food';
   }
@@ -5033,21 +5046,26 @@
     P.x = meal.seat.x + meal.dir.x * 1.2; P.z = meal.seat.z + meal.dir.z * 1.2;
     player.position.set(P.x, 0, P.z);
     meal.spot = null;
-    if (meal.state !== 'none') { meal.state = 'none'; clearPlates(); meal.waiter = null; }
+    if (meal.state !== 'none') { meal.state = 'none'; clearPlates(); }
   }
   function clearPlates() { for (const p of meal.plates) { if (p.parent) p.parent.remove(p); } meal.plates = []; }
   function mealAct(it, spot) {
-    if (meal.spot !== spot) { if (meal.spot) standUp(); sitAt(spot); openMenu({ cuisine: it.cuisine, name: it.title, mode: 'table', it }); return; }
-    if (meal.state === 'seated') openMenu({ cuisine: it.cuisine, name: it.title, mode: 'table', it });
-    else if (meal.state === 'ordered') toast('Your food is on its way.');
-    else if (meal.state === 'served') { meal.state = 'eating'; meal.t = 0; }
+    const ctx = { cuisine: it.cuisine, name: it.title, mode: 'table', it };
+    if (meal.spot !== spot) { if (meal.spot) standUp(); sitAt(spot); if (meal.state === 'seated') openMenu(ctx); return; }
+    switch (meal.state) {
+      case 'seated': openMenu(ctx); break;
+      case 'ordered': toast('Your food is on its way.'); break;
+      case 'served': meal.state = 'eating'; meal.t = 0; break;
+      case 'billing': toast('The waiter is bringing your bill.'); break;
+      case 'billed': openBill(it); break;
+    }
   }
   function openMenu(ctx) {
     const items = MENUS[ctx.cuisine] || MENUS.arabic;
     const cart = items.map(() => 0);
     const total = () => cart.reduce((s, q, i) => s + q * items[i][1], 0);
     const render = () => {
-      let html = '<p class="note">' + (ctx.mode === 'room' ? 'Room service is charged straight away.' : 'Order what you like. The waiter brings it to your table. Pay at the counter when you are done, or guards will bring you there.') + '</p>';
+      let html = '<p class="note">' + (ctx.mode === 'room' ? 'Room service is charged straight away.' : 'Order what you like. The waiter brings it to your table, and brings the bill as soon as you finish eating. If you walk out without paying, the guards will bring you back to the counter.') + '</p>';
       items.forEach((m, i) => { html += '<div class="row"><div class="nm">' + m[0] + '<small>+' + m[2] + ' food' + (m[3] ? ', +' + m[3] + ' HP' : '') + '</small></div><div class="pr">' + fmtMoney(m[1]) + '</div><div class="qty"><button data-act="dec" data-i="' + i + '">-</button><span>' + cart[i] + '</span><button data-act="inc" data-i="' + i + '">+</button></div></div>'; });
       html += '<div class="total"><span>Total</span><span>' + fmtMoney(total()) + '</span></div>';
       html += '<div class="row" style="background:none;padding:0;gap:8px"><button class="b" data-act="order"' + (total() ? '' : ' disabled') + '>' + (ctx.mode === 'room' ? 'Order and pay' : 'Order now') + '</button>' + (ctx.mode === 'table' ? '<button class="b alt" data-act="stand">Stand up</button>' : '') + '<button class="b alt" data-act="close">Close</button></div>';
@@ -5067,10 +5085,27 @@
           toast('Room service delivered. +' + f + ' food', 'win'); beep([523, 659], 0.4, 'sine', 0.1);
         } else {
           meal.tab += t; meal.food += f; meal.hp += h; meal.plateN = Math.min(5, n);
+          cart.forEach((q, i) => { if (q) meal.lines.push([items[i][0], q, items[i][1]]); });
           meal.state = 'ordered'; meal.t = 0; meal.cuisine = ctx.cuisine;
           closePanel(); toast('Order placed. The waiter will bring it to your table.', 'win'); beep([659], 0.25, 'sine', 0.08);
         }
       }
+    });
+    render();
+  }
+  // The itemised bill the waiter puts on your table
+  function openBill(it) {
+    const render = () => {
+      let html = '<p class="note">Your bill from ' + it.title + '. Pay now, or the guards will bring you to the counter when you try to leave.</p>';
+      for (const [n, q, p] of meal.lines) html += '<div class="row"><div class="nm">' + n + '<small>' + q + ' x ' + fmtMoney(p) + '</small></div><div class="pr">' + fmtMoney(q * p) + '</div></div>';
+      html += '<div class="total"><span>Total</span><span>' + fmtMoney(meal.tab) + '</span></div>';
+      html += '<div class="row" style="background:none;padding:0;gap:8px"><button class="b" data-act="pay">Pay now</button><button class="b alt" data-act="more">Order more</button><button class="b alt" data-act="close">Not now</button></div>';
+      setPanel(html);
+    };
+    openPanel('Bill', '', (act) => {
+      closePanel();
+      if (act === 'pay') settleTab(0);
+      else if (act === 'more') { meal.state = 'seated'; clearPlates(); openMenu({ cuisine: it.cuisine, name: it.title, mode: 'table', it }); }
     });
     render();
   }
@@ -5086,47 +5121,82 @@
       it.g.add(grp); meal.plates.push(grp);
     }
   }
-  // per-frame: waiter, eating, guards
-  function mealUpdate(it, dt) {
-    const w = it.waiter;
-    if (meal.spot && meal.state === 'ordered') {
-      meal.t += dt;
-      const tx = meal.spot.x - it.bx, tz = meal.spot.z - it.bz, cx = it.payAt.x - it.bx, cz = it.payAt.z - it.bz;
-      const T = meal.t, u = clamp(T / 3.2, 0, 1), back = clamp((T - 4.4) / 3, 0, 1);
-      if (w) {
-        const px = lerp2(cx, tx - meal.dir.x * 1.4, u), pz = lerp2(cz, tz - meal.dir.z * 1.4, u);
-        const bx = lerp2(tx - meal.dir.x * 1.4, cx, back), bz = lerp2(tz - meal.dir.z * 1.4, cz, back);
-        const x = T < 4.4 ? px : bx, z = T < 4.4 ? pz : bz;
-        w.g.position.set(x, 0, z); w.g.rotation.y = Math.atan2(-(T < 4.4 ? tx - cx : cx - tx), -(T < 4.4 ? tz - cz : cz - tz));
-        animWalk(w, T * 7, 0.5);
-      }
-      if (T > 3.4 && !meal.plates.length) servePlates(it);
-      if (T > 7.5) { meal.state = 'served'; toast('Your food has arrived. Press E to eat.', 'win'); beep([784, 988], 0.3, 'sine', 0.08); if (w) w.g.position.set(cxOf(it), 0, czOf(it)); }
-    } else if (meal.state === 'eating') {
-      meal.t += dt;
-      PL.armR.rotation.x = -1.3 + Math.sin(meal.t * 5) * 0.5; PL.upper.rotation.x = -0.12 - Math.sin(meal.t * 5) * 0.08;
-      if (meal.t > 7) {
-        PL.upper.rotation.x = 0; PL.armR.rotation.x = 0.9;
-        addFood(meal.food); hp = Math.min(MAX_HP, hp + meal.hp); addXP(Math.round(meal.tab / 8) + 10);
-        toast('Delicious! +' + meal.food + ' food. Remember to pay at the counter.', 'win', 3600);
-        meal.food = 0; meal.hp = 0; meal.state = 'seated'; clearPlates();
-      }
-    }
-    updateGuards(it, dt);
+  function placeBill(it) {
+    const grp = new THREE.Group(); grp.position.set(meal.spot.x - it.bx + 0.15, 0.86, meal.spot.z - it.bz + 0.15);
+    const tray = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.03, 0.3), mat(0x2a2018)); grp.add(tray);
+    const sheet = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.02, 0.22), mat(0xffffff)); sheet.position.y = 0.03; grp.add(sheet);
+    grp.traverse((o) => { o.userData.keep = true; });
+    it.g.add(grp); meal.plates.push(grp);
   }
   const lerp2 = (a, b, t) => a + (b - a) * t;
   const cxOf = (it) => it.payAt.x - it.bx + 2.2, czOf = (it) => it.payAt.z - it.bz;
+  const waiterHome = (it) => it.waiterHome || { x: cxOf(it), z: czOf(it) };
+  function walkWaiter(it, a, b, u, T) {
+    const w = it.waiter; if (!w) return;
+    w.g.position.set(lerp2(a.x, b.x, u), 0, lerp2(a.z, b.z, u));
+    w.g.rotation.y = Math.atan2(-(b.x - a.x), -(b.z - a.z));
+    animWalk(w, T * 7, 0.5);
+  }
+  // per-frame: waiter, eating, bill, guards
+  function mealUpdate(it, dt) {
+    const w = it.waiter, home = waiterHome(it);
+    if (meal.spot) {
+      const tx = meal.spot.x - it.bx, tz = meal.spot.z - it.bz, st = { x: tx - meal.dir.x * 1.4, z: tz - meal.dir.z * 1.4 };
+      if (meal.state === 'ordered') {
+        meal.t += dt;
+        const T = meal.t;
+        if (w) { if (T < 4.4) walkWaiter(it, home, st, clamp(T / 3.2, 0, 1), T); else walkWaiter(it, st, home, clamp((T - 4.4) / 3, 0, 1), T); }
+        if (T > 3.4 && !meal.plates.length) servePlates(it);
+        if (T > 7.5) { meal.state = 'served'; toast('Your food has arrived. Press E to eat.', 'win'); beep([784, 988], 0.3, 'sine', 0.08); if (w) w.g.position.set(home.x, 0, home.z); }
+      } else if (meal.state === 'eating') {
+        meal.t += dt;
+        PL.armR.rotation.x = -1.3 + Math.sin(meal.t * 5) * 0.5; PL.upper.rotation.x = -0.12 - Math.sin(meal.t * 5) * 0.08;
+        if (meal.t > 7) {
+          PL.upper.rotation.x = 0; PL.armR.rotation.x = 0.9;
+          addFood(meal.food); hp = Math.min(MAX_HP, hp + meal.hp); addXP(Math.round(meal.tab / 8) + 10);
+          toast('Delicious! +' + meal.food + ' food. The waiter is bringing your bill.', 'win', 3600);
+          meal.food = 0; meal.hp = 0; meal.state = 'billing'; meal.t = 0; clearPlates();
+        }
+      } else if (meal.state === 'billing') {
+        meal.t += dt;
+        const T = meal.t;
+        if (w) {
+          if (!w.billMesh) { w.billMesh = box(0.3, 0.03, 0.22, mat(0xffffff), 0, -0.05, 0.05, w.hand); w.billMesh.userData.keep = true; }
+          w.billMesh.visible = T < 2.9;
+          if (T < 2.9) walkWaiter(it, home, st, clamp(T / 2.8, 0, 1), T);
+        }
+        if (T > 2.9 && !meal.plates.length) placeBill(it);
+        if (T > 3.3) { meal.state = 'billed'; meal.wb = 0; meal.wFrom = st; toast('Your bill is on the table. Press E to pay.', 'win', 3600); beep([784, 988], 0.3, 'sine', 0.08); }
+      }
+    }
+    if (meal.wb >= 0 && w) {
+      meal.wb += dt;
+      walkWaiter(it, meal.wFrom, home, clamp(meal.wb / 3, 0, 1), meal.wb);
+      if (meal.wb > 3) { meal.wb = -1; w.g.position.set(home.x, 0, home.z); w.g.rotation.y = Math.PI / 2; }
+    }
+    updateGuards(it, dt);
+  }
 
+  // Pay what is owed (plus an optional fine). Takes whatever you have if you are short.
+  function settleTab(fine) {
+    const due = meal.tab + fine, pay = Math.min(due, save.cash);
+    save.cash -= pay; persist(); meal.tab = 0; meal.lines = [];
+    clearPlates(); if (meal.state === 'billed' || meal.state === 'billing') meal.state = meal.spot ? 'seated' : 'none';
+    addXP(Math.round(pay / 12) + 10);
+    return pay;
+  }
   function payBill(it) {
     if (meal.tab <= 0) { toast('Nothing to pay. Thank you!'); return; }
-    const due = meal.tab, pay = Math.min(due, save.cash);
-    save.cash -= pay; persist(); meal.tab = 0;
-    addXP(Math.round(pay / 12) + 10);
+    const due = meal.tab, pay = settleTab(0);
     toast(pay < due ? 'You paid all you had: ' + fmtMoney(pay) : 'Paid ' + fmtMoney(pay) + '. Thank you!', pay < due ? 'fail' : 'win'); beep([784, 1047], 0.4, 'sine', 0.1);
   }
   // Trying to leave without paying: the guards come and take you back to the counter
   function tryLeave(it) {
     if (meal.tab <= 0 || guards.phase) { if (!guards.phase) { if (meal.spot) standUp(); leaveInterior(); } return; }
+    startGuards(it);
+  }
+  function startGuards(it) {
+    if (guards.phase) return;
     if (meal.spot) standUp();
     guards.phase = 'chase'; guards.t = 0; guards.it = it;
     toast('You did not pay! Security is coming.', 'fail', 3500); showBanner('Security!', 'You still owe ' + fmtMoney(meal.tab));
@@ -5160,8 +5230,7 @@
       animWalk(PL, guards.t * 7, 0.6);
       g0.forEach((h, i) => { const ox = i ? 1.3 : -1.3; h.g.position.set(P.x - it.bx + Math.cos(P.h) * ox, 0, P.z - it.bz - Math.sin(P.h) * ox); h.g.rotation.y = P.h; animWalk(h, guards.t * 7, 0.6); });
       if (u >= 1) {
-        const fine = Math.round(meal.tab * 0.25), due = meal.tab + fine, pay = Math.min(due, save.cash);
-        save.cash -= pay; persist(); meal.tab = 0;
+        const fine = Math.round(meal.tab * 0.25), pay = settleTab(fine);
         toast('The guards made you pay ' + fmtMoney(pay) + ' (bill plus ' + fmtMoney(fine) + ' fine).', 'fail', 4500);
         guards.phase = 'leave'; guards.t = 0; INT.frozen = false; resetPose(); hideBanner();
       }
@@ -5217,92 +5286,6 @@
     it.board.set('MENU', '#f4e6c0', '#1b1410', 40);
     meal.tab = 0; meal.state = 'none'; meal.spot = null; meal.food = 0; meal.hp = 0;
     enterInterior(it);
-  }
-
-  // ---------- The Dubai Mall ----------
-  const SHOPS = [['GOLD AND JEWELS', 0xc9a23c], ['FASHION AVENUE', 0x6a2a7a], ['TECH ZONE', 0x1d4f8a], ['PERFUME PALACE', 0x8a3a5a], ['SPORTS ARENA', 0xc8102e], ['KIDS WORLD', 0x2e8a5a], ['WATCH GALLERY', 0x3a3a44], ['HOME AND DECOR', 0x8a6a3a], ['BOOK BAY', 0x4a6a8a], ['SWEETS PLAZA', 0xc85a8a]];
-  function buildMallInterior() {
-    const it = newInterior('mall', 'The Dubai Mall');
-    it.wide = true; it.cuisine = 'court';
-    const W = 150, D = 110, H = 24;
-    it.room(W, D, H, pho(texMarble(W, D, 16, '#d9d2c0', '#cdc4ae', '#a99e84'), 100), mat(0xeee6d4), mat(0xdedad0));
-    // skylight strips and warm lights
-    for (let i = -3; i <= 3; i++) it.plane(6, D - 6, new THREE.MeshBasicMaterial({ color: 0xfffbee }), i * 20, H - 0.05, 0, 0).rotation.x = Math.PI;
-    for (const x of [-50, -25, 0, 25, 50]) for (const z of [-35, 0, 35]) it.bulb(x, H - 3, z, 0.5);
-    // shop fronts along the north wall, upper floor repeated above
-    SHOPS.forEach(([name, c], i) => {
-      const x = -67.5 + i * 15;
-      it.box(13, 4.6, 0.25, GLASS, x, 2.3, -D / 2 + 3.6); it.box(13.4, 0.35, 0.5, mat(c), x, 5.3, -D / 2 + 3.6);
-      for (let k = 0; k < 4; k++) it.box(1.6, 1.0 + (k % 2) * 0.6, 1.0, mat([c, 0xffffff, 0xd9b24a, 0x222222][k]), x - 4.5 + k * 3, 0.7, -D / 2 + 1.4);
-      it.sign(11, 1.5, name, '#ffffff', '#' + c.toString(16).padStart(6, '0'), x, 6.5, -D / 2 + 3.5, 0, 34);
-      it.box(13, 4.2, 0.25, GLASS, x, 10.8, -D / 2 + 3.6); it.sign(11, 1.2, name, '#f4e6c0', '#14212e', x, 14, -D / 2 + 3.5, 0, 30);
-    });
-    it.box(150, 0.6, 5, mat(0xd9d2c0), 0, 8.6, -D / 2 + 2.5); it.box(150, 1.1, 0.2, GLASS, 0, 9.5, -D / 2 + 5.2);
-    it.box(150, 0.6, 5, mat(0xd9d2c0), 0, 8.6, D / 2 - 2.5); it.box(150, 1.1, 0.2, GLASS, 0, 9.5, D / 2 - 5.2);
-    // the aquarium wall (west)
-    it.box(1.2, 14, 62, GLASS, -W / 2 + 4, 7, 0, true);
-    it.box(4.5, 14, 62, new THREE.MeshBasicMaterial({ color: 0x1a7fa8 }), -W / 2 + 1.5, 7, 0);
-    it.sign(26, 2.4, 'DUBAI AQUARIUM', '#ffffff', '#0e3a52', -W / 2 + 4.8, 16, 0, Math.PI / 2, 38);
-    const fish = [];
-    for (let i = 0; i < 16; i++) { const f = new THREE.Group(); box(0.9, 0.4, 0.3, mat([0xf29a2e, 0xe8e8f0, 0x2e8be8, 0xf2d12e][i % 4]), 0, 0, 0, f); box(0.3, 0.5, 0.1, mat(0xf29a2e), -0.6, 0, 0, f); f.traverse((o) => { o.userData.keep = true; }); f.position.set(-W / 2 + 2 + Math.random() * 2, 1.5 + Math.random() * 11, -28 + Math.random() * 56); f.userData.sp = 1.2 + Math.random() * 2.4; f.userData.dir = i % 2 ? 1 : -1; it.g.add(f); fish.push(f); }
-    it.upd.push((dt) => { for (const f of fish) { f.position.z += f.userData.dir * f.userData.sp * dt; if (f.position.z > 29 || f.position.z < -29) { f.userData.dir *= -1; } f.rotation.y = f.userData.dir > 0 ? Math.PI / 2 : -Math.PI / 2; } });
-    // centre: fountain pond, benches, palms, pillars
-    it.cyl(9, 0.9, MAT.concreteL, -6, 0.45, 2, true, 28); it.cyl(8.3, 0.95, POOL_MAT, -6, 0.47, 2, false, 28); it.cyl(0.8, 5, SILVER, -6, 2.5, 2, false, 8); it.cyl(2.2, 0.4, SILVER, -6, 5, 2, false, 14);
-    for (const a of [0, 1, 2, 3]) { const x = -6 + Math.cos(a * 1.57) * 13, z = 2 + Math.sin(a * 1.57) * 13; it.box(4, 0.5, 1.2, mat(0x6b4a2f), x, 0.5, z, true, a * 1.57 + 1.57); plant(it, x + Math.cos(a * 1.57) * 3, z + Math.sin(a * 1.57) * 3, 1.3); }
-    for (const x of [-45, -15, 15, 45]) for (const z of [-24, 24]) it.cyl(1.4, H, mat(0xe3dac4), x, H / 2, z, true, 18);
-    // food court (east wing)
-    const tabX = [26, 38, 50, 62], tabZ = [-30, -18, -6, 6, 18];
-    for (const x of tabX) for (const z of tabZ) {
-      it.cyl(1.1, 0.12, mat(0xf0ece0), x, 0.78, z, false, 14); it.cyl(0.14, 0.78, MAT.rail, x, 0.39, z, false, 6); it.col(x, z, 2.2, 2.2, 0.9);
-      for (const [dx, dz] of [[1.5, 0], [-1.5, 0], [0, 1.5], [0, -1.5]]) { it.box(0.65, 0.1, 0.65, mat(0xd9731a), x + dx, 0.5, z + dz); it.box(0.1, 0.5, 0.1, MAT.rail, x + dx, 0.25, z + dz); }
-      const sp = it.spot(x, z, 2.7, () => mealLabel(sp), () => mealAct(it, sp));
-    }
-    const stalls = [['ARABIAN KITCHEN', 0xb85c2e], ['BURGER STATION', 0xc8102e], ['PIZZA CORNER', 0x2e7d32], ['SWEET AND JUICE', 0x7a3b8e]];
-    stalls.forEach(([name, c], i) => { const z = -33 + i * 20; it.box(3, 1.2, 14, mat(0x3a2418), W / 2 - 5, 0.6, z, true); it.box(3.2, 0.12, 14.4, mat(c), W / 2 - 5, 1.26, z); it.sign(13, 2.6, name, '#ffffff', '#' + c.toString(16).padStart(6, '0'), W / 2 - 0.5, 5, z, -Math.PI / 2, 40); it.human(makeHuman(c, 0x1a1c22, SKINS[i % 4], false), W / 2 - 2.2, z, Math.PI / 2); });
-    it.sign(24, 2.4, 'FOOD COURT', '#f4e6c0', '#14212e', 45, 10, -D / 2 + 3.6, 0, 40);
-    // cashier of the food court
-    it.box(8, 1.2, 2.2, mat(0x3a2418), 50, 0.6, 40, true); it.box(8.4, 0.12, 2.6, mat(0xd8b24a), 50, 1.26, 40);
-    it.waiter = it.human(makeHuman(0xf3f3f3, 0x1a1c22, SKINS[1], false), 50, 42, Math.PI);
-    it.board = { set() {} };
-    // Fashion Avenue spot and the exit
-    it.box(14, 4.4, 0.3, GLASS, 0, 2.2, D / 2 - 0.1);
-    it.sign(5, 0.9, 'EXIT', '#ffffff', '#1a6b3a', 0, 5.4, D / 2 - 0.4, Math.PI, 34);
-    it.spawn = { x: 0, z: D / 2 - 6, h: 0 };
-    it.payAt = { x: it.bx + 50, z: it.bz + 37.4 }; it.exitAt = { x: it.bx, z: it.bz + D / 2 - 4 };
-    it.spot(0, D / 2 - 3, 4, () => (meal.tab > 0 ? 'leave (you owe ' + fmtMoney(meal.tab) + ')' : 'leave the mall'), () => tryLeave(it));
-    it.spot(50, 37.4, 3.6, () => (meal.tab > 0 ? 'pay the bill (' + fmtMoney(meal.tab) + ')' : 'food court cashier: nothing to pay'), () => payBill(it));
-    it.spot(-52.5, -D / 2 + 9, 6, 'Fashion Avenue: buy clothes', () => openClothes());
-    it.spot(-30, -D / 2 + 9, 5, 'Tech Zone: buy phones', () => { toast('Open your phone (P) and tap Store to buy phones.'); });
-    // racks and mannequins in front of Fashion Avenue
-    for (let i = 0; i < 5; i++) { it.box(2.4, 1.6, 0.3, mat(0x6a2a7a), -60 + i * 3, 0.9, -D / 2 + 7); const m = makeHuman(OUTFITS[1 + i].robe || OUTFITS[1 + i].shirt, OUTFITS[1 + i].pants || 0xffffff, 0xe0c9b0, false); dressHuman(m, OUTFITS[1 + i]); it.human(m, -60 + i * 3, -D / 2 + 9, 0); }
-    it.onLeave = () => { clearPlates(); meal.spot = null; meal.state = 'none'; meal.tab = 0; guards.phase = ''; hideBanner(); };
-    it.upd.push((dt) => mealUpdate(it, dt));
-    return registerInterior(it);
-  }
-  function enterMall() {
-    const it = INTERIORS.get('mall') || buildMallInterior();
-    meal.tab = 0; meal.state = 'none'; meal.spot = null; meal.food = 0; meal.hp = 0;
-    enterInterior(it);
-  }
-  function openClothes() {
-    const render = () => {
-      let html = '<p class="note">Fashion Avenue. After you buy something, open your phone, go to Settings and tap Wear.</p>';
-      for (const o of OUTFITS) {
-        if (!o.price) continue;
-        const own = save.outfits.includes(o.id);
-        html += '<div class="row"><span class="sw" style="background:' + outfitColor(o) + '"></span><div class="nm">' + o.name + '<small>' + (o.robe ? 'Long robe' : 'Shirt and trousers') + (o.head ? ' · ' + (o.head === 'ghutra' ? 'ghutra' : 'cap') : '') + '</small></div><div class="pr">' + fmtMoney(o.price) + '</div><button class="b" data-act="buy" data-id="' + o.id + '"' + (own ? ' disabled' : '') + '>' + (own ? 'Owned' : 'Buy') + '</button></div>';
-      }
-      setPanel(html);
-    };
-    openPanel('Fashion Avenue', '', (act, d) => {
-      const o = outfitById.get(d.id);
-      if (!o || save.outfits.includes(o.id)) return;
-      if (save.cash < o.price) { toast('Not enough cash.', 'fail'); return; }
-      save.cash -= o.price; save.outfits.push(o.id); persist(); addXP(Math.round(o.price / 30) + 10);
-      toast('Bought ' + o.name + '. Open Phone > Settings to wear it.', 'win', 4000); beep([523, 784], 0.4, 'sine', 0.1);
-      render();
-    });
-    render();
   }
 
   // ---------- The masjid: wudu, jamaat and the five prayers ----------
@@ -5596,7 +5579,7 @@
 
   // <TRAVEL>
 
-  // ================= The wider world: cities abroad you can fly to =================
+  // ================= The wider world: cities abroad you can fly to ==========
   // Dubai is the home world. Every other world re-uses the same road grid with its own colours, street names,
   // buildings and landmarks. Switching world rebuilds the streets around you.
   const WORLD = { id: 'dubai' };
@@ -6594,6 +6577,662 @@
     chip.classList.toggle('now', t.status === 'booked' && left <= 45);
   }
   // </TRAVEL>
+=======
+  // <MALL>
+  // ================= The Dubai Mall: five floors, shops, the Gold Souk, and your Bag =================
+  save.inventory = save.inventory || {};
+  const hexs = (c) => '#' + c.toString(16).padStart(6, '0');
+  const shade = (c, k) => (((c >> 16) & 255) * k << 16) | (((c >> 8) & 255) * k << 8) | ((c & 255) * k);
+
+  // ---- More clothes for Fashion Avenue ----
+  const MORE_OUTFITS = [
+    { id: 'jeans', name: 'Jeans and White Tee', shirt: 0xf2f2f2, pants: 0x2f4f7a, price: 240 },
+    { id: 'track', name: 'Red Tracksuit', shirt: 0xc8102e, pants: 0x9a0e24, price: 310 },
+    { id: 'pilot', name: 'Pilot Uniform and Cap', shirt: 0xf4f4f4, pants: 0x14203a, head: 'cap', cap: 0x14203a, price: 1200 },
+    { id: 'chef', name: 'Chef Whites', shirt: 0xf6f6f2, pants: 0x2a2a2e, head: 'cap', cap: 0xf6f6f2, price: 280 },
+    { id: 'kandura_black', name: 'Black Kandura and Ghutra', robe: 0x18181c, head: 'ghutra', price: 760 },
+    { id: 'doctor', name: 'Doctor White Coat', shirt: 0xf4f7f9, pants: 0x3b6a8a, price: 520 },
+    { id: 'bisht', name: 'Black Bisht', robe: 0x2a2420, head: 'ghutra', price: 5200 },
+  ];
+  for (const o of MORE_OUTFITS) if (!outfitById.has(o.id)) { OUTFITS.push(o); outfitById.set(o.id, o); }
+
+  // ---- Gold: a live rate that moves with the game clock ----
+  const KARAT = { 24: 0.999, 22: 0.916, 21: 0.875, 18: 0.75 };
+  const goldRate = () => 338 + 16 * Math.sin(GC.total / 61) + 7 * Math.sin(GC.total / 19.3 + 1.2);   // AED per gram of 24K
+  const goldTrend = () => 16 / 61 * Math.cos(GC.total / 61) + 7 / 19.3 * Math.cos(GC.total / 19.3 + 1.2);
+  const goldMetal = (g) => g.grams * goldRate() * KARAT[g.karat];
+  const goldPrice = (g) => Math.round(goldMetal(g) + (g.type === 'jewel' ? g.grams * g.mk : goldMetal(g) * (g.type === 'coin' ? 0.03 : 0.015)));
+  const goldSell = (g) => Math.round(goldMetal(g) * (g.type === 'bar' ? 0.985 : g.type === 'coin' ? 0.97 : 0.88));
+  const itemPrice = (item) => (item.kind === 'g' ? goldPrice(item) : item.price);
+
+  // ---- The catalogue: every shop and what it sells ----
+  // item rows: [name, price, kind, a, b]   kinds: c keepsake, f food (a food, b health), h medicine (a health), u use it (a = message)
+  const ITEMS = new Map();
+  const SHOPS_DATA = [];
+  const GB = (name, grams, karat, type, mk) => ({ name, grams, karat, type, mk: mk || 0 });
+  function defShop(id, name, floor, side, w, color, vis, blurb, rows, extra) {
+    const s = Object.assign({ id, name, floor, side, w, c: color, vis, blurb, items: [] }, extra);
+    rows.forEach((r, i) => {
+      const item = Array.isArray(r) ? { id: id + '_' + i, name: r[0], price: r[1], kind: r[2] || 'c', a: r[3], b: r[4] } : Object.assign({ id: id + '_' + i, kind: 'g' }, r);
+      item.shop = id; s.items.push(item); ITEMS.set(item.id, item);
+    });
+    SHOPS_DATA.push(s);
+    return s;
+  }
+  // Level 1: fashion and beauty
+  defShop('fashion', 'Fashion Avenue', 1, 'N', 44, 0x6a2a7a, 'fashion', 'Every outfit in the store is on display. Buy what you like and wear it from your Bag or Phone > Settings.', []);
+  defShop('perfume', 'Perfume Palace', 1, 'N', 24, 0x8a3a5a, 'perfume', 'Oud, attars and designer perfumes.', [
+    ['Oud Royale 100 ml', 850, 'u', 'You spray Oud Royale. Rich and woody.'], ['Amber Attar 12 ml', 180, 'u', 'A warm amber scent follows you.'], ['Rose Musk Perfume', 420, 'u', 'Soft rose and musk.'],
+    ['Sandalwood Spray', 310, 'u', 'Smooth sandalwood.'], ['Citrus Cologne', 260, 'u', 'Fresh and zesty.'], ['Bakhoor Incense Set', 140, 'c'], ['Attar Gift Set of 3', 520, 'c']]);
+  defShop('watches', 'Watch Gallery', 1, 'N', 24, 0x3a3a44, 'watch', 'Everyday and dress watches.', [
+    ['Classic Steel Watch', 1450], ['Diver Chronograph', 3900], ['Gold Dress Watch', 18500], ['Smart Fitness Watch', 1200], ['Skeleton Automatic', 9800], ['Kids Colour Watch', 220]]);
+  defShop('sweets', 'Sweets and Dates', 1, 'S', 20, 0xc85a8a, 'sweets', 'Dates, chocolates and Arabic sweets.', [
+    ['Medjool Dates 500 g', 45, 'f', 18, 0], ['Arabic Sweets Box', 85, 'f', 30, 0], ['Belgian Chocolate Box', 95, 'f', 28, 0], ['Baklava Tray', 70, 'f', 26, 0], ['Saffron Halwa Jar', 60, 'f', 20, 0],
+    ['Arabic Coffee and Cardamom', 40, 'f', 6, 0], ['Camel Milk Chocolate', 35, 'f', 14, 0]], { cu: -42 });
+  defShop('pharmacy', 'Pharmacy', 1, 'S', 20, 0x2e8a5a, 'pharmacy', 'Medicine and first aid.', [
+    ['First Aid Kit', 90, 'h', 100], ['Painkiller Pack', 25, 'h', 25], ['Vitamin C Tablets', 35, 'h', 15], ['Energy Gel', 22, 'f', 10, 10], ['Bandage Roll', 12, 'h', 15],
+    ['Medicated Syrup', 28, 'h', 30], ['Sunscreen SPF 50', 49], ['Hand Sanitizer', 12]], { cu: -20 });
+  defShop('gifts', 'Gift Garden', 1, 'S', 20, 0xc8403a, 'gift', 'Flowers, toys and gifts.', [
+    ['Rose Bouquet', 120], ['Teddy Bear Large', 180], ['Gift Hamper', 350], ['Balloon Bunch', 45], ['Greeting Card', 15], ['Scented Candle', 65], ['Photo Frame', 55]], { cu: 20 });
+  defShop('souvenir', 'Dubai Souvenirs', 1, 'S', 20, 0x1d6fa5, 'souvenir', 'Remember Dubai.', [
+    ['Burj Khalifa Model', 160], ['Camel Plush Toy', 70], ['UAE Flag', 35], ['Dubai T-Shirt', 60], ['Fridge Magnet Set', 25], ['Keychain', 15], ['Miniature Dhow Boat', 140]], { cu: 42 });
+  // Level 2: tech and play
+  defShop('tech', 'Tech Zone', 2, 'N', 36, 0x1d4f8a, 'tech', 'Laptops, TVs, audio and the latest phones.', [
+    ['Gaming Laptop 16"', 6999], ['Ultrabook 14"', 4799], ['Wireless Earbuds', 899], ['Noise-Cancelling Headphones', 1499], ['55" 4K Smart TV', 2899], ['Game Console', 2199],
+    ['Mirrorless Camera', 5400], ['Smartwatch', 1299], ['Tablet 11"', 2099], ['Power Bank 20000 mAh', 149]]);
+  defShop('games', 'Game Lab', 2, 'N', 28, 0x4a2e8a, 'game', 'Games and gaming gear.', [
+    ['Racing Wheel Set', 1100], ['Controller Pro', 349], ['Open-World Game', 249], ['Football Game', 229], ['VR Headset', 1899], ['Gaming Mouse', 199], ['Gaming Chair', 1150]]);
+  defShop('sports', 'Sports Arena', 2, 'N', 30, 0xc8102e, 'sports', 'Kit for every sport.', [
+    ['Football (Size 5)', 120], ['Running Shoes', 480], ['Cricket Bat', 350], ['Yoga Mat', 90], ['Dumbbell Set 20 kg', 260], ['Cycling Helmet', 210], ['Football Jersey', 260], ['Water Bottle 1 L', 45, 'f', 5, 0]]);
+  defShop('kids', 'Kids World', 2, 'S', 30, 0x2e8a5a, 'kids', 'Toys and games for children.', [
+    ['Building Blocks 500 pcs', 220], ['Remote Control Car', 190], ['Doll House', 340], ['Teddy Bear', 85], ['Board Game', 120], ['Kids Bicycle', 480], ['Puzzle 1000 pcs', 95]]);
+  defShop('books', 'Book Bay', 2, 'S', 24, 0x4a6a8a, 'books', 'Books and stationery.', [
+    ['Bestselling Novel', 45], ['History of Dubai', 70], ['Quran with Translation', 120], ['Arabic Cookbook', 95], ['Notebook Set', 30], ['World Atlas', 150], ['Kids Story Book', 35], ['Travel Guide', 55]]);
+  defShop('decor', 'Home and Decor', 2, 'S', 32, 0x8a6a3a, 'decor', 'Lamps, rugs and things for your home.', [
+    ['Arabic Lantern', 160], ['Silk Cushion Set', 220], ['Ceramic Vase', 190], ['Wall Clock', 140], ['Table Lamp', 210], ['Prayer Rug', 120], ['Wall Calligraphy Art', 350], ['Scented Diffuser', 130]]);
+  defShop('pets', 'Pet Paradise', 2, 'W', 26, 0x3a8a8a, 'pets', 'Everything for your pet.', [
+    ['Cat Food Pack', 45, 'c'], ['Dog Food 5 kg', 120], ['Pet Collar', 40], ['Bird Cage', 260], ['Fish Bowl with Fish', 90], ['Cat Tree', 420], ['Dog Toy Set', 55]]);
+  defShop('music', 'Music House', 2, 'E', 26, 0x7a3b3b, 'music', 'Instruments and music.', [
+    ['Oud (Arabic Lute)', 1800], ['Acoustic Guitar', 750], ['Digital Piano', 2400], ['Darbuka Drum', 220], ['Harmonica', 45], ['Headphones DJ', 380], ['Karaoke Microphone', 150]]);
+  // Level 3: the Gold Souk
+  defShop('goldbars', 'Al Noor Gold Bars and Coins', 3, 'N', 32, 0x9a7a1c, 'gold', 'Investment gold. The price follows today\'s live gold rate.', [
+    GB('24K Gold Bar 1 g', 1, 24, 'bar'), GB('24K Gold Bar 5 g', 5, 24, 'bar'), GB('24K Gold Bar 10 g', 10, 24, 'bar'), GB('24K Gold Bar 20 g', 20, 24, 'bar'), GB('24K Gold Bar 50 g', 50, 24, 'bar'),
+    GB('24K Gold Bar 100 g', 100, 24, 'bar'), GB('24K Gold Bar 250 g', 250, 24, 'bar'), GB('24K Gold Bar 1 kg', 1000, 24, 'bar'),
+    GB('22K Gold Dinar 4.25 g', 4.25, 22, 'coin'), GB('22K Gold Sovereign 7.98 g', 7.98, 22, 'coin'), GB('24K Gold Coin 1/2 oz', 15.55, 24, 'coin'), GB('24K Gold Coin 1 oz', 31.1, 24, 'coin')]);
+  defShop('jewels', 'Royal Jewels', 3, 'N', 36, 0xa8821c, 'gold', 'Necklaces, bangles, rings and bridal sets. Price = gold weight at the live rate plus making charge.', [
+    GB('22K Gold Necklace 18 g', 18, 22, 'jewel', 24), GB('22K Long Chain 30 g', 30, 22, 'jewel', 18), GB('21K Bangle Pair 40 g', 40, 21, 'jewel', 20), GB('18K Gold Ring 6 g', 6, 18, 'jewel', 35),
+    GB('18K Gold Earrings 5 g', 5, 18, 'jewel', 38), GB('22K Pendant 8 g', 8, 22, 'jewel', 28), GB('22K Men\'s Bracelet 25 g', 25, 22, 'jewel', 20), GB('18K Cufflinks 12 g', 12, 18, 'jewel', 30),
+    GB('21K Bridal Set 120 g', 120, 21, 'jewel', 26)]);
+  defShop('pearl', 'Pearl and Diamond House', 3, 'N', 30, 0x5a6a9a, 'pearl', 'Natural pearls and gemstones.', [
+    ['Pearl Necklace', 3800], ['Diamond Ring 1 ct', 18500], ['Diamond Studs', 6200], ['Emerald Pendant', 9400], ['Sapphire Ring', 7800], ['Ruby Bracelet', 12500]]);
+  defShop('exchange', 'Gold Exchange', 3, 'S', 30, 0x7a5a14, 'exchange', 'Sell your gold at today\'s live rate.', []);
+  defShop('oud', 'Oud and Attar House', 3, 'S', 24, 0x6a3a1c, 'oud', 'Oud wood, oils and incense.', [
+    ['Oud Wood Chips 50 g', 380], ['Oud Oil 3 ml', 650], ['Amber Resin', 290], ['Musk Tahara 6 ml', 120], ['Bakhoor Burner', 80], ['Perfume Gift Box', 520]]);
+  defShop('carpets', 'Persian Carpet House', 3, 'S', 34, 0x8a2a2a, 'carpet', 'Hand-knotted carpets and rugs.', [
+    ['Persian Carpet 2 x 3 m', 4200], ['Kilim Rug', 1300], ['Prayer Mat', 150], ['Silk Runner', 2800], ['Camel Saddle Cushion', 260]]);
+  defShop('spice', 'Spice and Tea Souk', 3, 'W', 28, 0x9a5a1c, 'spice', 'Saffron, spices and tea.', [
+    ['Saffron 5 g', 85, 'f', 4, 0], ['Cardamom 100 g', 40, 'f', 3, 0], ['Karak Tea Mix', 35, 'f', 6, 0], ['Dried Lime Bag', 20, 'f', 4, 0], ['Rose Petal Tea', 45, 'f', 5, 2], ['Za\'atar Mix', 25, 'f', 3, 0]]);
+  defShop('silver', 'Silver and Antiques', 3, 'E', 28, 0x7a7a84, 'silver', 'Silverware and antiques.', [
+    ['Silver Dallah Coffee Pot', 1400], ['Silver Tea Set', 2100], ['Antique Khanjar Dagger', 2600], ['Silver Ring', 180], ['Old Brass Lamp', 320], ['Silver Prayer Beads', 140]]);
+  // Level 4: luxury and cinema
+  defShop('bags', 'Maison Luxe Bags', 4, 'N', 30, 0x6a2a2a, 'bags', 'Leather handbags and luggage.', [
+    ['Leather Handbag', 3900], ['Designer Tote', 6500], ['Evening Clutch', 2700], ['Leather Wallet', 950], ['Travel Suitcase', 3100], ['Backpack', 780], ['Leather Belt', 650]]);
+  defShop('shades', 'Sun and Shades', 4, 'N', 26, 0x2a6a8a, 'shades', 'Sunglasses and eyewear.', [
+    ['Aviator Sunglasses', 780], ['Sport Wrap Sunglasses', 520], ['Cat-Eye Sunglasses', 1150], ['Reading Glasses', 290], ['Blue-light Glasses', 340]]);
+  defShop('finetime', 'Fine Time Watches', 4, 'N', 30, 0x14212e, 'watch', 'Luxury Swiss watches.', [
+    ['Luxury Automatic', 24500], ['Rose Gold Chronograph', 38000], ['Diamond Bezel Watch', 95000], ['Limited Edition Tourbillon', 180000]]);
+  defShop('cinema', 'Cinema Royale', 4, 'S', 36, 0x3a1450, 'cinema', 'Buy a ticket and watch a film.', []);
+  defShop('vr', 'VR Arcade', 4, 'S', 30, 0x2a1a7a, 'vr', 'Virtual reality games.', []);
+  defShop('beauty', 'Beauty Bar', 4, 'S', 26, 0xc85a8a, 'beauty', 'Makeup and skincare.', [
+    ['Lipstick Set', 180], ['Face Cream', 220], ['Hair Oil', 90], ['Foundation', 240], ['Makeup Kit', 560], ['Nail Polish Set', 110]]);
+  defShop('choc', 'Chocolatier', 4, 'W', 26, 0x5a2a1a, 'sweets', 'Premium chocolates.', [
+    ['Dark Chocolate Box', 110, 'f', 30, 0], ['Truffle Selection', 160, 'f', 34, 0], ['Gold Leaf Chocolate', 260, 'f', 28, 0], ['Hot Chocolate Mix', 55, 'f', 14, 0], ['Pistachio Bar', 40, 'f', 16, 0]]);
+  // Level 5: market and bakery (the food court fills the rest of the floor)
+  defShop('market', 'Fresh Market', 5, 'N', 40, 0x3a8a3a, 'market', 'Groceries and snacks. Eat them from your Bag.', [
+    ['Water Pack 6 x 500 ml', 12, 'f', 10, 0], ['Apples 1 kg', 14, 'f', 14, 5], ['Bananas 1 kg', 8, 'f', 12, 0], ['Sandwich', 18, 'f', 20, 0], ['Orange Juice 1 L', 12, 'f', 8, 3],
+    ['Chips Pack', 7, 'f', 8, 0], ['Yogurt', 6, 'f', 6, 2], ['Fresh Salad Bowl', 22, 'f', 14, 8], ['Protein Bar', 9, 'f', 10, 2], ['Rice 5 kg', 35]]);
+  defShop('bakery', 'Coffee and Bakery', 5, 'N', 28, 0x8a5a2a, 'bakery', 'Fresh bread, coffee and cakes.', [
+    ['Croissant', 9, 'f', 10, 0], ['Cheese Danish', 12, 'f', 12, 0], ['Latte', 16, 'f', 5, 0], ['Cake Slice', 22, 'f', 14, 0], ['Cookie Box', 28, 'f', 15, 0], ['Date Muffin', 11, 'f', 11, 0]]);
+
+  const FLOOR_INFO = [null,
+    { name: 'Ground · Fashion and Beauty', base: '#d9d2c0', alt: '#cdc4ae', line: '#a99e84' },
+    { name: 'Level 2 · Tech and Play', base: '#d6d9dc', alt: '#c6cbd0', line: '#9aa2aa' },
+    { name: 'Level 3 · Gold Souk', base: '#d2b277', alt: '#c4a062', line: '#8d6a2a' },
+    { name: 'Level 4 · Luxury and Cinema', base: '#3a3d46', alt: '#2d3038', line: '#b8944a' },
+    { name: 'Level 5 · Food Court and Market', base: '#dcd3bd', alt: '#cfc5ab', line: '#a99e84' },
+  ];
+  const MALL_W = 130, MALL_D = 84, MALL_H = 20;
+  const CASE_GLASS = new THREE.MeshPhongMaterial({ color: 0xcfeaff, transparent: true, opacity: 0.22, shininess: 120, specular: 0xffffff });
+  const LIFT_GLASS = new THREE.MeshPhongMaterial({ color: 0x9fd0e8, transparent: true, opacity: 0.3, shininess: 120, specular: 0xffffff });
+
+  // ---- Building a shop alcove: a frame that maps (along the wall, depth into the shop) to the floor plan ----
+  function shopFrame(it, side, cu, w) {
+    const horiz = side === 'N' || side === 'S', W = it.W, D = it.D, dep = 12;
+    const pt = (u, d) => (side === 'N' ? [cu + u, -D / 2 + dep - d] : side === 'S' ? [cu + u, D / 2 - dep + d] : side === 'W' ? [-W / 2 + dep - d, cu + u] : [W / 2 - dep + d, cu + u]);
+    const ry = side === 'N' ? 0 : side === 'S' ? Math.PI : side === 'W' ? Math.PI / 2 : -Math.PI / 2;      // faces out of the shop (planes)
+    const face = side === 'N' ? Math.PI : side === 'S' ? 0 : side === 'W' ? -Math.PI / 2 : Math.PI / 2;    // faces out of the shop (people)
+    const f = {
+      side, w, cu, pt, ry, face,
+      box(wu, h, dd, m, u, y, d, solid) { const [x, z] = pt(u, d); return it.box(horiz ? wu : dd, h, horiz ? dd : wu, m, x, y, z, solid); },
+      plane(wu, dd, m, u, y, d) { const [x, z] = pt(u, d); return it.plane(horiz ? wu : dd, horiz ? dd : wu, m, x, y, z); },
+      sign(sw, sh, text, fg, bg, u, y, d, size) { const [x, z] = pt(u, d); return it.sign(sw, sh, text, fg, bg, x, y, z, ry, size); },
+      cyl(r, h, m, u, y, d, solid, seg) { const [x, z] = pt(u, d); return it.cyl(r, h, m, x, y, z, solid, seg || 10); },
+      sph(r, m, u, y, d) { const [x, z] = pt(u, d); return put(it.g, new THREE.SphereGeometry(r, 10, 8), m, x, y, z); },
+      torus(r, t, m, u, y, d, rx) { const [x, z] = pt(u, d); const o = put(it.g, new THREE.TorusGeometry(r, t, 6, 16), m, x, y, z); o.rotation.x = rx === undefined ? Math.PI / 2 : rx; return o; },
+      bulb(u, y, d, r) { const [x, z] = pt(u, d); return it.bulb(x, y, z, r); },
+      stat(hum, u, d) { const [x, z] = pt(u, d); return it.stat(hum, x, z, face); },
+      lieCyl(r, len, m, u, y, d) { const o = f.cyl(r, len, m, u, y, d, false, 10); o.rotation.z = Math.PI / 2; if (!horiz) o.rotation.y = Math.PI / 2; return o; },
+    };
+    return f;
+  }
+  const shopRnd = (sh) => mulberry(sh.id.split('').reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7));
+  // shelves along the back wall, filled with small goods
+  function shelfWall(f, rnd, pal, shape, levels = 3) {
+    const hw = f.w / 2;
+    for (let lv = 0; lv < levels; lv++) f.box(f.w - 1.2, 0.1, 0.8, mat(0xcfc6b0), 0, 0.85 + lv * 1.05, 11.3);
+    f.box(f.w - 1.2, 0.8, 0.8, mat(0xe8dfcb), 0, 0.4, 11.3);
+    for (let u = -hw + 1.4; u <= hw - 1.4; u += 1.15) for (let lv = 0; lv < levels; lv++) {
+      const c = pal[Math.floor(rnd() * pal.length)], y = 0.95 + lv * 1.05;
+      switch (shape) {
+        case 'bottle': f.cyl(0.2, 0.55, mat(c), u, y + 0.28, 11.3, false, 8); f.cyl(0.08, 0.15, mat(0xd8b24a), u, y + 0.62, 11.3, false, 6); break;
+        case 'ball': f.sph(0.3, mat(c), u, y + 0.3, 11.3); break;
+        case 'book': f.box(0.14, 0.6 + rnd() * 0.25, 0.5, mat(c), u, y + 0.35, 11.3); break;
+        default: f.box(0.7, 0.35 + rnd() * 0.35, 0.5, mat(c), u, y + 0.22, 11.3);
+      }
+    }
+  }
+  function displayTables(f, rnd, pal, count, shape, d = 7.4) {
+    for (let i = 0; i < count; i++) {
+      const u = (i - (count - 1) / 2) * Math.min(7, (f.w - 6) / Math.max(1, count - 1 || 1));
+      f.box(3.2, 0.9, 1.5, mat(0xefe9dc), u, 0.45, d, true);
+      for (let k = 0; k < 5; k++) {
+        const c = pal[Math.floor(rnd() * pal.length)], uu = u - 1.2 + k * 0.6;
+        if (shape === 'ball') f.sph(0.25, mat(c), uu, 1.15, d); else if (shape === 'bottle') f.cyl(0.14, 0.45, mat(c), uu, 1.12, d, false, 8); else f.box(0.45, 0.28 + rnd() * 0.25, 0.4, mat(c), uu, 1.05 + rnd() * 0.1, d);
+      }
+    }
+  }
+  const PAL = {
+    warm: [0xd9a02e, 0xb85c2e, 0xc8102e, 0xe9d9ac, 0x8b5a2b], cool: [0x1d6fa5, 0x2e8be8, 0x6a9e4a, 0x7a3b8e, 0xf4f4f4], glass: [0xc88ab8, 0x8ac8d8, 0xe8d28a, 0xa8d88a, 0xe8a88a, 0x9a8ae8],
+    sweet: [0xc85a8a, 0xd9a02e, 0x6a3a1c, 0xf2e6cc, 0x8a2a4a], spice: [0xc8402a, 0xd9a02e, 0x6a8a2a, 0x8a5a2a, 0xe8d28a], book: [0x8a2a2a, 0x2a4a8a, 0x2a6a3a, 0xd9a02e, 0x5a2a6a, 0xe8e0d0],
+  };
+  const DISPLAY = {
+    fashion(f, sh) {
+      // every outfit in the shop stands on a podium, two rows
+      const outs = OUTFITS.slice();
+      outs.forEach((o, i) => {
+        const row = i % 2, col = Math.floor(i / 2), u = -20 + col * 4.4, d = row ? 6.2 : 9.6;
+        f.box(1.7, 0.25, 1.7, mat(0x2a1a3a), u, 0.13, d);
+        const m = makeHuman(0xcfcac0, 0x9a968c, 0xd9d3c8, false); dressHuman(m, o);
+        f.stat(m, u, d); m.g.position.y = 0.25;
+      });
+      f.box(f.w - 1, 3.2, 0.4, mat(0xf0e4f4), 0, 2.4, 11.55);
+      f.sign(16, 1.4, 'ALL THE LATEST STYLES', '#f4e6c0', '#4a1a5a', 0, 4.6, 11.3, 60);
+    },
+    gold(f, sh, rnd) {
+      f.box(f.w - 2, 3.6, 0.2, mat(0x5a1522), 0, 2.4, 11.6); f.box(f.w - 1.8, 0.2, 0.3, GOLD, 0, 4.25, 11.55); f.box(f.w - 1.8, 0.2, 0.3, GOLD, 0, 0.6, 11.55);
+      const n = f.w > 33 ? 4 : 3;
+      for (let i = 0; i < n; i++) {
+        const u = (i - (n - 1) / 2) * 7.2;
+        f.box(3.4, 0.9, 1.5, mat(0x2a1a10), u, 0.45, 7.4, true); f.box(3.3, 0.8, 1.4, CASE_GLASS, u, 1.3, 7.4);
+        for (let k = 0; k < 3; k++) f.box(0.55, 0.14, 0.3, GOLD, u - 1 + k * 0.5, 0.97 + k * 0.14, 7.4);
+        f.torus(0.34, 0.035, GOLD, u + 0.9, 1.45, 7.4, 0.2); f.torus(0.12, 0.03, GOLD, u - 0.4, 1.0, 7.9, 1.2); f.torus(0.12, 0.03, GOLD, u - 0.1, 1.0, 7.9, 1.2);
+      }
+    },
+    pearl(f, sh, rnd) {
+      f.box(f.w - 2, 3.6, 0.2, mat(0x1a2a4a), 0, 2.4, 11.6);
+      for (let i = 0; i < 3; i++) {
+        const u = (i - 1) * 7.2;
+        f.box(3.4, 0.9, 1.5, mat(0x1a2030), u, 0.45, 7.4, true); f.box(3.3, 0.8, 1.4, CASE_GLASS, u, 1.3, 7.4);
+        for (let k = 0; k < 6; k++) f.sph(0.15, mat(0xf4f0ea), u - 1.2 + k * 0.4, 1.0, 7.2);
+        for (let k = 0; k < 3; k++) f.box(0.22, 0.22, 0.22, mat([0x2ab86a, 0x2a5ae8, 0xc8102e][k]), u - 0.6 + k * 0.6, 1.0, 7.8).rotation.y = 0.8;
+      }
+    },
+    tech(f, sh, rnd) {
+      const cols = [0x3a8aff, 0xff7a2a, 0x2ac86a, 0xc82a8a];
+      for (let i = 0; i < 4; i++) { const u = -13.5 + i * 9; f.box(7, 3.6, 0.3, mat(0x14151a), u, 2.6, 11.55); f.sign(6.4, 3.3, ['TELEVISIONS', 'PHONES', 'LAPTOPS', 'AUDIO'][i], '#ffffff', hexs(cols[i]), u, 2.6, 11.38, 56); }
+      for (let i = 0; i < 3; i++) {
+        const u = (i - 1) * 8;
+        f.box(3.4, 0.9, 1.5, mat(0xefe9dc), u, 0.45, 7.4, true);
+        for (let k = 0; k < 2; k++) { f.box(1.0, 0.04, 0.7, mat(0x2a2d33), u - 0.9 + k * 1.5, 0.95, 7.5); f.box(1.0, 0.7, 0.04, mat(0x2a2d33), u - 0.9 + k * 1.5, 1.3, 7.1); }
+      }
+    },
+    perfume(f, sh, rnd) { shelfWall(f, rnd, PAL.glass, 'bottle'); displayTables(f, rnd, PAL.glass, 2, 'bottle'); },
+    watch(f, sh, rnd) {
+      f.box(f.w - 2, 3.2, 0.2, mat(0x1a1a20), 0, 2.4, 11.6);
+      for (let i = 0; i < 3; i++) { const u = (i - 1) * 8; f.box(3.6, 0.9, 1.5, mat(0x23242b), u, 0.45, 7.4, true); f.box(3.5, 0.5, 1.4, CASE_GLASS, u, 1.15, 7.4); for (let k = 0; k < 4; k++) f.cyl(0.22, 0.08, k % 2 ? GOLD : SILVER, u - 1.2 + k * 0.8, 0.98, 7.4, false, 14); }
+    },
+    sweets(f, sh, rnd) { shelfWall(f, rnd, PAL.sweet, 'box', 2); displayTables(f, rnd, PAL.sweet, 2, 'box'); },
+    pharmacy(f, sh, rnd) {
+      shelfWall(f, rnd, [0xf4f4f4, 0x2e8a5a, 0x9ad8aa, 0xe8e8e8], 'box'); displayTables(f, rnd, [0xf4f4f4, 0x2e8a5a], 2, 'box');
+      f.box(0.3, 1.8, 0.2, mat(0x1da85a), 0, 5.2, 0.9); f.box(1.8, 0.3, 0.2, mat(0x1da85a), 0, 5.2, 0.9);
+    },
+    gift(f, sh, rnd) {
+      for (let i = 0; i < 5; i++) { const u = -7 + i * 3.5; f.cyl(0.04, 1.0, mat(0x3a8a3a), u, 1.0, 10.2, false, 5); f.sph(0.28, mat([0xc8102e, 0xf2a0c0, 0xf4d03a, 0xf4f4f4, 0x9a3ac8][i]), u, 1.6, 10.2); }
+      for (let i = 0; i < 4; i++) { const u = -9 + i * 6; f.box(3.4, 0.9, 1.5, mat(0xefe3d0), u, 0.45, 7.4, true); f.sph(0.45, mat(0x8b5a2b), u, 1.35, 7.4); f.sph(0.28, mat(0x8b5a2b), u, 1.95, 7.4); }
+      shelfWall(f, rnd, PAL.warm, 'box', 2);
+    },
+    souvenir(f, sh, rnd) {
+      shelfWall(f, rnd, PAL.cool, 'box', 3);
+      for (let k = 0; k < 6; k++) f.box(0.9 - k * 0.12, 0.7, 0.9 - k * 0.12, SILVER, 0, 1.15 + k * 0.62, 7.4);
+      f.box(3.2, 0.9, 1.5, mat(0xefe9dc), 0, 0.45, 7.4, true);
+    },
+    game(f, sh, rnd) { shelfWall(f, rnd, [0x2a2a30, 0x1d6fa5, 0xc8102e, 0x2e7d32], 'box', 3); displayTables(f, rnd, [0x2a2a30, 0x4a2e8a], 3, 'box'); for (let i = 0; i < 3; i++) f.box(7, 0.18, 0.18, new THREE.MeshBasicMaterial({ color: [0xff2ad0, 0x2ad0ff, 0x8aff2a][i] }), 0, 5.4 - i * 0.3, 11.6); },
+    sports(f, sh, rnd) { shelfWall(f, rnd, [0xf4f4f4, 0xc8102e, 0x1d6fa5, 0xd9731a, 0x2a2a30], 'ball'); displayTables(f, rnd, [0xf4f4f4, 0xd9731a], 3, 'ball'); },
+    kids(f, sh, rnd) {
+      for (let i = 0; i < 6; i++) f.box(1.2, 1.2, 1.2, mat([0xc8102e, 0xf4d03a, 0x2e8be8, 0x2ac86a, 0xf29a2e, 0x9a3ac8][i]), -12 + i * 4.8, 0.6, 9.6);
+      for (let i = 0; i < 3; i++) { const u = -8 + i * 8; f.sph(0.9, mat(0x8b5a2b), u, 1.0, 6.2); f.sph(0.55, mat(0x8b5a2b), u, 2.1, 6.2); f.sph(0.2, mat(0x8b5a2b), u - 0.4, 2.55, 6.2); f.sph(0.2, mat(0x8b5a2b), u + 0.4, 2.55, 6.2); }
+      shelfWall(f, rnd, PAL.cool.concat(PAL.warm), 'box', 2);
+    },
+    books(f, sh, rnd) { shelfWall(f, rnd, PAL.book, 'book', 4); displayTables(f, rnd, PAL.book, 2, 'box'); },
+    decor(f, sh, rnd) {
+      for (let i = 0; i < 5; i++) { const u = -10 + i * 5; f.cyl(0.08, 1.4, MAT.rail, u, 0.7, 9.6, false, 6); f.cyl(0.5, 0.5, mat([0xf2e6cc, 0xe8b88a, 0xc8d8e8, 0xf2c8a8, 0xd9b24a][i]), u, 1.65, 9.6, false, 10); }
+      f.plane(8, 5, mat(0x8a2a2a), -6, 0.05, 6.2); f.plane(8, 5, mat(0x2a4a8a), 6, 0.05, 6.2);
+      shelfWall(f, rnd, [0xf2e6cc, 0xd9b24a, 0x8a5a2a], 'bottle', 2);
+    },
+    pets(f, sh, rnd) { shelfWall(f, rnd, PAL.warm, 'box', 3); for (let i = 0; i < 3; i++) { const u = -7 + i * 7; f.box(2.2, 1.6, 1.4, CASE_GLASS, u, 0.9, 7.2); f.sph(0.3, mat(0xd8a868), u, 0.5, 7.2); } },
+    music(f, sh, rnd) {
+      for (let i = 0; i < 4; i++) { const u = -8 + i * 5.4; f.box(0.7, 1.9, 0.25, mat(0x8b5a2b), u, 1.3, 9.8); f.cyl(0.08, 1.0, mat(0x4a2e1c), u, 2.7, 9.8, false, 6); }
+      for (let i = 0; i < 3; i++) { const u = -7 + i * 7; f.cyl(0.55, 0.8, mat(0x2a2a30), u, 0.5, 6.6, false, 14); f.cyl(0.58, 0.1, SILVER, u, 0.92, 6.6, false, 14); }
+    },
+    oud(f, sh, rnd) { shelfWall(f, rnd, [0x6a3a1c, 0x8a5a2a, 0xd9a02e, 0x2a1a10, 0x9a7a1c], 'bottle'); displayTables(f, rnd, [0x6a3a1c, 0xd9a02e], 2, 'bottle'); },
+    carpet(f, sh, rnd) {
+      const pal = [0x8a2a2a, 0x2a4a8a, 0x2a6a3a, 0xd9a02e, 0x5a2a6a];
+      for (let i = 0; i < 6; i++) { const u = -12 + i * 4.8; f.box(3.6, 3.6, 0.1, mat(pal[i % 5]), u, 3.0, 11.6); f.box(2.8, 2.8, 0.12, mat(pal[(i + 2) % 5]), u, 3.0, 11.55); f.box(1.2, 1.2, 0.14, mat(0xe8d9ac), u, 3.0, 11.5); }
+      for (let i = 0; i < 4; i++) f.lieCyl(0.4, 3.2, mat(pal[i % 5]), -9 + i * 6, 0.45, 7.4);
+      f.plane(9, 5, mat(0x8a2a2a), -8, 0.05, 6); f.plane(9, 5, mat(0x2a4a8a), 8, 0.05, 6);
+    },
+    spice(f, sh, rnd) { for (let i = 0; i < 6; i++) { const u = -10 + i * 4; f.cyl(0.8, 0.9, mat(0x8a6a3a), u, 0.45, 8, false, 12); f.cyl(0.62, 0.12, mat(PAL.spice[i % 5]), u, 0.92, 8, false, 12); f.sph(0.5, mat(PAL.spice[i % 5]), u, 0.95, 8); } shelfWall(f, rnd, PAL.spice, 'bottle', 3); },
+    silver(f, sh, rnd) { shelfWall(f, rnd, [0xc9ced6, 0x9aa0a8, 0xd9b24a, 0x8a6a3a], 'bottle', 3); displayTables(f, rnd, [0xc9ced6, 0xd9b24a], 2, 'box'); },
+    bags(f, sh, rnd) { for (let i = 0; i < 5; i++) { const u = -10 + i * 5; f.cyl(0.6, 0.7, mat(0x1a1a20), u, 0.35, 8, false, 14); f.box(1.0, 0.7, 0.45, mat([0x6a2a2a, 0xc8a050, 0x1a1a20, 0x2a4a6a, 0xe8d9ac][i]), u, 1.05, 8); f.torus(0.28, 0.03, GOLD, u, 1.55, 8, 0); } shelfWall(f, rnd, [0x6a2a2a, 0x1a1a20, 0xc8a050, 0x8a6a4a], 'box', 3); },
+    shades(f, sh, rnd) { for (let i = 0; i < 5; i++) { const u = -10 + i * 5; f.cyl(0.08, 1.2, MAT.rail, u, 0.6, 8, false, 6); f.box(0.7, 0.18, 0.1, mat(0x14151a), u, 1.3, 8); } shelfWall(f, rnd, [0x14151a, 0x6a4a2a, 0x2a4a6a], 'box', 2); },
+    cinema(f, sh, rnd) {
+      const films = ['DESERT STORM', 'BURJ HEIST', 'PALM DREAMS', 'FALCON KIDS'], cols = ['#7a1a1a', '#14212e', '#a83a6a', '#1a6a3a'];
+      films.forEach((t, i) => f.sign(6.4, 4.2, t, '#ffffff', cols[i], -12 + i * 8, 3.0, 11.4, 60));
+      f.box(3.6, 2.6, 1.6, mat(0xc8102e), 10, 1.3, 7.4, true); f.box(3.0, 1.6, 0.1, CASE_GLASS, 10, 1.9, 6.6);
+      for (let i = 0; i < 12; i++) f.sph(0.14, mat(0xf4f0d0), 9.2 + (i % 4) * 0.5, 1.5 + Math.floor(i / 4) * 0.4, 7.4);
+    },
+    vr(f, sh, rnd) { const c = [0xff2ad0, 0x2ad0ff, 0x8aff2a]; for (let i = 0; i < 3; i++) f.box(f.w - 2, 0.2, 0.2, new THREE.MeshBasicMaterial({ color: c[i] }), 0, 5.6 - i * 0.5, 11.6); for (let i = 0; i < 4; i++) { const u = -10 + i * 6.6; f.cyl(0.3, 1.2, mat(0x14151a), u, 0.6, 7.6, false, 10); f.box(0.7, 0.4, 0.5, mat(0x23242b), u, 1.5, 7.6); f.box(0.55, 0.12, 0.04, new THREE.MeshBasicMaterial({ color: c[i % 3] }), u, 1.5, 7.3); } },
+    beauty(f, sh, rnd) { for (let i = 0; i < 4; i++) f.box(3, 3.4, 0.1, mat(0xf4e8f0), -9 + i * 6, 2.6, 11.6); shelfWall(f, rnd, [0xe85a8a, 0xf2a0c0, 0xb83a6a, 0xf4f4f4, 0xc84a8a], 'bottle', 2); displayTables(f, rnd, [0xe85a8a, 0xf2a0c0], 2, 'box'); },
+    exchange(f, sh, rnd) {
+      f.box(f.w - 2, 3.8, 0.2, mat(0x14151a), 0, 2.5, 11.6);
+      f.box(6, 2.4, 2, mat(0x2a2a30), 9, 1.2, 8, true); f.box(5, 1.2, 0.1, CASE_GLASS, 9, 3.0, 7.0); f.box(1.4, 1.4, 1.2, GOLD, 9, 2.7, 9);
+      for (let i = 0; i < 3; i++) f.box(0.6, 0.14, 0.34, GOLD, -9 + i * 0.7, 1.0, 8);
+      f.box(3.4, 0.9, 1.5, mat(0x2a1a10), -9, 0.45, 8, true);
+    },
+    market(f, sh, rnd) {
+      for (let i = 0; i < 6; i++) { const u = -14 + i * 5.6; f.box(3.6, 0.7, 1.5, mat(0x8b5a2b), u, 0.35, 7.6, true); for (let k = 0; k < 6; k++) f.sph(0.2, mat([0xc8102e, 0xf29a2e, 0x6a9e4a, 0xf4d03a, 0x8a2a8a, 0x2ac86a][(i + k) % 6]), u - 1.2 + k * 0.48, 0.85, 7.6); }
+      for (let i = 0; i < 5; i++) f.box(2.4, 3.2, 0.9, mat(0xf4f6f8), -12 + i * 6, 1.6, 11.2);
+    },
+    bakery(f, sh, rnd) { f.box(f.w - 4, 1.1, 1.4, mat(0x5a3a1c), 0, 0.55, 7.8, true); f.box(f.w - 4.2, 0.9, 1.3, CASE_GLASS, 0, 1.55, 7.8); for (let i = 0; i < 10; i++) f.lieCyl(0.2, 0.9, mat([0xc8883a, 0xd9a050, 0xa86a2a][i % 3]), -8 + i * 1.8, 1.25, 7.8); shelfWall(f, rnd, [0xc8883a, 0xf4e6c8, 0x6a3a1c], 'box', 2); },
+    generic(f, sh, rnd) { shelfWall(f, rnd, PAL.warm.concat(PAL.cool), 'box'); displayTables(f, rnd, PAL.warm, 2, 'box'); },
+  };
+
+  function buildShop(it, sh, cu) {
+    const f = shopFrame(it, sh.side, cu, sh.w), hw = sh.w / 2, rnd = shopRnd(sh);
+    sh.floorCu = cu;
+    f.plane(sh.w - 0.4, 12, mat(shade(sh.c, 0.3)), 0, 0.035, 6);
+    f.box(sh.w, 6.4, 0.3, mat(sh.c), 0, 3.2, 11.8);
+    for (const s of [-1, 1]) f.box(0.3, 6.4, 12, mat(0xf2eee4), s * hw, 3.2, 6, true);
+    f.box(sh.w + 0.3, 1.5, 0.6, mat(sh.c), 0, 6.15, 0);
+    f.sign(Math.min(sh.w - 1.5, 22), 1.2, sh.name.toUpperCase(), '#ffffff', hexs(sh.c), 0, 6.15, -0.35, 62);
+    for (const d of [3, 8]) for (const u of [-hw / 2, hw / 2]) f.bulb(u, 5.7, d, 0.22);
+    (DISPLAY[sh.vis] || DISPLAY.generic)(f, sh, rnd);
+    if (sh.vis !== 'fashion') {
+      const cw = Math.min(8, sh.w - 8);
+      f.box(cw, 1.1, 1.3, mat(0xe9e2d2), 0, 0.55, 3.6, true); f.box(cw + 0.1, 0.1, 1.4, mat(sh.c), 0, 1.15, 3.6);
+      f.stat(makeHuman([0xf4f4f4, 0xc8102e, 0x1d4f8a, 0x2e8a5a][sh.id.length % 4], 0x1a1c22, SKINS[sh.id.length % 4], false), 0, 4.9);
+    } else {
+      f.box(8, 1.1, 1.3, mat(0xe9e2d2), -15, 0.55, 2.6, true); f.stat(makeHuman(0xf4f4f4, 0x1a1c22, SKINS[2], false), -15, 3.9);
+    }
+    const [sx, sz] = f.pt(sh.vis === 'fashion' ? 0 : 0, 1.8);
+    it.spot(sx, sz, sh.vis === 'fashion' ? 7 : 4.2, sh.name + ': ' + (sh.vis === 'exchange' ? 'sell gold and see the rate' : sh.vis === 'cinema' ? 'buy a cinema ticket' : sh.vis === 'vr' ? 'play virtual reality' : 'browse and buy'), () => openShop(sh));
+  }
+
+  // ---- A floor of the mall ----
+  const voidTex = () => canvasTex(128, 64, (g) => {
+    const gr = g.createLinearGradient(0, 0, 0, 64); gr.addColorStop(0, '#0a2236'); gr.addColorStop(1, '#14425e'); g.fillStyle = gr; g.fillRect(0, 0, 128, 64);
+    for (let i = 0; i < 70; i++) { g.fillStyle = 'rgba(255,230,160,' + (0.25 + Math.random() * 0.5) + ')'; g.fillRect(Math.random() * 128, Math.random() * 64, 2, 2); }
+  });
+  function rateBoard(it, w, h, x, y, z, ry) {
+    const cw = Math.round(w * 90), ch = Math.round(h * 90), c = document.createElement('canvas'); c.width = cw; c.height = ch;
+    const t = new THREE.CanvasTexture(c);
+    sign(it.g, w, h, new THREE.MeshBasicMaterial({ map: t }), x, y, z, ry);
+    return () => {
+      const g = c.getContext('2d'), r = goldRate(), tr = goldTrend();
+      g.fillStyle = '#10141c'; g.fillRect(0, 0, cw, ch);
+      g.fillStyle = '#e8c76a'; g.font = 'bold ' + Math.round(ch * 0.2) + 'px "Arial Black", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText('LIVE GOLD RATE · AED PER GRAM ' + (tr >= 0 ? '▲' : '▼'), cw / 2, ch * 0.16);
+      let x0 = cw * 0.14;
+      for (const k of [24, 22, 21, 18]) {
+        g.fillStyle = '#ffffff'; g.font = 'bold ' + Math.round(ch * 0.18) + 'px "Arial Black", Arial, sans-serif'; g.fillText(k + 'K', x0, ch * 0.5);
+        g.fillStyle = tr >= 0 ? '#3ccf7a' : '#ff6a5a'; g.font = 'bold ' + Math.round(ch * 0.24) + 'px "Arial Black", Arial, sans-serif'; g.fillText((r * KARAT[k]).toFixed(2), x0, ch * 0.78);
+        x0 += cw * 0.24;
+      }
+      t.needsUpdate = true;
+    };
+  }
+  function mannequinShopper(it, x, z, ry) {
+    const r = Math.random(), h = makeHuman(pick(SHIRTS), pick(PANTS), pick(SKINS), false);
+    if (r < 0.3) dressHuman(h, { robe: 0xf5f3ec, head: 'ghutra' }); else if (r < 0.45) dressHuman(h, { robe: 0x121212, head: 'hijab' });
+    return it.stat(h, x, z, ry);
+  }
+
+  function buildMallFloor(n) {
+    const info = FLOOR_INFO[n];
+    const it = newInterior('mall:' + n, 'Dubai Mall · Level ' + n);
+    const W = MALL_W, D = MALL_D, H = MALL_H;
+    Object.assign(it, { W, D, H, n, wide: true, cuisine: 'court', floorName: info.name });
+    it.stat = (hum, x, z, ry) => { hum.g.position.set(x, 0, z); hum.g.rotation.y = ry; it.g.add(hum.g); return hum; };
+    const dark = n === 4;
+    it.room(W, D, H, pho(texMarble(W, D, 16, info.base, info.alt, info.line), 100), mat(dark ? 0x2a2c33 : 0xeee6d4), mat(dark ? 0x1b1c22 : 0xdedad0));
+    const skyM = new THREE.MeshBasicMaterial({ color: dark ? 0xffe9b8 : 0xfffbee });
+    for (let i = -3; i <= 3; i++) it.plane(5, D - 8, skyM, i * 18, H - 0.05, 0, 0).rotation.x = Math.PI;
+    for (let x = -50; x <= 50; x += 25) for (const z of [-24, 0, 24]) it.bulb(x, H - 3, z, 0.45);
+    // second level gallery with railings, repeating the shops above
+    for (const s of [-1, 1]) {
+      it.box(W - 28, 0.5, 5, mat(dark ? 0x3a3d46 : 0xd9d2c0), 0, 8.9, s * (D / 2 - 2.5)); it.box(W - 28, 1.1, 0.2, CASE_GLASS, 0, 9.6, s * (D / 2 - 5.1));
+      for (let i = 0; i < 6; i++) it.sign(14, 1.0, info.name.split('·')[1] ? info.name.split('· ')[1].toUpperCase() : 'DUBAI MALL', '#f4e6c0', '#14212e', -47 + i * 19, 12.4, s * (D / 2 - 0.5), s > 0 ? Math.PI : 0, 42);
+    }
+    // columns, kept out of the food court
+    const cols = [];
+    for (const x of n === 5 ? [-46, -22] : [-45, -15, 15, 45]) for (const z of [-22, 22]) { it.cyl(1.3, H, mat(dark ? 0x2a2c33 : 0xe3dac4), x, H / 2, z, true, 18); cols.push([x, z]); }
+    // the shops
+    const mine = SHOPS_DATA.filter((s) => s.floor === n);
+    for (const side of ['N', 'S', 'W', 'E']) {
+      const list = mine.filter((s) => s.side === side && s.cu === undefined);
+      const total = list.reduce((a, s) => a + s.w + 2, -2);
+      let start = -total / 2;
+      for (const s of list) { buildShop(it, s, start + s.w / 2); start += s.w + 2; }
+    }
+    for (const s of mine) if (s.cu !== undefined) buildShop(it, s, s.cu);
+    // lift bank
+    for (const sx of [-1, 1]) {
+      it.cyl(1.9, H - 2, LIFT_GLASS, sx * 3.6, (H - 2) / 2, -20, true, 18);
+      for (let k = 0; k < 4; k++) it.cyl(1.95, 0.25, MAT.rail, sx * 3.6, 0.2 + k * 5.2, -20, false, 18);
+      it.box(2.4, 3.4, 0.15, MAT.rail, sx * 3.6, 1.7, -18.0);
+    }
+    it.box(9.6, 0.5, 0.6, mat(0x14212e), 0, 4.6, -17.8); it.sign(8, 0.8, 'LIFTS · LEVELS 1 TO 5', '#ffffff', '#14212e', 0, 4.6, -17.45, 0, 46);
+    const cabs = [];
+    for (const sx of [-1, 1]) { const c = new THREE.Group(); box(2.6, 3.2, 2.6, mat(0xc9ced6), 0, 1.6, 0, c); c.traverse((o) => { o.userData.keep = true; }); c.position.set(sx * 3.6, 0.3, -20); it.g.add(c); cabs.push(c); }
+    it.upd.push((dt, t) => { cabs.forEach((c, k) => { c.position.y = 0.3 + (Math.sin(t * 0.35 + k * 2) * 0.5 + 0.5) * (H - 7); }); });
+    // guest services and security desk
+    it.box(7, 1.1, 1.8, mat(0x14212e), 14, 0.55, -21, true); it.box(7.2, 0.1, 2, mat(0xd8b24a), 14, 1.15, -21);
+    it.stat(makeHuman(0xf4f4f4, 0x14212e, SKINS[1], false), 14, -22.5, 0);
+    it.sign(7, 0.8, 'GUEST SERVICES AND SECURITY', '#ffffff', '#14212e', 14, 3.4, -23.6, 0, 40);
+    it.payAt = { x: it.bx + 14, z: it.bz - 17.6 };
+    it.exitAt = { x: it.bx, z: it.bz - 12 };
+    // benches, plants, shoppers
+    for (const [x, z] of [[-30, -10], [30, -10], [-30, 14], [30, 14]]) { it.box(4, 0.5, 1.2, mat(0x6b4a2f), x, 0.5, z, true, 0); plant(it, x + 3, z, 1.2); }
+    for (let i = 0; i < 9; i++) mannequinShopper(it, -42 + Math.random() * 84, -8 + Math.random() * 20, Math.random() * 6.28);
+    it.spawn = { x: 0, z: -11, h: Math.PI }; it.liftSpawn = it.spawn;
+    FLOOR_BUILD[n](it, { W, D, H, cols });
+    it.spot(0, -14.4, 5, 'lifts: change floor', () => openMallLift(it));
+    it.spot(14, -17.4, 3.6, () => (meal.tab > 0 ? 'guest services: pay the bill (' + fmtMoney(meal.tab) + ')' : 'guest services: nothing to pay'), () => payBill(it));
+    it.onLeave = () => { clearPlates(); meal.spot = null; meal.state = 'none'; guards.phase = ''; hideBanner(); };
+    it.upd.push((dt) => mealUpdate(it, dt));
+    return registerInterior(it);
+  }
+
+  // what makes each level special
+  const FLOOR_BUILD = {
+    1(it, o) {
+      const { W, D, H } = o;
+      it.cyl(8, 0.9, MAT.concreteL, 0, 0.45, 6, true, 28); it.cyl(7.3, 0.95, POOL_MAT, 0, 0.47, 6, false, 28); it.cyl(0.7, 5, SILVER, 0, 2.5, 6, false, 8); it.cyl(2.2, 0.4, SILVER, 0, 5, 6, false, 14);
+      for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; put(it.g, new THREE.ConeGeometry(0.2, 2.2, 6), mat(0xdff4ff), Math.cos(a) * 4.6, 1.9, 6 + Math.sin(a) * 4.6); }
+      for (let a = 0; a < 4; a++) { const x = Math.cos(a * 1.57) * 12, z = 6 + Math.sin(a * 1.57) * 12; it.box(4, 0.5, 1.2, mat(0x6b4a2f), x, 0.5, z, true, a * 1.57 + 1.57); plant(it, x + Math.cos(a * 1.57) * 3, z + Math.sin(a * 1.57) * 3, 1.3); }
+      // aquarium wall
+      it.box(1.2, 14, 62, GLASS, -W / 2 + 4, 7, 0, true); it.box(4.5, 14, 62, new THREE.MeshBasicMaterial({ color: 0x1a7fa8 }), -W / 2 + 1.5, 7, 0);
+      it.sign(26, 2.4, 'DUBAI AQUARIUM', '#ffffff', '#0e3a52', -W / 2 + 4.8, 16, 0, Math.PI / 2, 80);
+      const fish = [];
+      for (let i = 0; i < 16; i++) { const fg = new THREE.Group(); box(0.9, 0.4, 0.3, mat([0xf29a2e, 0xe8e8f0, 0x2e8be8, 0xf2d12e][i % 4]), 0, 0, 0, fg); box(0.3, 0.5, 0.1, mat(0xf29a2e), -0.6, 0, 0, fg); fg.traverse((q) => { q.userData.keep = true; }); fg.position.set(-W / 2 + 2 + Math.random() * 2, 1.5 + Math.random() * 11, -28 + Math.random() * 56); fg.userData.sp = 1.2 + Math.random() * 2.4; fg.userData.dir = i % 2 ? 1 : -1; it.g.add(fg); fish.push(fg); }
+      it.upd.push((dt) => { for (const fg of fish) { fg.position.z += fg.userData.dir * fg.userData.sp * dt; if (fg.position.z > 29 || fg.position.z < -29) fg.userData.dir *= -1; fg.rotation.y = fg.userData.dir > 0 ? Math.PI / 2 : -Math.PI / 2; } });
+      // the entrance
+      it.box(20, 6, 0.3, GLASS, 0, 3, D / 2 - 0.15); for (const x of [-10, 0, 10]) it.box(0.5, 6.2, 0.5, MAT.rail, x, 3.1, D / 2 - 0.15);
+      it.sign(9, 1, 'ENTRANCE AND EXIT', '#ffffff', '#1a6b3a', 0, 6.4, D / 2 - 0.4, Math.PI, 56);
+      it.spawn = { x: 0, z: D / 2 - 6, h: 0 };
+      it.spot(0, D / 2 - 3, 4.2, () => (meal.tab > 0 ? 'leave (you owe ' + fmtMoney(meal.tab) + ')' : 'leave the mall'), () => tryLeave(it));
+    },
+    2(it, o) {
+      const { H } = o;
+      it.plane(40, 16, new THREE.MeshBasicMaterial({ map: voidTex() }), 0, 0.04, 6);
+      for (const [w, d, x, z] of [[40, 0.3, 0, -2], [40, 0.3, 0, 14], [0.3, 16, -20, 6], [0.3, 16, 20, 6]]) it.box(w, 1.1, d, CASE_GLASS, x, 0.6, z, true);
+      for (const [x, z] of [[-20, -2], [20, -2], [-20, 14], [20, 14]]) it.cyl(0.18, 1.2, MAT.rail, x, 0.6, z, false, 8);
+      it.sign(14, 1.2, 'LEVEL 2 · ATRIUM VIEW', '#f4e6c0', '#14212e', 0, 1.8, 14.3, 0, 50);
+      chandelier(it, 0, H - 4, 6, 5);
+      for (const x of [-26, 26]) plant(it, x, 6, 1.5);
+    },
+    3(it, o) {
+      const { H } = o;
+      // canopy of cloth strips and lanterns
+      const cl = [0xc8102e, 0xd9b24a, 0x1d6fa5, 0x2e8a5a];
+      for (let i = -5; i <= 5; i++) it.plane(3, 52, mat(cl[Math.abs(i) % 4]), i * 8.5, 12, 0, 0).rotation.x = Math.PI;
+      for (let x = -50; x <= 50; x += 12.5) for (const z of [-12, 4, 20]) { it.cyl(0.03, 1.4, MAT.rail, x, 11.3, z, false, 4); it.bulb(x, 10.5, z, 0.32); }
+      // a giant gold dallah (Arabic coffee pot) in the middle
+      it.cyl(2.4, 1.2, GOLD, 0, 0.6, 6, true, 18); it.cyl(1.9, 2.6, GOLD, 0, 2.5, 6, false, 18); it.cyl(1.0, 2.6, GOLD, 0, 5.0, 6, false, 14); it.cyl(1.25, 0.4, GOLD, 0, 6.5, 6, false, 14);
+      put(it.g, new THREE.SphereGeometry(0.7, 12, 8), GOLD, 0, 7.1, 6); const sp = it.box(0.5, 0.5, 3.4, GOLD, -2.6, 4.6, 6, false); sp.rotation.z = 0.7; sp.rotation.y = Math.PI / 2;
+      const hd = put(it.g, new THREE.TorusGeometry(1.5, 0.18, 8, 16, Math.PI), GOLD, 2.0, 4.4, 6); hd.rotation.z = -Math.PI / 2;
+      for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; it.bulb(Math.cos(a) * 3.6, 0.3, 6 + Math.sin(a) * 3.6, 0.25); }
+      it.sign(10, 1.1, 'THE GOLD SOUK', '#f4e6c0', '#5a3a0a', 0, 8.6, -3, 0, 70);
+      // live rate board on the souk side wall
+      const upd = rateBoard(it, 24, 4, 0, 7.5, 30.7, Math.PI); upd(); let tt = 0;
+      it.upd.push((dt) => { tt += dt; if (tt > 1) { tt = 0; upd(); } });
+      // arches by the lifts
+      for (const x of [-9, 9]) { it.cyl(0.5, 5, mat(0xd9b24a), x, 2.5, -9, false, 10); }
+      it.box(18.6, 0.8, 0.8, mat(0xd9b24a), 0, 5.2, -9);
+    },
+    4(it, o) {
+      const { H } = o;
+      it.plane(7, 44, mat(0x7a1020), 0, 0.045, 4);
+      chandelier(it, 0, H - 4, 6, 7); chandelier(it, 0, H - 4, 22, 4);
+      it.cyl(1.6, 0.9, mat(0x1a1a20), 0, 0.45, 6, true, 16); put(it.g, new THREE.SphereGeometry(2.6, 20, 14), SILVER, 0, 3.4, 6);
+      for (let a = 0; a < 4; a++) { const x = Math.cos(a * 1.57) * 9, z = 6 + Math.sin(a * 1.57) * 9; it.box(3, 0.5, 1, mat(0x6b4a2f), x, 0.5, z, true, a * 1.57); }
+      it.sign(14, 1.2, 'LEVEL 4 · LUXURY BOULEVARD', '#e8c76a', '#14120e', 0, 6.4, -3, 0, 56);
+    },
+    5(it, o) {
+      const { W, D, H, cols } = o;
+      it.sign(30, 2.4, 'FOOD COURT', '#f4e6c0', '#14212e', 24, 12, -D / 2 + 0.6, 0, 110);
+      const tabX = [-2, 7, 16, 25, 34, 43, 52], tabZ = [-24, -15.5, -7, 1.5, 10, 18.5, 27];
+      const chairM = mat(0xd9731a), topM = mat(0xf0ece0);
+      for (const x of tabX) for (const z of tabZ) {
+        if (cols.some(([cx, cz]) => Math.hypot(cx - x, cz - z) < 3.4)) continue;
+        it.cyl(1.1, 0.12, topM, x, 0.78, z, false, 14); it.cyl(0.14, 0.78, MAT.rail, x, 0.39, z, false, 6); it.col(x, z, 2.2, 2.2, 0.9);
+        for (const [dx, dz] of [[1.5, 0], [-1.5, 0], [0, 1.5], [0, -1.5]]) { it.box(0.65, 0.1, 0.65, chairM, x + dx, 0.5, z + dz); it.box(0.1, 0.5, 0.1, MAT.rail, x + dx, 0.25, z + dz); }
+        const sp = it.spot(x, z, 2.7, () => mealLabel(sp), () => mealAct(it, sp));
+      }
+      const stalls = [['ARABIAN KITCHEN', 0xb85c2e], ['BURGER STATION', 0xc8102e], ['PIZZA CORNER', 0x2e7d32], ['SWEET AND JUICE', 0x7a3b8e], ['NOODLE BAR', 0x1d6fa5]];
+      stalls.forEach(([name, c], i) => {
+        const z = -27 + i * 13.5;
+        it.box(3, 1.2, 10.5, mat(0x3a2418), W / 2 - 5, 0.6, z, true); it.box(3.2, 0.12, 10.9, mat(c), W / 2 - 5, 1.26, z);
+        it.sign(11, 2.2, name, '#ffffff', hexs(c), W / 2 - 0.5, 5, z, -Math.PI / 2, 80);
+        it.stat(makeHuman(c, 0x1a1c22, SKINS[i % 4], false), W / 2 - 2.2, z, Math.PI / 2);
+        for (let k = 0; k < 4; k++) it.bulb(W / 2 - 4, 4.2, z - 4 + k * 2.7, 0.2);
+      });
+      // food court cashier
+      it.box(10, 1.2, 2, mat(0x3a2418), 30, 0.6, 33, true); it.box(10.4, 0.12, 2.4, mat(0xd8b24a), 30, 1.26, 33);
+      it.sign(10, 1, 'CASHIER', '#ffffff', '#14212e', 30, 3.2, 34.2, Math.PI, 70);
+      it.waiter = it.human(makeHuman(0xf3f3f3, 0x1a1c22, SKINS[1], false), 30, 35, Math.PI);
+      it.waiterHome = { x: 30, z: 35.6 };
+      it.payAt = { x: it.bx + 26, z: it.bz + 31.2 };
+      it.spot(30, 31.4, 4, () => (meal.tab > 0 ? 'cashier: pay the bill (' + fmtMoney(meal.tab) + ')' : 'cashier: nothing to pay'), () => payBill(it));
+      // a lounge in the west half
+      for (let i = 0; i < 3; i++) sofa(it, -48, -8 + i * 8, Math.PI / 2, [0x8a2a2a, 0x2a4a6a, 0x6a5a2a][i]);
+      plant(it, -56, -26, 1.6); plant(it, -56, 26, 1.6);
+    },
+  };
+
+  const mallFloor = (n) => INTERIORS.get('mall:' + n) || buildMallFloor(n);
+  function enterMall() {
+    const it = mallFloor(1);
+    meal.tab = 0; meal.lines = []; meal.state = 'none'; meal.spot = null; meal.food = 0; meal.hp = 0; guards.phase = '';
+    enterInterior(it);
+  }
+  function openMallLift(it) {
+    let html = '<p class="note">Choose a level. Glass lifts run between all five floors of the Dubai Mall.</p>';
+    for (let n = 1; n <= 5; n++) html += '<div class="row"><div class="nm">' + FLOOR_INFO[n].name + '<small>' + SHOPS_DATA.filter((s) => s.floor === n).map((s) => s.name).join(', ') + (n === 5 ? ', Food Court' : '') + '</small></div><button class="b' + (n === it.n ? ' alt' : '') + '" data-act="go" data-n="' + n + '"' + (n === it.n ? ' disabled' : '') + '>' + (n === it.n ? 'You are here' : 'Go') + '</button></div>';
+    openPanel('Lifts', html, (act, d) => { closePanel(); rideMallLift(+d.n); });
+  }
+  function rideMallLift(n) {
+    const here = INT.active;
+    if (!here || n === here.n) return;
+    if (meal.tab > 0) { startGuards(here); return; }
+    toast('Going to ' + FLOOR_INFO[n].name + '...'); beep([880, 1175], 0.5, 'sine', 0.08);
+    const it = mallFloor(n);
+    switchInterior(it, it.liftSpawn, () => toast(FLOOR_INFO[n].name));
+  }
+
+  // ---- Shopping panels ----
+  function addItem(id, n) { save.inventory[id] = (save.inventory[id] || 0) + n; persist(); }
+  const owned = (id) => save.inventory[id] || 0;
+  const itemDetail = (item) => {
+    if (item.kind === 'g') return item.grams + ' g of ' + item.karat + 'K gold · sells back for ' + fmtMoney(goldSell(item)) + (owned(item.id) ? ' · you own ' + owned(item.id) : '');
+    const extra = item.kind === 'f' ? '+' + item.a + ' food' + (item.b ? ', +' + item.b + ' HP' : '') : item.kind === 'h' ? '+' + item.a + ' HP' : '';
+    return [extra, owned(item.id) ? 'you own ' + owned(item.id) : ''].filter(Boolean).join(' · ') || ' ';
+  };
+  function buyItem(item, n) {
+    const cost = itemPrice(item) * n;
+    if (save.cash < cost) { toast('Not enough cash.', 'fail'); return false; }
+    save.cash -= cost; addItem(item.id, n); addXP(Math.round(cost / 60) + 3);
+    toast('Bought ' + (n > 1 ? n + ' x ' : '') + item.name + ' for ' + fmtMoney(cost) + '. It is in your Bag.', 'win', 3200); beep([523, 784], 0.35, 'sine', 0.09);
+    return true;
+  }
+  function buyPhoneNow(p) {
+    if (save.phones.includes(p.id)) { save.phone = p.id; persist(); applyPhone(); renderStore(); return; }
+    if (save.cash < p.price) { toast('Not enough cash.', 'fail'); return; }
+    save.cash -= p.price; save.phones.push(p.id); save.phone = p.id; persist(); addXP(Math.round(p.price / 40));
+    applyPhone(); renderStore(); toast('You bought the ' + p.name + '!', 'win'); beep([523, 784], 0.4, 'sine', 0.1);
+  }
+  function openShop(sh) {
+    if (sh.vis === 'fashion') return openFashion(sh);
+    if (sh.vis === 'exchange') return openExchange(sh);
+    if (sh.vis === 'cinema') return openCinema(sh);
+    if (sh.vis === 'vr') return openVR(sh);
+    const render = () => {
+      let html = '<p class="note">' + sh.blurb + '</p>';
+      if (sh.vis === 'gold') html += '<div class="row"><div class="nm">Live gold rate today (24K)<small>' + (goldTrend() >= 0 ? 'rising' : 'falling') + ' · 22K ' + (goldRate() * KARAT[22]).toFixed(2) + ' · 21K ' + (goldRate() * KARAT[21]).toFixed(2) + ' · 18K ' + (goldRate() * KARAT[18]).toFixed(2) + ' per gram</small></div><div class="pr">' + (goldTrend() >= 0 ? '▲ ' : '▼ ') + fmtMoney(goldRate()) + ' /g</div></div>';
+      for (const item of sh.items) {
+        const price = itemPrice(item);
+        html += '<div class="row"><div class="nm">' + item.name + '<small>' + itemDetail(item) + '</small></div><div class="pr">' + fmtMoney(price) + '</div><button class="b" data-act="buy" data-id="' + item.id + '" data-n="1">Buy</button>' + (price <= 150 ? '<button class="b alt" data-act="buy" data-id="' + item.id + '" data-n="5">x5</button>' : '') + '</div>';
+      }
+      if (sh.id === 'tech') {
+        html += '<h4>Phones</h4>';
+        for (const p of PHONES) if (p.price) html += '<div class="row"><span class="sw" style="background:' + p.color + '"></span><div class="nm">' + p.name + '<small>speed ' + p.tier + '</small></div><div class="pr">' + fmtMoney(p.price) + '</div><button class="b' + (save.phone === p.id ? ' alt' : '') + '" data-act="phone" data-id="' + p.id + '"' + (save.phone === p.id ? ' disabled' : '') + '>' + (save.phone === p.id ? 'In use' : save.phones.includes(p.id) ? 'Use' : 'Buy') + '</button></div>';
+      }
+      setPanel(html);
+    };
+    openPanel(sh.name, '', (act, d) => {
+      if (act === 'buy') { if (buyItem(ITEMS.get(d.id), +d.n)) render(); }
+      else if (act === 'phone') { buyPhoneNow(phoneById.get(d.id)); render(); }
+    });
+    render();
+  }
+  function openFashion(sh) {
+    const render = () => {
+      let html = '<p class="note">' + sh.blurb + ' Every outfit in the shop is listed here.</p>';
+      for (const o of OUTFITS) {
+        const own = save.outfits.includes(o.id), wearing = save.outfit === o.id;
+        html += '<div class="row"><span class="sw" style="background:' + outfitColor(o) + '"></span><div class="nm">' + o.name + '<small>' + (o.robe ? 'Long robe' : 'Shirt and trousers') + (o.head ? ' · ' + (o.head === 'ghutra' ? 'ghutra' : 'cap') : '') + '</small></div><div class="pr">' + (o.price ? fmtMoney(o.price) : 'Free') + '</div>'
+          + (own ? '<button class="b alt" data-act="wear" data-id="' + o.id + '"' + (wearing ? ' disabled' : '') + '>' + (wearing ? 'Wearing' : 'Wear') + '</button>' : '<button class="b" data-act="buy" data-id="' + o.id + '">Buy</button>') + '</div>';
+      }
+      setPanel(html);
+    };
+    openPanel('Fashion Avenue', '', (act, d) => {
+      const o = outfitById.get(d.id); if (!o) return;
+      if (act === 'wear') { wearOutfit(o.id); render(); return; }
+      if (save.outfits.includes(o.id)) return;
+      if (save.cash < o.price) { toast('Not enough cash.', 'fail'); return; }
+      save.cash -= o.price; save.outfits.push(o.id); persist(); addXP(Math.round(o.price / 30) + 10);
+      toast('Bought ' + o.name + '. Wear it here, from your Bag, or in Phone > Settings.', 'win', 4000); beep([523, 784], 0.4, 'sine', 0.1);
+      render();
+    });
+    render();
+  }
+  function openExchange(sh) {
+    const render = () => {
+      const r = goldRate();
+      let html = '<p class="note">' + sh.blurb + ' Bars and coins sell back at about 97 to 98 percent of the metal value, jewellery at about 88 percent (the making charge is not returned).</p>';
+      html += '<div class="row"><div class="nm">Live gold rate today (24K)<small>22K ' + (r * KARAT[22]).toFixed(2) + ' · 21K ' + (r * KARAT[21]).toFixed(2) + ' · 18K ' + (r * KARAT[18]).toFixed(2) + ' per gram</small></div><div class="pr">' + (goldTrend() >= 0 ? '▲ ' : '▼ ') + fmtMoney(r) + ' /g</div></div>';
+      const mine = Object.keys(save.inventory).filter((id) => save.inventory[id] > 0 && ITEMS.has(id) && ITEMS.get(id).kind === 'g');
+      html += '<h4>Your gold</h4>';
+      if (!mine.length) html += '<p class="note">You do not have any gold. Buy some at Al Noor Gold Bars and Coins or Royal Jewels.</p>';
+      let total = 0;
+      for (const id of mine) {
+        const item = ITEMS.get(id), q = save.inventory[id], v = goldSell(item); total += v * q;
+        html += '<div class="row"><div class="nm">' + item.name + '<small>you own ' + q + ' · ' + item.grams + ' g each</small></div><div class="pr">' + fmtMoney(v) + '</div><button class="b" data-act="sell" data-id="' + id + '" data-n="1">Sell 1</button>' + (q > 1 ? '<button class="b alt" data-act="sell" data-id="' + id + '" data-n="' + q + '">Sell all</button>' : '') + '</div>';
+      }
+      if (mine.length) html += '<div class="total"><span>All your gold is worth</span><span>' + fmtMoney(total) + '</span></div>';
+      setPanel(html);
+    };
+    openPanel(sh.name, '', (act, d) => {
+      const item = ITEMS.get(d.id), n = Math.min(+d.n, owned(d.id));
+      if (!item || n <= 0) return;
+      const v = goldSell(item) * n;
+      save.inventory[d.id] -= n; save.cash += v; persist(); addXP(Math.round(v / 100) + 2);
+      toast('Sold ' + n + ' x ' + item.name + ' for ' + fmtMoney(v) + '.', 'win', 3200); beep([784, 1047], 0.35, 'sine', 0.09);
+      render();
+    });
+    render();
+  }
+  const MOVIES = [['Desert Storm', 'Action', 130], ['Burj Heist', 'Thriller', 120], ['Palm Dreams', 'Romance', 110], ['Falcon Kids', 'Animation', 95]];
+  function openCinema(sh) {
+    let html = '<p class="note">Pick a film. Standard seats cost AED 55 and VIP recliners AED 120. Time passes while you watch and you come out relaxed.</p>';
+    MOVIES.forEach((m, i) => { html += '<div class="row"><div class="nm">' + m[0] + '<small>' + m[1] + ' · ' + m[2] + ' minutes</small></div><button class="b" data-act="watch" data-i="' + i + '" data-p="55">Standard 55</button><button class="b alt" data-act="watch" data-i="' + i + '" data-p="120">VIP 120</button></div>'; });
+    openPanel(sh.name, html, (act, d) => {
+      const m = MOVIES[+d.i], price = +d.p;
+      if (save.cash < price) { toast('Not enough cash.', 'fail'); return; }
+      save.cash -= price; persist(); closePanel();
+      fadeThen(() => { advanceClock(m[2] + 10); hp = Math.min(MAX_HP, hp + (price > 100 ? 60 : 30)); food = Math.max(5, food - 6); addXP(price > 100 ? 40 : 25); toast('You watched ' + m[0] + '. What a film!', 'win', 3600); }, 500);
+    });
+  }
+  const VR_GAMES = [['VR Racing', 60, 35, 30], ['VR Zombie Escape', 80, 40, 45], ['VR Space Walk', 70, 30, 35], ['VR Underwater Safari', 90, 45, 50]];
+  function openVR(sh) {
+    let html = '<p class="note">Put on a headset and play. Time passes while you play.</p>';
+    VR_GAMES.forEach((g, i) => { html += '<div class="row"><div class="nm">' + g[0] + '<small>' + g[2] + ' minutes</small></div><div class="pr">' + fmtMoney(g[1]) + '</div><button class="b" data-act="play" data-i="' + i + '">Play</button></div>'; });
+    openPanel(sh.name, html, (act, d) => {
+      const g = VR_GAMES[+d.i];
+      if (save.cash < g[1]) { toast('Not enough cash.', 'fail'); return; }
+      save.cash -= g[1]; persist(); closePanel();
+      fadeThen(() => { advanceClock(g[2]); food = Math.max(5, food - 5); addXP(g[3]); toast('You finished ' + g[0] + '! +' + g[3] + ' XP', 'win', 3600); }, 500);
+    });
+  }
+
+  // ---- The Bag (phone tab) ----
+  function useItem(id) {
+    const item = ITEMS.get(id); if (!item || owned(id) <= 0) return;
+    if (item.kind === 'f') { addFood(item.a); hp = Math.min(MAX_HP, hp + (item.b || 0)); toast('You ate ' + item.name + '. +' + item.a + ' food', 'win'); }
+    else if (item.kind === 'h') { hp = Math.min(MAX_HP, hp + item.a); toast('You used ' + item.name + '. +' + item.a + ' HP', 'win'); }
+    else if (item.kind === 'u') { toast(item.a, 'win'); addXP(3); }
+    else return;
+    save.inventory[id]--; persist(); renderBag();
+  }
+  function renderBag() {
+    const list = $('bagList'); if (!list) return;
+    list.innerHTML = '';
+    const ids = Object.keys(save.inventory).filter((id) => save.inventory[id] > 0 && ITEMS.has(id));
+    const section = (title) => { const h = document.createElement('div'); h.className = 'code-group'; h.textContent = title; list.appendChild(h); };
+    const row = (name, sub, btn, fn, swatch) => {
+      const r = document.createElement('div'); r.className = 'shop-row';
+      r.innerHTML = (swatch ? '<span class="sw"></span>' : '') + '<span class="nm"></span>' + (btn ? '<button></button>' : '');
+      if (swatch) r.querySelector('.sw').style.background = swatch;
+      r.querySelector('.nm').innerHTML = name + '<small>' + sub + '</small>';
+      if (btn) { const b = r.querySelector('button'); b.textContent = btn.label; b.disabled = !!btn.off; if (!btn.off) b.addEventListener('click', fn); }
+      list.appendChild(r);
+    };
+    const gold = ids.filter((id) => ITEMS.get(id).kind === 'g');
+    const food = ids.filter((id) => ['f', 'h', 'u'].includes(ITEMS.get(id).kind));
+    const other = ids.filter((id) => !gold.includes(id) && !food.includes(id));
+    if (!ids.length) { const p = document.createElement('p'); p.textContent = 'Your bag is empty. Buy things in the Dubai Mall shops.'; list.appendChild(p); }
+    if (food.length) { section('Food, medicine and things to use'); for (const id of food) { const it = ITEMS.get(id); row(it.name + ' x' + save.inventory[id], it.kind === 'f' ? '+' + it.a + ' food' + (it.b ? ', +' + it.b + ' HP' : '') : it.kind === 'h' ? '+' + it.a + ' HP' : 'use it', { label: it.kind === 'f' ? 'Eat' : 'Use' }, () => useItem(id)); } }
+    if (gold.length) {
+      let g = 0, v = 0; for (const id of gold) { const it = ITEMS.get(id); g += it.grams * save.inventory[id]; v += goldSell(it) * save.inventory[id]; }
+      section('Gold · ' + g.toFixed(2) + ' g · worth ' + fmtMoney(v) + ' today');
+      for (const id of gold) { const it = ITEMS.get(id); row(it.name + ' x' + save.inventory[id], 'sells for ' + fmtMoney(goldSell(it)) + ' each at the Gold Exchange (Level 3)', null); }
+    }
+    if (other.length) { section('Things you bought'); for (const id of other) { const it = ITEMS.get(id); row(it.name + ' x' + save.inventory[id], 'keepsake', null); } }
+    section('Clothes');
+    for (const id of save.outfits) { const o = outfitById.get(id); if (o) row(o.name, save.outfit === id ? 'wearing now' : 'owned', { label: save.outfit === id ? 'Wearing' : 'Wear', off: save.outfit === id }, () => { wearOutfit(id); renderBag(); }, outfitColor(o)); }
+  }
+  if (location.hash === '#debug') window.__mall = { mallFloor, enterMall, openShop, SHOPS_DATA, ITEMS, goldRate, goldPrice, goldSell, addItem, renderBag, useItem, rideMallLift, openMallLift, FLOOR_INFO, buyItem, startGuards, settleTab, openBill };
+  // </MALL>
 
   // ================= Camera & loop =================
   let snapCam = true, shake = 0;
