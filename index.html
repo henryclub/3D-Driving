@@ -6286,6 +6286,21 @@
     // hangars and fuel tanks
     for (let i = 0; i < 3; i++) { box(70, 16, 50, mat(0xc4c8d0), 1180 + i * 90, 8, -1170, g); box(72, 2, 52, mat(0x9aa4ae), 1180 + i * 90, 17, -1170, g); }
     for (let i = 0; i < 3; i++) put(g, new THREE.CylinderGeometry(9, 9, 14, 16), mat(0xe8e4dc), 1500 + i * 24, 7, -1170);
+    // the causeway road from the beach to the airport: a deck over the sea with lane lines, kerbs and lamps
+    {
+      const cz0 = -520, cz1 = -1062, mid = (cz0 + cz1) / 2, len = cz0 - cz1;
+      box(17, 1.4, len, MAT.concreteL, 720, -0.65, mid, g);
+      plane(g, 13, len, asph, 720, 0.08, mid);
+      const yel = new THREE.MeshBasicMaterial({ color: 0xf2c230 });
+      for (let z = cz0 - 6; z > cz1; z -= 12) plane(g, 0.3, 5, yel, 720, 0.1, z);
+      for (const sx of [-1, 1]) {
+        plane(g, 0.3, len, white, 720 + sx * 6.3, 0.1, mid);
+        box(0.5, 1.1, len, MAT.concreteL, 720 + sx * 8.1, 0.55, mid, g);
+        for (let z = cz0 - 20; z > cz1; z -= 45) { box(0.25, 8, 0.25, MAT.rail, 720 + sx * 7.6, 4.2, z, g); box(2.4, 0.2, 0.3, MAT.rail, 720 + sx * 6.5, 8.2, z, g); put(g, new THREE.SphereGeometry(0.35, 6, 4), new THREE.MeshBasicMaterial({ color: 0xfff1c0 }), 720 + sx * 5.5, 8.0, z, 0, false); }
+      }
+      for (let z = cz0 - 30; z > cz1; z -= 60) for (const sx of [-1, 1]) box(2.4, 6, 2.4, MAT.concrete, 720 + sx * 5, -3.5, z, g);
+      sign(g, 12, 2.4, labelMat('AIRPORT  \u2708  7 km', '#ffffff', '#0b6b3a', 640, 128, 60), 720, 6.2, cz0 - 12, Math.PI);
+    }
     // forecourt: palms, lamps, car park markings
     for (let x = 600; x <= 840; x += 20) { addTree(g, [], 0, 0, x, -1068); addTree(g, [], 0, 0, x, -1102); }
     for (let x = 600; x <= 840; x += 40) plane(g, 0.3, 28, white, x, 0.1, -1072);
