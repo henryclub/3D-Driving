@@ -6573,8 +6573,8 @@
     const h = hashStr(from + '>' + to), km = distKm(from, to);
     const dur = Math.round(km / 820 * 60 + 35);
     const eco = Math.round(150 + km * 0.2), biz = Math.round(eco * 3.2);
-    const base = [360 + (h % 60), 790 + ((h >> 3) % 50), 1290 + ((h >> 6) % 40)];
-    return base.map((m, i) => ({ m, no: 'AZ ' + (100 + ((h >> (i + 2)) % 880)), dur, eco, biz, stand: (h >> (i + 5)) % 4 }));
+    const base = [360 + (h % 60), 790 + ((h >>> 3) % 50), 1290 + ((h >>> 6) % 40)];
+    return base.map((m, i) => ({ m, no: 'AZ ' + (100 + ((h >>> (i + 2)) % 880)), dur, eco, biz, stand: (h >>> (i + 5)) % 4 }));
   }
   function nextDepTotal(m0, lead = 90) {
     const t0 = GC.total + lead, day = Math.floor((t0 + 450) / 1440);
@@ -6588,6 +6588,7 @@
   const ECO_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
   save.tickets = save.tickets || [];
   const tickets = save.tickets;
+  for (const t of tickets) { t.stand = ((Math.round(+t.stand) || 0) % 4 + 4) % 4; t.flightNo = String(t.flightNo).replace('-', ''); }   // older saves could hold a negative gate
 
   function ticketLabel(t) { return t.flightNo + ' · ' + WORLD_DEFS[t.from].city + ' to ' + WORLD_DEFS[t.to].city; }
   function renderTravel() {
