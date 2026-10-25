@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#12161f">
-<title>3D Driving</title>
+<title>UAE Driving</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Manrope:wght@400;600;800&display=swap">
@@ -181,7 +181,7 @@
   .toggle .sw2::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); transition: transform 0.15s; }
   .toggle[aria-pressed="true"] .sw2 { background: var(--go); }
   .toggle[aria-pressed="true"] .sw2::after { transform: translateX(16px); }
-  .tabs { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--line); }
+  .tabs { display: grid; grid-template-columns: repeat(6, 1fr); border-top: 1px solid var(--line); }
   .tabs button { background: none; border: 0; padding: 12px 1px 14px; font-weight: 800; font-size: 11.5px; color: var(--muted); cursor: pointer; }
   .tabs button.on { color: var(--accent); }
   .calling { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(180deg, #1c3a2a, #0e1a14); text-align: center; padding: 20px; }
@@ -255,6 +255,7 @@
   .side-btn { right: calc(max(16px, env(safe-area-inset-right, 0px)) + 72px); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); width: 54px; height: 54px; border: 1px solid var(--line); font-size: 11.5px; }
   .nos-btn { background: rgba(74,163,255,0.4); }
   .zoom-btn { background: var(--panel); }
+  .up-btn { background: rgba(60,207,122,0.4); bottom: calc(146px + env(safe-area-inset-bottom, 0px)); }
   .zoom-btn.on { background: rgba(255,201,60,0.35); border-color: var(--accent); }
   /* Flying-car controls (Tesla Roadster) */
   .fly-btns { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); top: 46%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 4; }
@@ -311,6 +312,57 @@
     .chip .value { font-size: 14px; }
   }
   @media (prefers-reduced-motion: reduce) { .ring, .wasted .w, .wanted.hot .stars svg.on { animation: none; } }
+
+  /* ---------- Dubai life: chips, panels, banners ---------- */
+  .chip.small { padding: 5px 10px; }
+  .chip.small .value { font-size: 13px; }
+  .timechip { align-items: flex-end; text-align: right; }
+  .timechip .value { font-size: 20px; font-variant-numeric: tabular-nums; }
+  .timechip.now { border-color: rgba(60, 207, 122, 0.8); }
+  .timechip.now .label { color: var(--go); }
+  .stay { border-color: rgba(255, 201, 60, 0.5); }
+  .xpbar { width: 150px; height: 5px; border-radius: 3px; background: rgba(243,241,234,0.15); overflow: hidden; }
+  .xpbar i { display: block; height: 100%; width: 100%; transform-origin: left; background: var(--blue); }
+  .hp.food { height: 13px; }
+  .hp.food i { background: linear-gradient(90deg, #d27a1c, #f2a33a); }
+  .hp.food i.low { background: linear-gradient(90deg, #b8202b, #ff5c5c); }
+  .hp.food span { font-size: 10px; }
+  .panel { position: fixed; inset: 0; z-index: 11; display: grid; place-items: center; background: rgba(10,12,18,0.72); backdrop-filter: blur(4px); padding: 12px; }
+  .panel .card { width: min(600px, 100%); max-height: min(86vh, 760px); overflow: hidden; display: flex; flex-direction: column; background: #151a24; border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .panel .ph { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .panel .ph b { font-family: var(--display); font-weight: 400; font-size: 20px; }
+  .panel .ph button { border: 0; background: rgba(243,241,234,0.1); color: var(--ink); width: 32px; height: 32px; border-radius: 10px; font-size: 16px; cursor: pointer; }
+  .panel .pb { overflow-y: auto; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .panel .note { color: var(--muted); font-size: 13px; line-height: 1.45; }
+  .panel .row { display: flex; align-items: center; gap: 10px; background: rgba(243,241,234,0.05); border-radius: 12px; padding: 9px 12px; }
+  .panel .row .nm { flex: 1; min-width: 0; font-weight: 700; font-size: 14px; }
+  .panel .row .nm small { display: block; color: var(--muted); font-weight: 600; font-size: 12px; margin-top: 1px; }
+  .panel .row .pr { font-family: var(--display); color: var(--go); font-size: 14px; white-space: nowrap; }
+  .panel .row .sw { width: 22px; height: 22px; border-radius: 6px; flex: none; border: 1px solid rgba(255,255,255,0.25); }
+  .panel button.b { border: 0; border-radius: 10px; padding: 8px 14px; font-weight: 800; font-size: 13px; cursor: pointer; background: var(--accent); color: #1b1606; }
+  .panel button.b.alt { background: rgba(243,241,234,0.12); color: var(--ink); }
+  .panel button.b:disabled { opacity: 0.4; cursor: default; }
+  .panel .qty { display: flex; align-items: center; gap: 8px; font-family: var(--display); }
+  .panel .qty button { width: 28px; height: 28px; border-radius: 8px; border: 0; background: rgba(243,241,234,0.12); color: var(--ink); font-size: 16px; cursor: pointer; }
+  .panel .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; }
+  .panel .grid button { border: 0; border-radius: 10px; padding: 10px 0; font-weight: 800; background: rgba(243,241,234,0.1); color: var(--ink); cursor: pointer; font-family: var(--display); }
+  .panel .grid button.on { background: var(--accent); color: #1b1606; }
+  .panel .total { display: flex; justify-content: space-between; font-family: var(--display); font-size: 18px; padding-top: 4px; }
+  .panel h4 { margin: 6px 0 0; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  .fade { position: fixed; inset: 0; z-index: 12; background: #000; opacity: 0; pointer-events: none; transition: opacity 0.28s; }
+  .fade.on { opacity: 1; }
+  .banner { position: fixed; left: 50%; top: calc(86px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 4px; background: var(--panel); border: 1px solid rgba(255,201,60,0.5); border-radius: 14px; padding: 10px 18px; text-align: center; max-width: calc(100% - 24px); }
+  .banner b { font-family: var(--display); font-weight: 400; font-size: 20px; color: var(--accent); }
+  .banner span { font-size: 14px; font-weight: 600; }
+  .banner button { margin-top: 4px; pointer-events: auto; border: 0; border-radius: 10px; padding: 6px 14px; font-weight: 800; background: rgba(243,241,234,0.14); color: var(--ink); cursor: pointer; }
+  .shop-row { display: flex; align-items: center; gap: 8px; background: rgba(243,241,234,0.05); border-radius: 12px; padding: 8px 10px; }
+  .shop-row .nm { flex: 1; min-width: 0; font-weight: 700; font-size: 13px; }
+  .shop-row .nm small { display: block; color: var(--muted); font-weight: 600; font-size: 11px; }
+  .shop-row .sw { width: 14px; height: 14px; border-radius: 4px; flex: none; border: 1px solid rgba(255,255,255,0.25); }
+  .shop-row button { border: 0; border-radius: 9px; padding: 6px 10px; font-weight: 800; font-size: 12px; background: var(--accent); color: #1b1606; cursor: pointer; white-space: nowrap; }
+  .shop-row button:disabled { background: rgba(243,241,234,0.12); color: var(--muted); cursor: default; }
+  .tabs.six { grid-template-columns: repeat(6, 1fr); }
+  .tabs.six button { font-size: 10.5px; }
 </style>
 </head>
 <body>
@@ -335,6 +387,8 @@
       <button class="pause-btn" id="pauseBtn" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
       <div class="chip"><span class="label" id="modeLabel">On foot</span><span class="value" id="modeValue">Outside your home</span></div>
     </div>
+    <div class="chip small" id="placeChip"><span class="label">Location</span><span class="value" id="placeVal">Sheikh Zayed Rd</span></div>
+    <div class="chip small" id="lvlChip"><span class="label" id="lvlLabel">Level 1 · Newcomer</span><div class="xpbar"><i id="xpBar"></i></div></div>
     <div class="chip mission" id="missionBox" hidden>
       <span class="label" id="mTitle">Mission</span>
       <span class="obj" id="mObj"></span>
@@ -345,7 +399,9 @@
   <div class="col right">
     <div class="map"><canvas id="map" width="296" height="296"></canvas></div>
     <div class="map-legend"><span><i class="dot" style="background:#ffc93c"></i><span id="homeDist">0 m</span></span><span id="tgtLegend" hidden><i class="dot" style="background:#3ccf7a"></i><span id="tgtDist">0 m</span></span></div>
-    <div class="cash" id="cash">₹0</div>
+    <div class="cash" id="cash">AED 0</div>
+    <div class="chip timechip" id="timeChip"><span class="value" id="timeVal">07:30</span><span class="label" id="timeNext">Next: Zuhr 12:15</span></div>
+    <div class="chip small stay timechip" id="stayChip" hidden><span class="label" id="stayLabel">Room</span><span class="value" id="stayVal"></span></div>
   </div>
 </div>
 
@@ -357,7 +413,11 @@
 <div class="vitals">
   <div class="wanted" id="wanted"><div class="stars" id="stars"></div><span class="wtime" id="wtime"></span></div>
   <div class="hp"><i id="hpBar"></i><span id="hpText">HP 200</span></div>
+  <div class="hp food"><i id="foodBar"></i><span id="foodText">FOOD 85</span></div>
 </div>
+<div class="banner" id="banner" hidden><b id="banTitle"></b><span id="banSub"></span><button id="banSkip" hidden>Skip</button></div>
+<div class="panel" id="panel" hidden><div class="card"><div class="ph"><b id="panelTitle"></b><button id="panelX" aria-label="Close">&#10005;</button></div><div class="pb" id="panelBody"></div></div></div>
+<div class="fade" id="fade"></div>
 
 <div class="speedo" id="speedo" hidden>
   <div class="row"><b id="speed">0</b><span>KM/H</span></div>
@@ -382,6 +442,7 @@
 </div>
 <button class="fire-btn" id="fireBtn" hidden>FIRE</button>
 <button class="side-btn nos-btn" id="nosBtn" data-hold="shift" hidden>NOS</button>
+<button class="side-btn up-btn" id="upBtn" data-hold="space" hidden>UP</button>
 <button class="side-btn zoom-btn" id="zoomBtn" hidden>Zoom</button>
 <div class="touch" id="touch">
   <div class="pad"><button data-hold="left" aria-label="Steer left">&#9664;</button><button data-hold="right" aria-label="Steer right">&#9654;</button></div>
@@ -393,7 +454,7 @@
 <div class="phone" id="phone" hidden>
   <div class="screen">
     <div class="notch"></div>
-    <div class="status"><span id="clock">9:41</span><span>AZARR 5G</span></div>
+    <div class="status"><span id="clock">9:41</span><span id="phoneModel">AZARR 5G</span></div>
 
     <div class="pane" id="pane-dialer">
       <div class="display" id="dialDisplay"></div>
@@ -419,10 +480,16 @@
       <div class="scroll" id="missionList"></div>
     </div>
 
+    <div class="pane" id="pane-store" hidden>
+      <h2>Phone Store</h2>
+      <p>Buy a new phone. Better phones get your vehicle to you faster.</p>
+      <div class="scroll" id="storeList"></div>
+    </div>
+
     <div class="pane" id="pane-home" hidden>
-      <h2>Home</h2>
+      <h2>Settings</h2>
       <div class="stats">
-        <div class="stat"><span class="label">Cash</span><b id="statCash">₹0</b></div>
+        <div class="stat"><span class="label">Cash</span><b id="statCash">AED 0</b></div>
         <div class="stat"><span class="label">Missions passed</span><b id="statDone">0</b></div>
       </div>
       <p id="homeInfo">Home is 0 m away.</p>
@@ -430,6 +497,9 @@
       <button class="big-btn ghost" id="clearCars">Send called vehicles back</button>
       <button class="toggle" id="nightToggle" aria-pressed="false">Night mode <span class="sw2"></span></button>
       <button class="toggle" id="soundToggle" aria-pressed="true">Sound <span class="sw2"></span></button>
+      <h2 style="margin-top:10px">Outfit</h2>
+      <p>Clothes you bought at Fashion Avenue in the Dubai Mall show up here.</p>
+      <div class="scroll" id="outfitList" style="max-height:200px"></div>
     </div>
 
     <div class="pane help" id="pane-help" hidden>
@@ -464,6 +534,22 @@
           </dl>
         </section>
         <section>
+          <h3>Dubai life</h3>
+          <dl>
+            <dt>Clock and prayers</dt><dd>The clock at the top right runs fast: a whole day takes 16 minutes. When Fajr, Zuhr, Asr, Maghrib or Isha begins you get a message and the clock turns green. Walk to a masjid (the clock shows how far) and press <kbd>E</kbd> at the door.</dd>
+            <dt>Masjid</dt><dd>Inside, go to the <b>wudu area</b> first and watch the full ablution, then step onto the carpet and press <kbd>E</kbd> to pray with the jamaat. Each prayer has its real number of rak'ahs. You earn XP and a gem.</dd>
+            <dt>Food</dt><dd>The orange <b>FOOD</b> bar under your health drops slowly. At zero you start losing health. Eat at any restaurant or the Dubai Mall food court.</dd>
+            <dt>Restaurants and the mall</dt><dd>Sit at a table with <kbd>E</kbd>, choose from the menu, wait for the waiter, press <kbd>E</kbd> to eat. Pay at the counter. If you try to leave without paying, guards catch you, take you to the counter and charge the bill plus a fine.</dd>
+            <dt>Hotels</dt><dd>Enter any hotel (or the Burj Al Arab on its island). At reception choose a room type, a floor and how long to stay. Then use the lifts to ride to your floor. In your room you can sleep to restore health, order room service and enjoy the view. When your time ends you are sent back to the lobby.</dd>
+            <dt>Clothes and phones</dt><dd>Buy clothes at Fashion Avenue in the Dubai Mall, then open your phone, go to <b>Settings</b> and tap <b>Wear</b>. The <b>Store</b> tab sells phones: better phones bring your vehicle faster.</dd>
+            <dt>Level</dt><dd>Missions, prayers, meals and shopping give XP. The bar at the top left shows your level.</dd>
+          </dl>
+        </section>
+        <section>
+          <h3>Helicopter</h3>
+          <p>Call <b>6001</b>, or climb into the one on your garage roof. Hold <kbd>Space</kbd> to rise, <kbd>Shift</kbd> to go down, <kbd>W</kbd> to fly forward and <kbd>A</kbd> <kbd>D</kbd> to turn. You can land on roofs and on the helipad of the Burj Al Arab. Land on the street to get out.</p>
+        </section>
+        <section>
           <h3>Stealing a car</h3>
           <p>Stand in front of a car in traffic and it will stop. Walk to its side and tap <b>Enter</b> (or <kbd>E</kbd>) to pull the driver out and take it. If the police see you do it, you get a star.</p>
         </section>
@@ -495,7 +581,7 @@
         </section>
         <section>
           <h3>Map and home</h3>
-          <p>The minimap shows roads, your home (yellow dot), your target, traffic and police (flashing red and blue). The <b>Home</b> tab takes you home when you are not wanted, and has night mode and sound.</p>
+          <p>The city is Dubai. The chip at the top left shows the district you are in. The minimap shows roads, the red Metro line along Sheikh Zayed Road, your home (yellow dot), the Burj Khalifa and Burj Al Arab (white and blue dots at the edge), your target, traffic and police (flashing red and blue). The <b>Home</b> tab takes you home when you are not wanted, and has night mode and sound.</p>
         </section>
         <section>
           <h3>Other keys</h3>
@@ -516,19 +602,20 @@
       <div class="c-state" id="cState">Ringing...</div>
     </div>
 
-    <nav class="tabs" id="tabs">
+    <nav class="tabs six" id="tabs">
       <button data-tab="dialer" class="on">Dialer</button>
       <button data-tab="garage">Garage</button>
       <button data-tab="missions">Missions</button>
+      <button data-tab="store">Store</button>
       <button data-tab="help">Help</button>
-      <button data-tab="home">Home</button>
+      <button data-tab="home">Settings</button>
     </nav>
   </div>
 </div>
 
 <div class="menu" id="overlay">
   <span class="brand">AZARR MOTORS PRESENTS</span>
-  <h1><span class="big">3D</span><span class="word">Driving</span></h1>
+  <h1><span class="big">UAE</span><span class="word">Driving</span></h1>
   <div class="checker"></div>
   <button class="play" id="startBtn"><svg viewBox="0 0 24 24"><path d="M6 3l15 9-15 9z"/></svg>PLAY</button>
   <p class="tip">New here? Open the <b>Phone</b> in game and tap <b>Help</b>.</p>
@@ -539,7 +626,7 @@
 (() => {
   'use strict';
   const CH = 80;          // chunk size: a road cross through the middle, four lots around it
-  const VIEW_R = 2;       // chunks loaded in each direction
+  const VIEW_R = window.matchMedia('(pointer: coarse)').matches ? 2 : 3;       // chunks loaded in each direction
   const HOME_SPAWN = { x: -23, z: -26, h: -Math.PI / 2 };
   const MAX_HP = 200;
   const $ = (id) => document.getElementById(id);
@@ -548,12 +635,12 @@
   const wrapAngle = (a) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
   const rand = (a, b) => a + Math.random() * (b - a);
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-  const money = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
+  const money = (n) => 'AED ' + Math.round(n).toLocaleString('en-US');
   const fmtDist = (d) => (d < 1000 ? Math.round(d) + ' m' : (d / 1000).toFixed(1) + ' km');
   const isTouch = window.matchMedia('(pointer: coarse)').matches;
 
   const SAVE_KEY = 'azarr-3d-driving';
-  const save = { cash: 0, done: 0, night: false, sound: true };
+  const save = { cash: 0, done: 0, night: false, sound: true, xp: 0, gems: 0, prayers: 0, outfit: 'casual', outfits: ['casual'], phone: 'basic', phones: ['basic'] };
   try { Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')); } catch (e) {}
   const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
 
@@ -565,16 +652,17 @@
   $('stage').appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xd8e4ea);
-  scene.fog = new THREE.Fog(0xd8e4ea, 70, 195);
-  const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 700);
+  scene.background = new THREE.Color(0xe6dcc6);
+  scene.fog = new THREE.Fog(0xe6dcc6, 140, 880);
+  const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 1500);
 
-  const skyU = { top: { value: new THREE.Color(0x4a95e6) }, bottom: { value: new THREE.Color(0xd8e4ea) } };
-  const sky = new THREE.Mesh(new THREE.SphereGeometry(450, 24, 12), new THREE.ShaderMaterial({
+  const skyU = { top: { value: new THREE.Color(0x5aa5e6) }, bottom: { value: new THREE.Color(0xe6dcc6) } };
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(1200, 24, 12), new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false, uniforms: skyU,
     vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
     fragmentShader: 'uniform vec3 top; uniform vec3 bottom; varying vec3 vP; void main(){ float h = normalize(vP).y; gl_FragColor = vec4(mix(bottom, top, smoothstep(0.0, 0.45, h)), 1.0); }'
   }));
+  sky.renderOrder = -1;
   scene.add(sky);
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0x8b8f7c, 0.72);
@@ -657,7 +745,7 @@
   });
   armTex.repeat.set(1, 33 / 8);
   const ASPHALT = new THREE.MeshLambertMaterial({ map: armTex });
-  const BUILD_MATS = [0xe9dcc8, 0xc6d4de, 0xd99a7e, 0xa3bcb0, 0xefe2ac, 0xbcaed0, 0xd6d6d2, 0x93a7bb, 0xe3b9a4]
+  const BUILD_MATS = [0xf3ead7, 0xe8dcc0, 0xd9c8a6, 0xe9e3d6, 0xcdd7dc, 0xf0e0c8, 0xddd0b8, 0xc9b99a, 0xe6c9a8]
     .map((c) => new THREE.MeshLambertMaterial({ color: c, map: winTex, emissive: 0xffffff, emissiveMap: litTex, emissiveIntensity: 0 }));
   const puffTex = canvasTex(64, 64, (g) => {
     const r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -703,22 +791,193 @@
   }
   function disposeTree(o) { o.traverse((m) => { if (m.userData.own && m.geometry) m.geometry.dispose(); }); }
 
+  // ================= Dubai: world layout =================
+  // The city is the same endless road grid, dressed as Dubai. North is the Arabian Gulf, Sheikh Zayed Road (the z = 0 road) runs east to west
+  // under the Dubai Metro, Downtown with the Burj Khalifa lies to the south-east, the Burj Al Arab stands on its own island off the beach,
+  // old Dubai and the Creek are to the east, the Marina to the west and the desert beyond.
+  const INT = { active: null, frozen: false, camFn: null, hotelName: '', mosqueName: '' };
+  const SEA_EDGE = -520;
+  const SEA_OK = []; // places over the water you may drive or walk: oriented rectangles (centre, half width, half depth, turn about y)
+  const addSeaOk = (x, z, hw, hd, a = 0) => SEA_OK.push({ x, z, hw, hd, a, c: Math.cos(a), s: Math.sin(a) });
+  addSeaOk(-160, -590.5, 7, 90.5);   // causeway to the Burj Al Arab island
+  addSeaOk(-160, -719.5, 39, 39.5);  // the island itself
+  const BAA = { x: -160, z: -740 };   // Burj Al Arab
+  const BK = { x: 214.5, z: 54.5 };   // Burj Khalifa
+  const FOUNTAIN = { x: 214.5, z: 105.5 };
+  function seaFix(x, z, r) {
+    if (z >= SEA_EDGE + r) return null;
+    let bx = x, bz = SEA_EDGE + r, bd = bz - z;
+    for (const o of SEA_OK) {
+      const dx = x - o.x, dz = z - o.z;
+      const lx = dx * o.c - dz * o.s, lz = dx * o.s + dz * o.c;
+      const nx = clamp(lx, -(o.hw - r), o.hw - r), nz = clamp(lz, -(o.hd - r), o.hd - r);
+      const d = Math.hypot(nx - lx, nz - lz);
+      if (d < bd) { bd = d; bx = o.x + nx * o.c + nz * o.s; bz = o.z - nx * o.s + nz * o.c; }
+    }
+    return bd < 1e-6 ? null : { x: bx, z: bz };
+  }
+  const inSea = (x, z) => z < SEA_EDGE + 1;
+
+  function zoneOf(cx, cz) {
+    const ax = Math.abs(cx);
+    if (cz <= -7) return 'sea';
+    if (cz === -6) return 'beach';
+    if (cz >= 8 || ax >= 21) return 'desert';
+    if (ax >= 15) return 'suburb';
+    if (cx >= 6 && cz >= -3 && cz <= 1) return 'old';
+    if (cz <= -2) return 'jumeirah';
+    if (cz <= 1) return 'szr';
+    if (cx <= -3 && cz <= 5) return 'marina';
+    if (cz <= 5) return 'downtown';
+    return 'suburb';
+  }
+  const districtAt = (x, z) => {
+    const cx = Math.round(x / CH), cz = Math.round(z / CH);
+    if (z < SEA_EDGE) return Math.hypot(x - BAA.x, z - BAA.z) < 90 ? 'Burj Al Arab Island' : 'Arabian Gulf';
+    if (Math.hypot(x - BK.x, z - BK.z) < 110) return 'Downtown Dubai';
+    if (Math.abs(z) < 9 && Math.abs(cx) <= 14) return 'Sheikh Zayed Road';
+    switch (zoneOf(cx, cz)) {
+      case 'beach': return 'Jumeirah Beach';
+      case 'jumeirah': return 'Jumeirah';
+      case 'szr': return 'Trade Centre';
+      case 'downtown': return 'Business Bay';
+      case 'marina': return 'Dubai Marina';
+      case 'old': return cx === 8 ? 'Dubai Creek' : 'Al Fahidi';
+      case 'suburb': return 'Al Barsha';
+      default: return 'Dubai Desert';
+    }
+  };
+
+  // ---- materials ----
+  const curtainTex = canvasTex(128, 128, (g) => {
+    g.fillStyle = '#e8edf1'; g.fillRect(0, 0, 128, 128);
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
+      const grd = g.createLinearGradient(0, r * 32, 0, r * 32 + 32);
+      grd.addColorStop(0, '#a9bfd2'); grd.addColorStop(1, '#4f6985');
+      g.fillStyle = grd; g.fillRect(c * 32 + 2, r * 32 + 4, 28, 22);
+    }
+  });
+  const curtainLit = canvasTex(128, 128, (g) => {
+    g.fillStyle = '#000000'; g.fillRect(0, 0, 128, 128);
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) if (Math.random() < 0.42) { g.fillStyle = Math.random() < 0.75 ? '#ffd9a0' : '#cfeaff'; g.fillRect(c * 32 + 2, r * 32 + 4, 28, 22); }
+  });
+  const glassMat = (c) => new THREE.MeshPhongMaterial({ color: c, map: curtainTex, shininess: 85, specular: 0x8899aa, emissive: 0xffffff, emissiveMap: curtainLit, emissiveIntensity: 0 });
+  const TOWER_MATS = [0xffffff, 0xcfe4f2, 0xbfd9d6, 0xd9e2ea, 0xa9c4dc, 0xe6dcc6].map(glassMat);
+  const SAND_MATS = [0xd8bf8e, 0xcfb185, 0xe0cba0, 0xc9a97a]
+    .map((c) => new THREE.MeshLambertMaterial({ color: c, map: winTex, emissive: 0xffffff, emissiveMap: litTex, emissiveIntensity: 0 }));
+  const NIGHT_MATS = BUILD_MATS.concat(TOWER_MATS, SAND_MATS);
+  const WAVE = canvasTex(256, 256, (g) => {
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, 256, 256);
+    g.strokeStyle = 'rgba(190,230,245,0.55)'; g.lineWidth = 2.2;
+    for (let i = 0; i < 70; i++) { const x = Math.random() * 256, y = Math.random() * 256, w = 14 + Math.random() * 26; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + w / 2, y - 4, x + w, y); g.stroke(); }
+  });
+  WAVE.repeat.set(125, 125);
+  const SEA_TILE = 24;
+  const SEA_MAT = new THREE.MeshPhongMaterial({ color: 0x1f8fb2, map: WAVE, shininess: 120, specular: 0xcfeeff });
+  const POOL_MAT = new THREE.MeshPhongMaterial({ color: 0x2bb3d6, shininess: 100, specular: 0xffffff });
+  const LAKE_MAT = new THREE.MeshPhongMaterial({ color: 0x2a8fb3, shininess: 100, specular: 0xbfe9ff });
+  const FOAM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6, depthWrite: false });
+  const MAT = {
+    sand: mat(0xb99d6b), beach: mat(0xc8b27c), plaza: mat(0xb8b0a0), pave: mat(0xaaa293), grass: mat(0x5a8f3e), concrete: mat(0xbcb7ac), concreteL: mat(0xd6d2c8),
+    dark: mat(0x3a3d42), rail: mat(0xaab0b8), trunk: mat(0x8a6a48), cream: mat(0xf0e4cc), white: mat(0xf4f1ea), blue: mat(0x2f6f9f), rock: mat(0x6e665a),
+    camel: mat(0xc49a62), camelD: mat(0xa27a45), tent: mat(0xe9dcc0), tentD: mat(0x7a2f22), wood: mat(0x6b4a2f), sail: mat(0xf2ead8), umbR: mat(0xd33a2c), umbW: mat(0xf6f2e6),
+  };
+  const PALM_LEAF = new THREE.MeshLambertMaterial({ color: 0x3f8236, side: THREE.DoubleSide });
+  const GOLD = new THREE.MeshPhongMaterial({ color: 0xd4a73c, shininess: 110, specular: 0xffe9a0 });
+  const SILVER = new THREE.MeshPhongMaterial({ color: 0xd8dde2, shininess: 120, specular: 0xffffff });
+  const STATION_SHELL = new THREE.MeshPhongMaterial({ color: 0xe4eaee, shininess: 100, specular: 0xffffff, side: THREE.DoubleSide });
+  const RED_LIGHT = new THREE.MeshBasicMaterial({ color: 0xff2a2a });
+  const FROND = [];
+  for (let i = 0; i < 9; i++) FROND.push(new THREE.BoxGeometry(0.7, 0.06, 3.5).translate(0, 0, 1.75).rotateX(0.62).rotateY(i * Math.PI * 2 / 9 + 0.2));
+    const SIGN = {
+    szr: textMat('SHEIKH ZAYED ROAD  E11', '#ffffff', '#0b6b4b', 512, 96, 40),
+  };
+
+  // ---- small helpers ----
+  const own = (m) => { m.userData.own = true; return m; };
+  function put(g, geo, m, x, y, z, ry = 0, cast = true) {
+    const mesh = own(new THREE.Mesh(geo, m));
+    mesh.position.set(x, y, z); if (ry) mesh.rotation.y = ry;
+    mesh.castShadow = cast; mesh.receiveShadow = true;
+    g.add(mesh); return mesh;
+  }
+  function facade(g, w, h, d, m, x, y0, z, ry = 0) { return put(g, buildingGeo(w, h, d), m, x, y0 + h / 2, z, ry); }
+  function tubeGeo(rt, rb, h, seg, flat) {
+    let geo = new THREE.CylinderGeometry(rt, rb, h, seg, 1, false);
+    if (flat) { geo = geo.toNonIndexed(); geo.computeVertexNormals(); }
+    const uv = geo.attributes.uv, tiles = Math.max(1, Math.round((flat ? seg * Math.max(rt, rb) * 1.73 : Math.PI * 2 * Math.max(rt, rb)) / 16)), vt = h / 16;
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * tiles, uv.getY(i) * vt);
+    return geo;
+  }
+  function slantGeo(w, h, d) {
+    const geo = buildingGeo(w, h, d), p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) if (p.getY(i) > 0 && p.getZ(i) > 0) p.setY(i, p.getY(i) - h * 0.1);
+    geo.computeVertexNormals();
+    return geo;
+  }
+  function plane(g, w, d, m, x, y, z, ry = 0) {
+    const mesh = own(new THREE.Mesh(new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2), m));
+    mesh.position.set(x, y, z); if (ry) mesh.rotation.y = ry; mesh.receiveShadow = true; g.add(mesh); return mesh;
+  }
+  function sign(g, w, h, m, x, y, z, ry = 0) {
+    const mesh = own(new THREE.Mesh(new THREE.PlaneGeometry(w, h), m));
+    mesh.position.set(x, y, z); mesh.rotation.y = ry; g.add(mesh); return mesh;
+  }
+  const signCache = new Map();
+  const labelMat = (text, fg, bg, w = 512, h = 96, size = 40) => { const k = text + fg + bg; if (!signCache.has(k)) signCache.set(k, textMat(text, fg, bg, w, h, size)); return signCache.get(k); };
+
+  // Merge a finished chunk into a handful of meshes (one per material) so the city stays cheap to draw
+  function mergeStatic(g) {
+    g.updateMatrixWorld(true);
+    const inv = new THREE.Matrix4().copy(g.matrixWorld).invert();
+    const meshes = [], buckets = new Map();
+    g.traverse((o) => { if (o.isMesh && !o.userData.keep && !Array.isArray(o.material)) meshes.push(o); });
+    const v = new THREE.Vector3(), rel = new THREE.Matrix4(), nm = new THREE.Matrix3();
+    for (const m of meshes) {
+      const k = m.material.id + (m.castShadow ? 'c' : 'n');
+      let bk = buckets.get(k);
+      if (!bk) buckets.set(k, bk = { mat: m.material, cast: m.castShadow, pos: [], nor: [], uv: [] });
+      const geo = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry;
+      rel.multiplyMatrices(inv, m.matrixWorld); nm.getNormalMatrix(rel);
+      const p = geo.attributes.position, n = geo.attributes.normal, u = geo.attributes.uv;
+      for (let i = 0; i < p.count; i++) {
+        v.fromBufferAttribute(p, i).applyMatrix4(rel); bk.pos.push(v.x, v.y, v.z);
+        v.fromBufferAttribute(n, i).applyMatrix3(nm).normalize(); bk.nor.push(v.x, v.y, v.z);
+        if (u) bk.uv.push(u.getX(i), u.getY(i)); else bk.uv.push(0, 0);
+      }
+      if (geo !== m.geometry) geo.dispose();
+      if (m.userData.own) m.geometry.dispose();
+      m.parent.remove(m);
+    }
+    for (const bk of buckets.values()) {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(bk.pos, 3));
+      geo.setAttribute('normal', new THREE.Float32BufferAttribute(bk.nor, 3));
+      geo.setAttribute('uv', new THREE.Float32BufferAttribute(bk.uv, 2));
+      const mesh = own(new THREE.Mesh(geo, bk.mat));
+      mesh.castShadow = bk.cast; mesh.receiveShadow = true;
+      g.add(mesh);
+    }
+  }
+
   // ================= Endless city (chunks) =================
   const chunks = new Map();
   const key = (cx, cz) => cx + ',' + cz;
 
   function addTree(g, cols, ox, oz, x, z) {
-    const t = new THREE.Mesh(G.trunk, mat(0x7a5235)); t.position.set(x, 1.1, z); t.castShadow = true; g.add(t);
-    const l = new THREE.Mesh(G.leaf, LEAF); l.position.set(x, 3.2, z); l.castShadow = true; g.add(l);
-    cols.push({ minX: ox + x - 0.4, maxX: ox + x + 0.4, minZ: oz + z - 0.4, maxZ: oz + z + 0.4, h: 4.5 });
+    const h = 5.4 + Math.abs(Math.sin(x * 12.9 + z * 78.2)) * 2.6;
+    const t = put(g, new THREE.CylinderGeometry(0.16, 0.27, h, 6), MAT.trunk, x, h / 2, z);
+    t.receiveShadow = false;
+    for (const f of FROND) { const l = new THREE.Mesh(f, PALM_LEAF); l.position.set(x, h, z); l.castShadow = true; g.add(l); }
+    cols.push({ minX: ox + x - 0.35, maxX: ox + x + 0.35, minZ: oz + z - 0.35, maxZ: oz + z + 0.35, h });
   }
 
   function buildHome(g, cols) {
-    const lot = new THREE.Mesh(G.lot, mat(0x74a957)); lot.position.set(-25.5, 0.01, -25.5); lot.receiveShadow = true; g.add(lot);
-    const plane = (w, d, c, x, z) => { const p = new THREE.Mesh(new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2), mat(c)); p.position.set(x, 0.02, z); p.receiveShadow = true; p.userData.own = true; g.add(p); };
-    plane(16, 7, 0xa8a49a, -19.5, -15.5);
-    plane(15, 2.2, 0xc9b99a, -18.5, -26);
-    plane(9, 6, 0xa8a49a, -17, -33);
+    const lot = new THREE.Mesh(G.lot, MAT.grass); lot.position.set(-25.5, 0.01, -25.5); lot.receiveShadow = true; g.add(lot);
+    const pl = (w, d, c, x, z) => plane(g, w, d, mat(c), x, 0.02, z);
+    pl(16, 7, 0xa8a49a, -19.5, -15.5);
+    pl(15, 2.2, 0xc9b99a, -18.5, -26);
+    pl(9, 6, 0xa8a49a, -17, -33);
 
     const wall = mat(0xf1e4cc);
     box(10, 5, 12, wall, -31, 2.5, -26, g);
@@ -733,12 +992,445 @@
     box(7.4, 0.25, 7.4, mat(0xb4553d), -31, 4.1, -15.5, g);
     box(0.25, 1.1, 0.25, mat(0x5a5f69), -12.6, 0.55, -23.2, g);
     box(0.5, 0.4, 0.7, mat(0xc8402f), -12.6, 1.25, -23.2, g);
-    const sign = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.9).rotateY(Math.PI / 2), textMat('MY HOME', '#ffc93c', '#12161f', 256, 72, 40));
-    sign.position.set(-25.88, 4.3, -26); sign.userData.own = true; g.add(sign);
+    const sg = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.9).rotateY(Math.PI / 2), textMat('MY HOME', '#ffc93c', '#12161f', 256, 72, 40));
+    sg.position.set(-25.88, 4.3, -26); sg.userData.own = true; g.add(sg);
 
     cols.push({ minX: -36, maxX: -26, minZ: -32, maxZ: -20, h: 8.6 }, { minX: -34.5, maxX: -27.5, minZ: -19, maxZ: -12, h: 4.3 }, { minX: -12.9, maxX: -12.3, minZ: -23.5, maxZ: -22.9, h: 1.5 });
     addTree(g, cols, 0, 0, -37, -37);
     addTree(g, cols, 0, 0, -37, -14);
+  }
+
+  // ---- buildings: shapes, footprints for collisions and meshes ----
+  const TIERS = [[1, 0.46], [0.8, 0.76], [0.6, 0.92], [0.4, 1]];
+  function bld(lot, shape, x, z, w, d, h, mi, extra) {
+    const b = Object.assign({ shape, x, z, w, d, h, mi }, extra);
+    if (b.enter) b.door = { x, z: z - lot.sz * (d / 2), nz: -lot.sz };
+    switch (shape) {
+      case 'stepped': b.cols = TIERS.map(([k, f]) => ({ x, z, w: w * k, d: d * k, h: h * f })).reverse(); break;
+      case 'cyl': case 'tri': case 'twist': b.cols = [{ x, z, w: w * 0.74, d: d * 0.74, h }]; break;
+      case 'mosque': b.cols = [{ x, z, w: w * 0.9, d: d * 0.9, h: 8 }, { x: x - w * 0.55, z: z - d * 0.55, w: 2.4, d: 2.4, h: 30 }, { x: x + w * 0.55, z: z - d * 0.55, w: 2.4, d: 2.4, h: 30 }]; break;
+      case 'frame': b.cols = [{ x: x - 9.5, z, w: 3.6, d: 3.6, h }, { x: x + 9.5, z, w: 3.6, d: 3.6, h }]; break;
+      case 'museum': b.cols = [{ x, z, w: 17, d: 15, h: 40 }]; break;
+      case 'villa': b.cols = [{ x, z, w: w * 0.7, d: d * 0.62, h: 6.4 }, { x, z: z - 6.2, w: 12.4, d: 0.3, h: 2.1 }, { x, z: z + 6.2, w: 12.4, d: 0.3, h: 2.1 }, { x: x - 6.2, z, w: 0.3, d: 12.4, h: 2.1 }, { x: x + 6.2, z, w: 0.3, d: 12.4, h: 2.1 }]; break;
+      default: b.cols = [{ x, z, w, d, h }];
+    }
+    lot.buildings.push(b);
+  }
+  const TOWER_SHAPES = ['tower', 'tower', 'tower', 'stepped', 'slant', 'cyl', 'tri', 'twist'];
+  const q4 = (v) => Math.max(8, Math.round(v / 4) * 4);
+
+  const HOTEL_NAMES = ['Palace Downtown', 'Marina Pearl Hotel', 'Jumeirah Sands Resort', 'Oasis Grand Hotel', 'Skyline Suites', 'Creek Heritage Hotel', 'Royal Palm Hotel', 'Desert Rose Resort', 'Gulf View Hotel', 'Sheikh Zayed Inn'];
+  const MOSQUE_NAMES = ['Al Noor Masjid', 'Jumeirah Masjid', 'Al Farooq Masjid', 'Al Salam Masjid', 'Sheikh Rashid Masjid', 'Al Rahma Masjid'];
+  const RESTAURANTS = [
+    { name: 'Al Mandi Grill', cuisine: 'arabic', c: 0xb85c2e }, { name: 'Shawarma House', cuisine: 'arabic', c: 0xd9a02e }, { name: 'Karak and Co Cafe', cuisine: 'cafe', c: 0x8b5a2b },
+    { name: 'Burger Barn', cuisine: 'burger', c: 0xc8102e }, { name: 'Pizza Piazza', cuisine: 'pizza', c: 0x2e7d32 }, { name: 'Sultan Seafood', cuisine: 'seafood', c: 0x1d6fa5 },
+    { name: 'Spice Route', cuisine: 'indian', c: 0xd9731a }, { name: 'Kunafa Corner', cuisine: 'dessert', c: 0x7a3b8e }, { name: 'Sushi Lounge', cuisine: 'sushi', c: 0x2b2b33 },
+  ];
+  const pickName = (arr, rnd) => arr[Math.floor(rnd() * arr.length)];
+  function diningLot(lot, rnd, sx, sz) {
+    for (const [a0, a1] of [[13.5, 24.5], [26.5, 37.5]]) for (const [b0, b1] of [[13.5, 24.5], [26.5, 37.5]]) {
+      if (rnd() < 0.2) { lot.deco.push(['garden', sx * (a0 + a1) / 2, sz * (b0 + b1) / 2, 9]); continue; }
+      const r = RESTAURANTS[Math.floor(rnd() * RESTAURANTS.length)];
+      bld(lot, 'restaurant', sx * (a0 + a1) / 2, sz * (b0 + b1) / 2, 10.6, 9.6, 5.6, Math.floor(rnd() * BUILD_MATS.length), { enter: { kind: 'restaurant', name: r.name, cuisine: r.cuisine }, rc: r.c });
+    }
+  }
+
+  const LANDMARKS = {
+    '3,1,-1,-1': 'bk', '3,1,1,-1': 'mall', '3,1,-1,1': 'fountain', '3,1,1,1': 'souk',
+    '1,0,-1,-1': 'emirates1', '1,0,1,-1': 'emirates2', '2,-1,-1,1': 'museum', '1,-3,1,-1': 'frame', '-4,2,1,1': 'cayan',
+    '3,0,-1,-1': 'plaza', '3,0,1,-1': 'plaza',
+  };
+
+  function towerLot(lot, rnd, sx, sz, hMin, hVar, shapes) {
+    const t = rnd(), pickShape = () => shapes[Math.floor(rnd() * shapes.length)];
+    const matFor = (shape) => (shape === 'box' ? Math.floor(rnd() * BUILD_MATS.length) : Math.floor(rnd() * TOWER_MATS.length));
+    const lay = (a0, a1, b0, b1, hh) => {
+      const shape = pickShape();
+      const w = a1 - a0, d = b1 - b0;
+      const hotel = rnd() < 0.2 && w > 20 && (shape === 'tower' || shape === 'stepped' || shape === 'slant' || shape === 'cyl');
+      bld(lot, shape, sx * (a0 + a1) / 2, sz * (b0 + b1) / 2, w, d, q4(hh), matFor(shape), Object.assign({ top: shape === 'tower' || shape === 'box' }, hotel ? { enter: { kind: 'hotel', name: pickName(HOTEL_NAMES, rnd) } } : null));
+    };
+    if (t < 0.5) lay(14, 37, 14, 37, hMin + rnd() * hVar);
+    else if (t < 0.8) {
+      if (rnd() < 0.5) { lay(13, 24.5, 13, 38, hMin * 0.8 + rnd() * hVar); lay(26.5, 38, 13, 38, hMin * 0.8 + rnd() * hVar); }
+      else { lay(13, 38, 13, 24.5, hMin * 0.8 + rnd() * hVar); lay(13, 38, 26.5, 38, hMin * 0.8 + rnd() * hVar); }
+    } else {
+      for (const [a0, a1] of [[13, 24.5], [26.5, 38]]) for (const [b0, b1] of [[13, 24.5], [26.5, 38]]) {
+        const shape = rnd() < 0.5 ? 'box' : 'slant';
+        bld(lot, shape, sx * (a0 + a1) / 2, sz * (b0 + b1) / 2, a1 - a0, b1 - b0, q4(hMin * 0.4 + rnd() * hVar * 0.6), matFor(shape), { top: false });
+      }
+    }
+  }
+  function villaLot(lot, rnd, sx, sz, density) {
+    for (const [a0, a1] of [[13, 25.5], [25.5, 38]]) for (const [b0, b1] of [[13, 25.5], [25.5, 38]]) {
+      const x = sx * (a0 + a1) / 2, z = sz * (b0 + b1) / 2;
+      if (rnd() > density) { lot.deco.push(['garden', x, z, 10]); if (rnd() < 0.7) lot.trees.push([x, z]); continue; }
+      bld(lot, 'villa', x, z, 9.4, 8.4, 6.4, Math.floor(rnd() * BUILD_MATS.length), { floors: rnd() < 0.55 ? 2 : 1, wallTo: sz > 0 ? 1 : -1, pool: rnd() < 0.4 });
+      lot.deco.push(['plot', x, z, 12.4]);
+    }
+  }
+  function aptLot(lot, rnd, sx, sz, hMin, hVar, mats) {
+    for (const [a0, a1] of [[13.5, 24.5], [26.5, 37.5]]) for (const [b0, b1] of [[13.5, 24.5], [26.5, 37.5]]) {
+      bld(lot, 'box', sx * (a0 + a1) / 2, sz * (b0 + b1) / 2, a1 - a0, b1 - b0, q4(hMin + rnd() * hVar), mats === 'sand' ? Math.floor(rnd() * 4) : Math.floor(rnd() * BUILD_MATS.length), { top: rnd() < 0.5, sand: mats === 'sand' });
+    }
+  }
+  function oldLot(lot, rnd, sx, sz) {
+    for (const [a0, a1] of [[13.5, 24.5], [26.5, 37.5]]) for (const [b0, b1] of [[13.5, 24.5], [26.5, 37.5]]) {
+      if (rnd() < 0.12) { lot.deco.push(['garden', sx * (a0 + a1) / 2, sz * (b0 + b1) / 2, 9]); continue; }
+      bld(lot, 'house', sx * (a0 + a1) / 2, sz * (b0 + b1) / 2, 10.4, 10.4, 5.5 + Math.floor(rnd() * 3) * 3, Math.floor(rnd() * 4), { sand: true, wind: rnd() < 0.7 });
+    }
+  }
+
+  const layoutCache = new Map();
+  function chunkLayout(cx, cz) {
+    const k = key(cx, cz);
+    if (layoutCache.has(k)) return layoutCache.get(k);
+    const zone = zoneOf(cx, cz);
+    const rnd = mulberry(((cx * 73856093) ^ (cz * 19349663)) + 7);
+    const lots = [];
+    if (zone !== 'sea') for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+      if (cx === 0 && cz === 0 && sx === -1 && sz === -1) { lots.push({ sx, sz, home: true, buildings: [], trees: [], deco: [] }); continue; }
+      const lot = { sx, sz, ground: 'plaza', park: false, trees: [], buildings: [], deco: [] };
+      lots.push(lot);
+      const r = rnd();
+      const lm = LANDMARKS[cx + ',' + cz + ',' + sx + ',' + sz];
+      if (lm) { landmarkLot(lot, lm, sx, sz); continue; }
+      if (cx === 8 && sx === -1 && cz >= -6 && cz <= 4) { lot.ground = 'water'; lot.water = true; lot.cols = [{ x: sx * 25.5, z: sz * 25.5, w: 28, d: 28, h: 0.5 }]; lot.deco.push(['dhow', sx * 25.5, sz * 25.5]); continue; }
+      if (cx === 0 && cz === 0) {
+        if (sx === 1 && sz === -1) { lot.park = true; lot.ground = 'grass'; for (let i = 0; i < 5; i++) lot.trees.push([sx * (15 + rnd() * 21), sz * (15 + rnd() * 21)]); }
+        else aptLot(lot, rnd, sx, sz, 12, 16);
+        continue;
+      }
+      switch (zone) {
+        case 'beach':
+          if (sz < 0) {
+            lot.ground = 'beach';
+            for (let i = 0; i < 4; i++) lot.deco.push(['umbrella', sx * (16 + rnd() * 18), sz * (16 + rnd() * 18)]);
+            lot.deco.push(['lifeguard', sx * 33, sz * 30]);
+            for (let i = 0; i < 3; i++) lot.trees.push([sx * (15 + rnd() * 22), sz * (30 + rnd() * 7)]);
+            if (r < 0.4) bld(lot, 'house', sx * 20, sz * 22, 14, 8, 5, 3, { sand: false, club: true });
+          } else if (r < 0.7) { bld(lot, 'stepped', sx * 25.5, sz * 25.5, 22, 22, q4(28 + rnd() * 28), 0, { resort: true, enter: { kind: 'hotel', name: pickName(HOTEL_NAMES, rnd) } }); lot.deco.push(['pool', sx * 15, sz * 16]); lot.trees.push([sx * 36, sz * 14], [sx * 14, sz * 36]); }
+          else if (r < 0.85) diningLot(lot, rnd, sx, sz);
+          else villaLot(lot, rnd, sx, sz, 0.8);
+          break;
+        case 'jumeirah':
+          if (r < 0.1) { lot.park = true; lot.ground = 'grass'; for (let i = 0; i < 6; i++) lot.trees.push([sx * (14 + rnd() * 23), sz * (14 + rnd() * 23)]); }
+          else if (r < 0.17) { lot.ground = 'sand'; bld(lot, 'mosque', sx * 25.5, sz * 25.5, 16, 16, 12, 0, { enter: { kind: 'mosque', name: pickName(MOSQUE_NAMES, rnd) } }); lot.trees.push([sx * 14, sz * 37], [sx * 37, sz * 14]); }
+          else if (r < 0.27) diningLot(lot, rnd, sx, sz);
+          else if (r < 0.4) aptLot(lot, rnd, sx, sz, 14, 24);
+          else villaLot(lot, rnd, sx, sz, 0.88);
+          break;
+        case 'szr':
+          if (r < 0.06) { lot.park = true; lot.ground = 'grass'; for (let i = 0; i < 5; i++) lot.trees.push([sx * (14 + rnd() * 23), sz * (14 + rnd() * 23)]); }
+          else if (r < 0.11) { bld(lot, 'mosque', sx * 25.5, sz * 25.5, 16, 16, 12, 0, { enter: { kind: 'mosque', name: pickName(MOSQUE_NAMES, rnd) } }); lot.ground = 'sand'; }
+          else if (r < 0.19) diningLot(lot, rnd, sx, sz);
+          else towerLot(lot, rnd, sx, sz, cz === 0 ? 100 : 56, cz === 0 ? 150 : 90, TOWER_SHAPES);
+          break;
+        case 'downtown': case 'marina':
+          if (r < 0.07) { lot.park = true; lot.ground = 'grass'; for (let i = 0; i < 5; i++) lot.trees.push([sx * (14 + rnd() * 23), sz * (14 + rnd() * 23)]); }
+          else if (r < 0.15) diningLot(lot, rnd, sx, sz);
+          else towerLot(lot, rnd, sx, sz, zone === 'marina' ? 80 : 48, zone === 'marina' ? 140 : 100, zone === 'marina' ? ['tower', 'twist', 'cyl', 'stepped', 'tower', 'slant'] : TOWER_SHAPES);
+          break;
+        case 'old':
+          if (r < 0.1) { lot.ground = 'sand'; bld(lot, 'mosque', sx * 25.5, sz * 25.5, 15, 15, 12, 0, { enter: { kind: 'mosque', name: pickName(MOSQUE_NAMES, rnd) } }); }
+          else if (r < 0.34) { lot.ground = 'sand'; diningLot(lot, rnd, sx, sz); }
+          else { lot.ground = 'sand'; oldLot(lot, rnd, sx, sz); if (rnd() < 0.5) lot.trees.push([sx * 25.5, sz * 25.5]); }
+          break;
+        case 'suburb':
+          if (r < 0.2) { lot.ground = 'sand'; for (let i = 0; i < 2; i++) lot.deco.push(['dune', sx * (19 + rnd() * 14), sz * (19 + rnd() * 14), 5 + rnd() * 3, 1 + rnd() * 1.4]); }
+          else villaLot(lot, rnd, sx, sz, 0.55);
+          break;
+        default: // desert
+          lot.ground = 'sand';
+          for (let i = 0, n = 2 + Math.floor(rnd() * 3); i < n; i++) lot.deco.push(['dune', sx * (19 + rnd() * 14), sz * (19 + rnd() * 14), 5 + rnd() * 3, 1 + rnd() * 1.6]);
+          if (r < 0.18) { lot.deco.push(['camel', sx * (17 + rnd() * 14), sz * (17 + rnd() * 14), rnd() * 6.28]); if (rnd() < 0.6) lot.deco.push(['camel', sx * (17 + rnd() * 14), sz * (17 + rnd() * 14), rnd() * 6.28]); }
+          else if (r < 0.26) { lot.deco.push(['tent', sx * 25.5, sz * 25.5]); lot.trees.push([sx * 18, sz * 32]); }
+          else if (r < 0.34) { lot.trees.push([sx * 20, sz * 24], [sx * 24, sz * 30], [sx * 30, sz * 22]); }
+      }
+      if (lot.park && !lot.ground) lot.ground = 'grass';
+    }
+    // street palms: a pair at every junction side in the city
+    if (zone !== 'sea' && zone !== 'desert') {
+      for (const [x, z] of [[11.6, 25], [11.6, -25], [-11.6, 25], [-11.6, -25], [25, 11.6], [-25, 11.6], [25, -11.6], [-25, -11.6]]) {
+        if (rnd() < 0.55) lots.push({ street: true, trees: [[x, z]], buildings: [], deco: [] });
+      }
+    }
+    if (layoutCache.size > 800) layoutCache.clear();
+    layoutCache.set(k, lots);
+    return lots;
+  }
+  function landmarkLot(lot, lm, sx, sz) {
+    switch (lm) {
+      case 'bk': lot.landmark = lm; lot.cols = [{ x: sx * 25.5, z: sz * 25.5, w: 17, d: 17, h: 440 }]; lot.trees.push([sx * 14, sz * 14], [sx * 37, sz * 14], [sx * 14, sz * 37], [sx * 37, sz * 37]); break;
+      case 'mall': bld(lot, 'mall', sx * 25.5, sz * 25.5, 25, 25, 16, 0, { enter: { kind: 'mall', name: 'The Dubai Mall' } }); break;
+      case 'fountain': lot.ground = 'water'; lot.water = true; lot.landmark = lm; lot.cols = [{ x: sx * 25.5, z: sz * 25.5, w: 28, d: 28, h: 0.5 }]; break;
+      case 'souk': bld(lot, 'stepped', sx * 25.5, sz * 25.5, 24, 24, 44, 5, { resort: true, enter: { kind: 'hotel', name: 'Palace Downtown' } }); break;
+      case 'emirates1': bld(lot, 'tri', sx * 25.5, sz * 25.5, 24, 24, 300, 3, { crown: true }); break;
+      case 'emirates2': bld(lot, 'tri', sx * 25.5, sz * 25.5, 22, 22, 252, 4, { crown: true }); break;
+      case 'museum': lot.ground = 'grass'; bld(lot, 'museum', sx * 25.5, sz * 25.5, 20, 20, 40, 0); break;
+      case 'frame': lot.ground = 'grass'; bld(lot, 'frame', sx * 25.5, sz * 25.5, 24, 8, 72, 0); for (let i = 0; i < 4; i++) lot.trees.push([sx * (14 + i * 7), sz * 36]); break;
+      case 'cayan': bld(lot, 'twist', sx * 25.5, sz * 25.5, 24, 24, 220, 1); break;
+      case 'plaza': lot.ground = 'grass'; lot.park = true; for (let i = 0; i < 6; i++) lot.trees.push([sx * (15 + (i % 3) * 10), sz * (18 + Math.floor(i / 3) * 14)]); break;
+    }
+  }
+  const HOME_COLS = [{ minX: -36, maxX: -26, minZ: -32, maxZ: -20, h: 8.6 }, { minX: -34.5, maxX: -27.5, minZ: -19, maxZ: -12, h: 4.3 }];
+  function layoutCols(cx, cz) {
+    const out = [];
+    const ox = cx * CH, oz = cz * CH;
+    for (const lot of chunkLayout(cx, cz)) {
+      if (lot.home) { out.push(...HOME_COLS); continue; }
+      const list = [];
+      for (const b of lot.buildings) list.push(...b.cols);
+      if (lot.cols) list.push(...lot.cols);
+      for (const c of list) out.push({ minX: ox + c.x - c.w / 2, maxX: ox + c.x + c.w / 2, minZ: oz + c.z - c.d / 2, maxZ: oz + c.z + c.d / 2, h: c.h });
+    }
+    for (const c of PALM_COLS) if (Math.round((c.minX + c.maxX) / 2 / CH) === cx && Math.round((c.minZ + c.maxZ) / 2 / CH) === cz) out.push(c);
+    if (cx === BAA_C.cx && cz === BAA_C.cz) out.push({ minX: BAA.x - 24, maxX: BAA.x + 24, minZ: BAA.z - 18, maxZ: BAA.z + 19.5, h: 285 });
+    return out;
+  }
+  const BAA_C = { cx: -2, cz: -9 };
+  const PALM_COLS = [];
+
+  // ---- Building meshes ----
+  function buildShape(g, b) {
+    const { x, z, w, d, h } = b;
+    switch (b.shape) {
+      case 'box': {
+        const m = b.sand ? SAND_MATS[b.mi % SAND_MATS.length] : BUILD_MATS[b.mi % BUILD_MATS.length];
+        facade(g, w, h, d, m, x, 0, z);
+        if (b.top) box(w * 0.4, 3, d * 0.4, MAT.concrete, x, h + 1.5, z, g);
+        break;
+      }
+      case 'tower': {
+        const m = TOWER_MATS[b.mi % TOWER_MATS.length];
+        facade(g, w, h, d, m, x, 0, z);
+        box(w * 0.62, 3.2, d * 0.62, MAT.concrete, x, h + 1.6, z, g);
+        if (h > 60) { put(g, new THREE.CylinderGeometry(0.18, 0.3, 16, 5), SILVER, x, h + 3.2 + 8, z); put(g, new THREE.SphereGeometry(0.5, 6, 4), RED_LIGHT, x, h + 3.2 + 16, z, 0, false); }
+        break;
+      }
+      case 'stepped': {
+        const m = b.resort ? BUILD_MATS[b.mi % BUILD_MATS.length] : TOWER_MATS[b.mi % TOWER_MATS.length];
+        let y0 = 0;
+        TIERS.forEach(([k, f]) => { const top = h * f; facade(g, w * k, top - y0, d * k, m, x, y0, z); y0 = top; });
+        if (b.resort) { box(w * 1.02, 1.0, d * 1.02, MAT.blue, x, h * 0.46 + 0.5, z, g); put(g, new THREE.CylinderGeometry(0.2, 0.3, 14, 5), SILVER, x, h + 7, z); }
+        else put(g, new THREE.CylinderGeometry(0.2, 0.35, 22, 5), SILVER, x, h + 11, z);
+        break;
+      }
+      case 'slant': {
+        const m = TOWER_MATS[b.mi % TOWER_MATS.length];
+        put(g, slantGeo(w, h, d), m, x, h / 2, z);
+        break;
+      }
+      case 'cyl': {
+        const m = TOWER_MATS[b.mi % TOWER_MATS.length];
+        const r = Math.min(w, d) / 2 * 0.92;
+        put(g, tubeGeo(r, r, h, 24), m, x, h / 2, z);
+        put(g, new THREE.CylinderGeometry(r * 0.7, r * 0.7, 3, 16), MAT.concrete, x, h + 1.5, z);
+        put(g, new THREE.CylinderGeometry(0.2, 0.3, 18, 5), SILVER, x, h + 3 + 9, z);
+        break;
+      }
+      case 'tri': {
+        const m = TOWER_MATS[b.mi % TOWER_MATS.length];
+        const r = Math.min(w, d) / 2 * 1.05;
+        put(g, tubeGeo(r, r, h, 3, true), m, x, h / 2, z);
+        if (b.crown) {
+          put(g, new THREE.ConeGeometry(r, h * 0.07, 3), SILVER, x, h + h * 0.035, z);
+          put(g, new THREE.CylinderGeometry(0.2, 0.3, 28, 5), SILVER, x, h + h * 0.07 + 14, z);
+        }
+        break;
+      }
+      case 'twist': {
+        const m = TOWER_MATS[b.mi % TOWER_MATS.length];
+        const n = Math.max(6, Math.round(h / 8)), sh = h / n;
+        for (let i = 0; i < n; i++) put(g, buildingGeo(w * 0.88, sh + 0.05, d * 0.88), m, x, sh * i + sh / 2, z, i * (Math.PI / 2 / n));
+        put(g, new THREE.CylinderGeometry(0.2, 0.3, 18, 5), SILVER, x, h + 9, z, 0, false);
+        break;
+      }
+      case 'villa': {
+        const m = BUILD_MATS[b.mi % BUILD_MATS.length];
+        const fl = b.floors || 1, hh = 3.4 * fl;
+        facade(g, w, hh, d, m, x, 0, z);
+        box(w + 0.8, 0.35, d + 0.8, MAT.white, x, hh + 0.17, z, g);
+        if (fl === 2) { box(w * 0.5, 0.2, 0.9, MAT.dark, x, 1.7, z + d / 2 + 0.2, g); }
+        box(w * 0.46, 1.0, d * 0.46, MAT.cream, x - w * 0.15, hh + 0.85, z, g);
+        // plot wall with a gate gap facing the road
+        const pw = 12.4, wz = b.wallTo * (pw / 2);
+        box(pw, 2.1, 0.3, MAT.cream, x, 1.05, z + wz - 0.15 * b.wallTo, g);
+        box(0.3, 2.1, pw, MAT.cream, x - pw / 2 + 0.15, 1.05, z, g);
+        box(0.3, 2.1, pw, MAT.cream, x + pw / 2 - 0.15, 1.05, z, g);
+        box(pw, 2.1, 0.3, MAT.cream, x, 1.05, z - wz + 0.15 * b.wallTo, g);
+        if (b.pool) plane(g, 4.4, 2.6, POOL_MAT, x + w * 0.1, 0.05, z - b.wallTo * (d / 2 + 2.2));
+        break;
+      }
+      case 'restaurant': {
+        const m = BUILD_MATS[b.mi % BUILD_MATS.length], nz = b.door.nz;
+        facade(g, w, h, d, m, x, 0, z);
+        box(w + 0.6, 0.35, d + 0.6, MAT.white, x, h + 0.17, z, g);
+        box(w * 0.82, 2.4, 0.15, GLASS, x, 1.5, z + nz * (d / 2 + 0.1), g);
+        box(w * 0.92, 0.28, 2.0, mat(b.rc), x, 3.5, z + nz * (d / 2 + 1.0), g);
+        box(w * 0.5, 0.9, w * 0.5, MAT.concrete, x, h + 0.8, z, g);
+        break;
+      }
+      case 'house': {
+        const m = b.sand ? SAND_MATS[b.mi % SAND_MATS.length] : BUILD_MATS[b.mi % BUILD_MATS.length];
+        facade(g, w, h, d, m, x, 0, z);
+        box(w + 0.5, 0.4, d + 0.5, b.sand ? MAT.sand : MAT.white, x, h + 0.2, z, g);
+        if (b.wind) { box(2.8, 4.8, 2.8, mat(0xcaa874), x + w * 0.22, h + 2.8, z + d * 0.22, g); box(1.8, 3.0, 0.15, MAT.dark, x + w * 0.22, h + 3.6, z + d * 0.22 + 1.45, g); box(1.8, 3.0, 0.15, MAT.dark, x + w * 0.22, h + 3.6, z + d * 0.22 - 1.45, g); }
+        if (b.club) { box(w + 1, 0.4, d + 1, MAT.blue, x, h + 0.6, z, g); }
+        break;
+      }
+      case 'mosque': {
+        const wall = mat(0xe8dfc9), dome = mat(0xd9c9a0);
+        box(w, 7, d, wall, x, 3.5, z, g);
+        box(w * 0.66, 2.4, d * 0.66, wall, x, 8.2, z, g);
+        put(g, new THREE.SphereGeometry(w * 0.3, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), dome, x, 9.4, z);
+        put(g, new THREE.CylinderGeometry(0.15, 0.15, 3, 5), GOLD, x, 9.4 + w * 0.3 + 1.2, z);
+        for (const sxx of [-1, 1]) {
+          const mx = x + sxx * w * 0.55, mz = z - d * 0.55;
+          put(g, new THREE.CylinderGeometry(0.9, 1.15, 26, 10), wall, mx, 13, mz);
+          put(g, new THREE.CylinderGeometry(1.6, 1.6, 0.6, 10), dome, mx, 22, mz);
+          put(g, new THREE.CylinderGeometry(0.9, 0.9, 5, 10), wall, mx, 25, mz);
+          put(g, new THREE.ConeGeometry(1.0, 4.5, 10), GOLD, mx, 29.6, mz);
+        }
+        sign(g, 5, 1.1, labelMat('MASJID', '#12161f', '#e8dfc9', 256, 56, 34), x, 4.2, z + d / 2 + 0.05, 0);
+        break;
+      }
+      case 'mall': {
+        box(w, h, d, mat(0xe6dfce), x, h / 2, z, g);
+        box(w * 1.02, 2.2, d * 1.02, mat(0x9b7b4e), x, h - 1.1, z, g);
+        put(g, tubeGeo(w * 0.28, w * 0.28, 5, 18), GLASS, x, h + 2.5, z);
+        sign(g, 16, 1.8, labelMat('THE DUBAI MALL', '#f4e6c0', '#3a2a1a', 512, 64, 38), x, 11, z + d / 2 + 0.06, 0);
+        sign(g, 16, 1.8, labelMat('THE DUBAI MALL', '#f4e6c0', '#3a2a1a', 512, 64, 38), x, 11, z - d / 2 - 0.06, Math.PI);
+        break;
+      }
+      case 'museum': {
+        box(18, 4, 18, MAT.grass, x, 2, z, g);
+        const ring = put(g, new THREE.TorusGeometry(7.4, 3.0, 12, 28), SILVER, x, 4 + 7.4 * 1.2 + 3.2, z);
+        ring.scale.set(1, 1.2, 0.95);
+        const band = put(g, new THREE.TorusGeometry(7.4, 3.08, 12, 28), GLASS, x, 4 + 7.4 * 1.2 + 3.2, z);
+        band.scale.set(1, 1.2, 0.3);
+        break;
+      }
+      case 'frame': {
+        for (const s of [-1, 1]) put(g, buildingGeo(3.6, h, 3.6), GOLD, x + s * 9.5, h / 2, z);
+        put(g, buildingGeo(22.6, 4.4, 4.4), GOLD, x, h - 2.2, z);
+        put(g, buildingGeo(22.6, 3, 4.4), GOLD, x, 1.5, z);
+        sign(g, 8, 1.6, labelMat('DUBAI FRAME', '#12161f', '#d4a73c', 512, 64, 40), x, 5.2, z + 2.3, 0);
+        break;
+      }
+    }
+  }
+
+  function doorDecor(g, b) {
+    const { x, z, nz } = b.door, kind = b.enter.kind, name = b.enter.name, fz = z + nz * 0.14;
+    box(2.6, 2.7, 0.22, kind === 'mosque' ? mat(0x5a3a22) : GLASS, x, 1.35, fz, g);
+    box(0.3, 2.9, 0.3, MAT.rail, x - 1.5, 1.45, fz, g); box(0.3, 2.9, 0.3, MAT.rail, x + 1.5, 1.45, fz, g); box(3.3, 0.3, 0.3, MAT.rail, x, 2.95, fz, g);
+    box(5.0, 0.22, 2.4, kind === 'hotel' ? mat(0x8a1c2b) : kind === 'mosque' ? mat(0xd9cfae) : MAT.concreteL, x, 3.35, z + nz * 1.2, g);
+    sign(g, 7, 1.0, labelMat(name, '#ffffff', kind === 'hotel' ? '#14212e' : kind === 'mosque' ? '#0e4d34' : kind === 'mall' ? '#3a2a1a' : '#2a2018', 640, 90, 34), x, 4.35, z + nz * 0.2, nz > 0 ? 0 : Math.PI);
+    if (kind === 'hotel') plane(g, 2.4, 5, mat(0x7a1a24), x, 0.04, z + nz * 2.8);
+  }
+
+  // ---- extras on lots ----
+  function buildDeco(g, d) {
+    const [type, x, z, a, c] = d;
+    switch (type) {
+      case 'garden': plane(g, a, a, MAT.grass, x, 0.03, z); break;
+      case 'plot': plane(g, a - 0.4, a - 0.4, MAT.grass, x, 0.03, z); break;
+      case 'pool': plane(g, 8, 4, POOL_MAT, x, 0.05, z); box(9, 0.2, 5, MAT.white, x, 0.1, z, g); plane(g, 8, 4, POOL_MAT, x, 0.22, z); break;
+      case 'umbrella': {
+        put(g, new THREE.CylinderGeometry(0.05, 0.05, 2.3, 4), MAT.white, x, 1.15, z);
+        put(g, new THREE.ConeGeometry(1.5, 0.7, 8), ((x * 3 + z) | 0) % 2 ? MAT.umbR : MAT.umbW, x, 2.5, z);
+        box(0.9, 0.2, 2.0, MAT.white, x + 1.9, 0.25, z, g); box(0.9, 0.2, 2.0, MAT.white, x - 1.9, 0.25, z, g);
+        break;
+      }
+      case 'lifeguard': {
+        for (const [dx, dz] of [[-0.9, -0.9], [0.9, -0.9], [-0.9, 0.9], [0.9, 0.9]]) box(0.2, 2.2, 0.2, MAT.wood, x + dx, 1.1, z + dz, g);
+        box(2.4, 0.2, 2.4, MAT.wood, x, 2.3, z, g);
+        box(2.0, 1.6, 2.0, MAT.umbR, x, 3.2, z, g);
+        box(2.6, 0.2, 2.6, MAT.white, x, 4.1, z, g);
+        break;
+      }
+      case 'dune': {
+        const m = put(g, new THREE.SphereGeometry(1, 12, 6), MAT.sand, x, 0, z, 0, false);
+        m.scale.set(a, c, a * 0.8); m.rotation.y = x * 1.7;
+        break;
+      }
+      case 'tent': {
+        put(g, new THREE.ConeGeometry(5.5, 4, 4).rotateY(Math.PI / 4), MAT.tent, x, 2, z);
+        box(2.6, 2.4, 0.2, MAT.tentD, x, 1.2, z + 3.9, g);
+        box(6, 0.1, 6, MAT.tentD, x, 0.06, z + 6, g);
+        break;
+      }
+      case 'camel': {
+        const grp = new THREE.Group(); grp.position.set(x, 0, z); grp.rotation.y = a;
+        box(0.8, 1.0, 2.2, MAT.camel, 0, 1.6, 0, grp);
+        box(0.55, 0.7, 0.5, MAT.camelD, 0, 2.3, -0.1, grp);
+        const neck = box(0.3, 1.3, 0.3, MAT.camel, 0, 2.5, 1.1, grp); neck.rotation.x = -0.55;
+        box(0.34, 0.34, 0.7, MAT.camelD, 0, 3.15, 1.55, grp);
+        for (const [lx, lz] of [[-0.28, -0.8], [0.28, -0.8], [-0.28, 0.8], [0.28, 0.8]]) box(0.2, 1.2, 0.2, MAT.camelD, lx, 0.6, lz, grp);
+        g.add(grp); grp.userData.keepGroup = true;
+        break;
+      }
+      case 'dhow': {
+        const grp = new THREE.Group(); grp.position.set(x, 0.1, z); grp.rotation.y = 0.15;
+        box(3.4, 1.6, 14, MAT.wood, 0, 0.5, 0, grp);
+        const bow = box(2.2, 1.6, 4, MAT.wood, 0, 0.9, -8.5, grp); bow.rotation.x = 0.35;
+        box(3.0, 0.5, 4, mat(0x2d5a4a), 0, 1.45, 4.2, grp);
+        box(0.25, 12, 0.25, MAT.wood, 0, 7, -1.5, grp);
+        const sail = own(new THREE.Mesh(new THREE.BoxGeometry(0.1, 8, 7), MAT.sail)); sail.position.set(0, 7.2, 1.8); sail.rotation.x = 0.05; sail.castShadow = true; grp.add(sail);
+        g.add(grp);
+        break;
+      }
+    }
+  }
+
+  // ---- Metro viaduct and stations ----
+  const STATIONS = { '-13': 'Jebel Ali', '-11': 'Ibn Battuta', '-9': 'Dubai Marina', '-7': 'Energy', '-5': 'Internet City', '-3': 'Mall of the Emirates', '-1': 'World Trade Centre', '1': 'Emirates Towers', '3': 'Burj Khalifa / Dubai Mall', '5': 'Business Bay', '7': 'Union', '9': 'Al Rigga', '11': 'Airport Terminal 1', '13': 'Centrepoint' };
+  const DECK_Y = 10.3;
+  function buildMetro(g, cols, ox, oz, cx) {
+    box(80, 1.3, 10.6, MAT.concrete, 0, DECK_Y - 0.65, 0, g);
+    for (const s of [-1, 1]) {
+      box(80, 1.0, 0.45, MAT.concreteL, 0, DECK_Y + 0.5, s * 5.1, g);
+      box(80, 0.14, 2.2, MAT.dark, 0, DECK_Y + 0.07, s * 2.1, g);
+      box(80, 0.2, 0.12, MAT.rail, 0, DECK_Y + 0.24, s * 2.1 - 0.72, g);
+      box(80, 0.2, 0.12, MAT.rail, 0, DECK_Y + 0.24, s * 2.1 + 0.72, g);
+    }
+    box(2.2, 9, 2.4, MAT.concrete, -40, 4.5, 0, g);
+    box(7.5, 1.1, 3.2, MAT.concrete, -40, 8.7, 0, g);
+    cols.push({ minX: ox - 41.2, maxX: ox - 38.8, minZ: oz - 1.3, maxZ: oz + 1.3, h: 9 });
+    // palm-lined median
+    for (const s of [-1, 1]) {
+      box(28, 0.3, 1.8, MAT.concreteL, s * 23.5, 0.15, 0, g);
+      plane(g, 27.4, 1.4, MAT.grass, s * 23.5, 0.32, 0);
+      for (const px of [13, 21, 29, 36]) addTree(g, cols, ox, oz, s * px, 0);
+    }
+    if (cx % 2 === 0) {
+      // overhead gantry: green boards
+      const gx = 24;
+      for (const s of [-1, 1]) { box(0.5, 6.8, 0.5, MAT.rail, gx, 3.4, s * 8.6, g); cols.push({ minX: ox + gx - 0.3, maxX: ox + gx + 0.3, minZ: oz + s * 8.6 - 0.3, maxZ: oz + s * 8.6 + 0.3, h: 6.8 }); }
+      box(0.5, 0.5, 17.8, MAT.rail, gx, 6.7, 0, g);
+      for (const s of [-1, 1]) {
+        box(0.2, 2.2, 6.6, mat(0x0b6b4b), gx, 5.2, s * 3.9, g);
+        for (const f of [-1, 1]) sign(g, 6.4, 2.0, SIGN.szr, gx + f * 0.13, 5.2, s * 3.9, f > 0 ? Math.PI / 2 : -Math.PI / 2);
+      }
+    }
+    if (cx % 2 !== 0) {
+      const name = STATIONS[String(cx)] || 'Dubai Metro';
+      const shell = put(g, new THREE.CylinderGeometry(1, 1, 44, 20, 1, true, Math.PI, Math.PI).rotateZ(-Math.PI / 2), STATION_SHELL, 0, DECK_Y + 0.15, 0, 0, false);
+      shell.scale.set(1, 4.8, 5.1);
+      for (const s of [-1, 1]) {
+        box(44, 0.7, 1.4, MAT.concreteL, 0, DECK_Y + 0.35, s * 4.4, g);
+        sign(g, 17, 2.0, labelMat(name.toUpperCase(), '#ffffff', '#b3141d', 640, 76, 34), 0, DECK_Y - 2.0, s * 5.4, s > 0 ? 0 : Math.PI);
+      }
+      for (const sxp of [-1, 1]) for (const szp of [-1, 1]) {
+        const px = sxp * 16.5, pz = szp * 10.4;
+        box(4.2, 10.4, 3.4, GLASS, px, 5.2, pz, g);
+        box(5, 0.5, 4.2, SILVER, px, 10.55, pz, g);
+        box(3, 0.6, 4.2, MAT.concrete, px, 10.0, szp * 7.3, g);
+        sign(g, 3.6, 1.0, labelMat('METRO', '#ffffff', '#b3141d', 256, 72, 40), px, 8.6, pz + szp * 1.72, szp > 0 ? 0 : Math.PI);
+        cols.push({ minX: ox + px - 2.1, maxX: ox + px + 2.1, minZ: oz + pz - 1.7, maxZ: oz + pz + 1.7, h: 10.4 });
+      }
+    }
   }
 
   function buildChunk(cx, cz) {
@@ -746,7 +1438,14 @@
     const ox = cx * CH, oz = cz * CH;
     g.position.set(ox, 0, oz);
     const cols = [];
-    const ground = new THREE.Mesh(G.ground, mat(0xb9b3a7)); ground.receiveShadow = true; g.add(ground);
+    const zone = zoneOf(cx, cz);
+    if (zone === 'sea') {
+      buildSeaChunk(g, cx, cz, cols, ox, oz);
+      scene.add(g);
+      return { g, cols };
+    }
+    const base = zone === 'desert' ? MAT.sand : zone === 'beach' ? MAT.beach : MAT.pave;
+    const ground = new THREE.Mesh(G.ground, base); ground.receiveShadow = true; g.add(ground);
     for (const [x, z, geo] of [[0, -23.5, G.armZ], [0, 23.5, G.armZ], [-23.5, 0, G.armX], [23.5, 0, G.armX]]) {
       const a = new THREE.Mesh(geo, ASPHALT); a.position.set(x, 0.02, z); a.receiveShadow = true; g.add(a);
     }
@@ -760,59 +1459,222 @@
     }
 
     for (const lot of chunkLayout(cx, cz)) {
-      const { sx, sz } = lot;
       if (lot.home) { buildHome(g, cols); continue; }
-      const lm = new THREE.Mesh(G.lot, mat(lot.park ? 0x74a957 : 0x9c9a92));
-      lm.position.set(sx * 25.5, 0.01, sz * 25.5); lm.receiveShadow = true; g.add(lm);
-      if (lot.park) { for (const [x, z] of lot.trees) addTree(g, cols, ox, oz, x, z); continue; }
+      if (lot.street) { for (const [x, z] of lot.trees) addTree(g, cols, ox, oz, x, z); continue; }
+      const { sx, sz } = lot;
+      const lm = new THREE.Mesh(G.lot, lot.water ? LAKE_MAT : MAT[lot.ground] || MAT.plaza);
+      lm.position.set(sx * 25.5, lot.water ? 0.04 : 0.01, sz * 25.5); lm.receiveShadow = true; g.add(lm);
+      if (lot.water) for (const [rx, rz, rw, rd] of [[0, -14.5, 29.6, 0.6], [0, 14.5, 29.6, 0.6], [-14.5, 0, 0.6, 29.6], [14.5, 0, 0.6, 29.6]]) box(rw, 0.5, rd, MAT.concreteL, sx * 25.5 + rx, 0.22, sz * 25.5 + rz, g);
+      if (lot.landmark === 'bk') { sign(g, 12, 2.2, labelMat('BURJ KHALIFA', '#f4e6c0', '#14212e', 512, 96, 42), sx * 25.5, 1.6, sz * 25.5 + 12.2, 0); }
+      for (const [x, z] of lot.trees) addTree(g, cols, ox, oz, x, z);
+      for (const dd of lot.deco) buildDeco(g, dd);
       for (const bd of lot.buildings) {
-        const m = new THREE.Mesh(buildingGeo(bd.w, bd.h, bd.d), BUILD_MATS[bd.mi]);
-        m.position.set(bd.x, bd.h / 2, bd.z); m.castShadow = true; m.receiveShadow = true; m.userData.own = true; g.add(m);
-        if (bd.top) box(bd.w * 0.4, 3, bd.d * 0.4, mat(0x7d828c), bd.x, bd.h + 1.5, bd.z, g);
-        cols.push({ minX: ox + bd.x - bd.w / 2, maxX: ox + bd.x + bd.w / 2, minZ: oz + bd.z - bd.d / 2, maxZ: oz + bd.z + bd.d / 2, h: bd.h });
+        buildShape(g, bd);
+        if (bd.door) doorDecor(g, bd);
+        for (const c of bd.cols) cols.push({ minX: ox + c.x - c.w / 2, maxX: ox + c.x + c.w / 2, minZ: oz + c.z - c.d / 2, maxZ: oz + c.z + c.d / 2, h: c.h });
       }
+      if (lot.cols) for (const c of lot.cols) cols.push({ minX: ox + c.x - c.w / 2, maxX: ox + c.x + c.w / 2, minZ: oz + c.z - c.d / 2, maxZ: oz + c.z + c.d / 2, h: c.h });
     }
+    if (cz === 0 && Math.abs(cx) <= 13) buildMetro(g, cols, ox, oz, cx);
+    if (zone === 'beach') {
+      plane(g, CH, 5, FOAM, 0, 0.03, -37.4);
+    }
+    mergeStatic(g);
     scene.add(g);
     return { g, cols };
   }
-
-  // The same seeded layout the chunk builder uses, so the fly map can show buildings that are not loaded yet
-  const layoutCache = new Map();
-  function chunkLayout(cx, cz) {
-    const k = key(cx, cz);
-    if (layoutCache.has(k)) return layoutCache.get(k);
-    const rnd = mulberry(((cx * 73856093) ^ (cz * 19349663)) + 7);
-    const lots = [];
-    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
-      if (cx === 0 && cz === 0 && sx === -1 && sz === -1) { lots.push({ sx, sz, home: true }); continue; }
-      const t = rnd();
-      const lot = { sx, sz, park: t < 0.15, trees: [], buildings: [] };
-      if (lot.park) { for (let i = 0; i < 5; i++) lot.trees.push([sx * (14 + rnd() * 23), sz * (14 + rnd() * 23)]); lots.push(lot); continue; }
-      let rects, hMin, hVar;
-      if (t < 0.45) { rects = [[13, 38, 13, 38]]; hMin = 18; hVar = 55; }
-      else if (t < 0.75) { rects = rnd() < 0.5 ? [[13, 24.5, 13, 38], [26.5, 38, 13, 38]] : [[13, 38, 13, 24.5], [13, 38, 26.5, 38]]; hMin = 12; hVar = 38; }
-      else { rects = [[13, 24.5, 13, 24.5], [26.5, 38, 13, 24.5], [13, 24.5, 26.5, 38], [26.5, 38, 26.5, 38]]; hMin = 8; hVar = 26; }
-      for (const [a0, a1, b0, b1] of rects) {
-        const w = a1 - a0, d = b1 - b0, h = Math.round((hMin + rnd() * hVar) / 4) * 4;
-        const x = sx * (a0 + a1) / 2, z = sz * (b0 + b1) / 2;
-        const mi = Math.floor(rnd() * BUILD_MATS.length);
-        const top = h > 30 && rnd() < 0.6;
-        lot.buildings.push({ x, z, w, d, h, mi, top });
+  function buildSeaChunk(g, cx, cz, cols, ox, oz) {
+    // the Burj Al Arab causeway (x = -160) and the island at the end of it
+    if (cx === -2 && cz >= -9 && cz <= -7) {
+      const isl = cz === -9;
+      const arm = (z) => { const a = new THREE.Mesh(G.armZ, ASPHALT); a.position.set(0, 0.04, z); a.receiveShadow = true; g.add(a); };
+      arm(23.5);
+      if (!isl) {
+        arm(-23.5);
+        const c = new THREE.Mesh(G.inter, mat(0x3b3e45)); c.position.y = 0.04; g.add(c);
+        box(14.8, 0.9, 80, MAT.concreteL, 0, -0.5, 0, g);
+        for (const s of [-1, 1]) box(0.5, 0.8, 80, MAT.white, s * 7.3, 0.5, 0, g);
+        for (const zz of [-30, 0, 30]) for (const s of [-1, 1]) {
+          const p = new THREE.Mesh(G.pole, mat(0x4a4f57)); p.position.set(s * 7.3, 3.25, zz); g.add(p);
+          const l = new THREE.Mesh(G.lamp, LAMP); l.position.set(s * 7.3 - s * 0.9, 6.4, zz); g.add(l);
+        }
+      } else {
+        box(80, 1.0, 80, MAT.concreteL, 0, -0.5, 0, g);
+        box(83, 0.7, 83, MAT.rock, 0, -0.6, 0, g);
+        plane(g, 80, 80, MAT.plaza, 0, 0.03, 0);
+        plane(g, 18, 18, mat(0x3b3e45), 0, 0.05, 28);
+        plane(g, 6, 6, MAT.grass, 0, 0.07, 28);
+        addTree(g, cols, ox, oz, 0, 28);
+        for (const x of [-30, -22, -14, 14, 22, 30]) addTree(g, cols, ox, oz, x, 8 + (Math.abs(x) % 3) * 4);
+        for (const x of [-34, 34]) for (const z of [-30, -10, 10, 30]) addTree(g, cols, ox, oz, x, z);
+        sign(g, 12, 2.0, labelMat('BURJ AL ARAB JUMEIRAH', '#e8c76a', '#14212e', 640, 88, 34), -14, 1.8, 22, 0);
       }
-      lots.push(lot);
     }
-    if (layoutCache.size > 800) layoutCache.clear();
-    layoutCache.set(k, lots);
-    return lots;
+    cols.push(...layoutCols(cx, cz));
+    if (g.children.length) mergeStatic(g);
   }
-  const HOME_COLS = [{ minX: -36, maxX: -26, minZ: -32, maxZ: -20, h: 8.6 }, { minX: -34.5, maxX: -27.5, minZ: -19, maxZ: -12, h: 4.3 }];
-  function layoutCols(cx, cz) {
-    const out = [];
-    for (const lot of chunkLayout(cx, cz)) {
-      if (lot.home) { out.push(...HOME_COLS); continue; }
-      for (const b of lot.buildings) out.push({ minX: cx * CH + b.x - b.w / 2, maxX: cx * CH + b.x + b.w / 2, minZ: cz * CH + b.z - b.d / 2, maxZ: cz * CH + b.z + b.d / 2, h: b.h });
+
+  // ================= Dubai: landmarks that are always in view =================
+  const dubai = { trains: [], jets: [], sail: null, beacon: null, bkBeacon: null, wheel: null };
+  function buildBurjKhalifa(parent) {
+    const g = new THREE.Group(); g.position.set(BK.x, 0, BK.z); parent.add(g);
+    const glass = glassMat(0xc4d9ea); NIGHT_MATS.push(glass);
+    const tiers = [[0, 56, 12], [56, 116, 10.4], [116, 180, 8.8], [180, 244, 7.4], [244, 306, 6.2], [306, 364, 5.0], [364, 412, 3.8], [412, 450, 2.6]];
+    put(g, tubeGeo(5.2, 3.4, 452, 6, true), glass, 0, 226, 0);
+    tiers.forEach(([y0, y1, L], i) => {
+      for (let k = 0; k < 3; k++) {
+        const a = k * Math.PI * 2 / 3 + i * 0.12, w = 7.8 - i * 0.55;
+        put(g, buildingGeo(w, y1 - y0, L), glass, Math.sin(a) * L / 2, (y0 + y1) / 2, Math.cos(a) * L / 2, a);
+      }
+    });
+    put(g, new THREE.CylinderGeometry(0.2, 2.6, 82, 8), SILVER, 0, 452 + 41, 0);
+    dubai.bkBeacon = put(g, new THREE.SphereGeometry(0.9, 8, 6), RED_LIGHT, 0, 536, 0, 0, false);
+  }
+  function buildBurjAlArab(parent) {
+    const g = new THREE.Group(); g.position.set(BAA.x, 0, BAA.z); parent.add(g);
+    const wingM = glassMat(0xbcd2e6), spineM = glassMat(0x93abc0); NIGHT_MATS.push(wingM, spineM);
+    box(54, 9, 38, MAT.white, 0, 4.5, 2, g);
+    for (const s of [-1, 1]) put(g, buildingGeo(9, 268, 34.5), wingM, s * 13.5, 134, -1, s * 0.516);
+    put(g, buildingGeo(14, 282, 10), spineM, 0, 141, -13);
+    put(g, new THREE.CylinderGeometry(0.3, 1.4, 42, 8), SILVER, 0, 282 + 21, -13);
+    dubai.beacon = put(g, new THREE.SphereGeometry(1, 8, 6), RED_LIGHT, 0, 326, -13, 0, false);
+    const sailM = new THREE.MeshPhongMaterial({ color: 0xf6f7f9, side: THREE.DoubleSide, shininess: 40, specular: 0x666666, transparent: true, opacity: 0.88, emissive: 0x000000 });
+    dubai.sail = sailM;
+    const sail = put(g, new THREE.CylinderGeometry(1, 1, 272, 40, 1, true, -Math.PI / 2, Math.PI), sailM, 0, 136, 14, 0, false);
+    sail.scale.set(22, 1, 20); sail.renderOrder = 2;
+    for (let i = 0; i <= 8; i++) { const th = -Math.PI / 2 + i * Math.PI / 8; put(g, new THREE.BoxGeometry(0.7, 272, 0.7), MAT.dark, 22 * Math.sin(th), 136, 14 + 20 * Math.cos(th), 0, false); }
+    box(20, 2.6, 8, MAT.white, 0, 201, 33, g); box(20, 0.5, 8.4, GLASS, 0, 202.7, 33, g);
+    // helipad
+    box(12, 1, 3, MAT.white, -24.5, 209, -1, g);
+    put(g, new THREE.CylinderGeometry(9, 9, 1, 24), MAT.white, -32, 209, -1);
+    put(g, new THREE.RingGeometry(5.8, 6.4, 24).rotateX(-Math.PI / 2), MAT.blue, -32, 209.55, -1, 0, false);
+    sign(g, 8, 1.3, labelMat('BURJ AL ARAB', '#e8c76a', '#14212e', 512, 80, 40), 0, 270, -7.9, 0);
+    box(6.4, 4.6, 0.3, GLASS, 0, 2.3, 21.3, g); box(0.5, 5, 0.5, GOLD, -3.4, 2.5, 21.3, g); box(0.5, 5, 0.5, GOLD, 3.4, 2.5, 21.3, g); box(7.6, 0.4, 3.2, GOLD, 0, 5.2, 22.4, g);
+    plane(g, 3, 6, mat(0x7a1a24), 0, 0.06, 24.5);
+    // podium lights and the approach
+    box(56, 0.5, 40, MAT.concreteL, 0, 9.2, 2, g);
+  }
+  function buildFountain(parent) {
+    const g = new THREE.Group(); g.position.set(FOUNTAIN.x, 0, FOUNTAIN.z); parent.add(g);
+    const jetM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, depthWrite: false });
+    const geo = new THREE.CylinderGeometry(0.1, 0.5, 1, 6);
+    for (const [x, z, h0] of [[-9, -5, 6], [-6, -5, 9], [-3, -5, 12], [0, -5, 16], [3, -5, 12], [6, -5, 9], [9, -5, 6], [-9, 5, 6], [-6, 5, 9], [-3, 5, 12], [0, 5, 16], [3, 5, 12], [6, 5, 9], [9, 5, 6], [0, 0, 24], [-5, 0, 14], [5, 0, 14], [-10, 0, 8], [10, 0, 8]]) {
+      const m = new THREE.Mesh(geo, jetM); m.position.set(x, 0.2, z); m.userData.h0 = h0; m.userData.ph = x * 0.7 + z * 0.3; g.add(m); dubai.jets.push(m);
     }
-    return out;
+  }
+  // Ain Dubai: the giant observation wheel off Bluewaters, turning slowly
+  function buildAinDubai(parent) {
+    const g = new THREE.Group(); g.position.set(-430, 0, -840); parent.add(g);
+    const base = new THREE.Group(); g.add(base);
+    box(80, 0.8, 50, MAT.beach, 0, -0.3, 0, base); box(84, 0.6, 54, MAT.rock, 0, -0.6, 0, base);
+    for (const s of [-1, 1]) { const leg = box(4, 128, 4, SILVER, s * 22, 62, 0, base); leg.rotation.z = -s * 0.36; }
+    box(6, 6, 10, SILVER, 0, 122, 0, base);
+    const ring = new THREE.Group(); ring.position.set(0, 122, 0); g.add(ring);
+    const torus = new THREE.Mesh(new THREE.TorusGeometry(105, 2.2, 8, 80), SILVER); torus.castShadow = true; ring.add(torus);
+    const caps = [];
+    for (let i = 0; i < 24; i++) {
+      const a = i / 24 * Math.PI * 2;
+      const spoke = box(0.7, 105, 0.7, SILVER, 0, 52, 0, new THREE.Group()); const sp = new THREE.Group(); sp.rotation.z = a; sp.add(spoke); ring.add(sp);
+      const cap = new THREE.Group(); cap.position.set(Math.sin(a) * 105, -Math.cos(a) * 105, 0);
+      box(7, 5, 5, i % 3 ? mat(0xf4f4f4) : mat(0xd9b24a), 0, -3, 0, cap); box(7.2, 1.6, 5.2, GLASS, 0, -2.6, 0, cap);
+      ring.add(cap); caps.push(cap);
+    }
+    dubai.wheel = { ring, caps };
+  }
+  function makeTrain(dirSign) {
+    const t = new THREE.Group();
+    const bodyM = new THREE.MeshPhongMaterial({ color: 0xe4e7ea, shininess: 90, specular: 0xffffff }), stripeM = mat(0xb3141d), winM = new THREE.MeshPhongMaterial({ color: 0x1b2634, shininess: 120, specular: 0x99aabb });
+    for (let i = 0; i < 3; i++) {
+      const x = (i - 1) * 17.6;
+      box(17, 3.2, 3.0, bodyM, x, 1.9, 0, t);
+      box(16.4, 1.05, 3.06, winM, x, 2.45, 0, t);
+      box(17.02, 0.35, 3.04, stripeM, x, 0.75, 0, t);
+      box(15, 0.25, 2.2, SILVER, x, 3.65, 0, t);
+    }
+    for (const e of [-1, 1]) {
+      box(2.0, 2.9, 2.8, bodyM, e * 27.2, 1.85, 0, t);
+      box(0.2, 1.3, 2.4, winM, e * 28.25, 2.3, 0, t);
+    }
+    t.userData.dir = dirSign;
+    return t;
+  }
+  // ---- Palm Jumeirah: a causeway from the beach road at x = 240, eight fronds of villas on each side and Atlantis at the crown ----
+  function buildPalm(parent) {
+    const g = new THREE.Group(); parent.add(g);
+    const road = mat(0x3b3e45), line = new THREE.MeshBasicMaterial({ color: 0xf2c230 });
+    const villaM = [0xf3ead7, 0xe8dcc0, 0xf0e0c8].map((c) => mat(c)), roofM = mat(0xc9bba0);
+    const strip = (x, z, hw, hd, a, withRoad) => {
+      put(g, new THREE.BoxGeometry(hw * 2, 0.5, hd * 2), MAT.beach, x, -0.23, z, a, false);
+      if (withRoad) { plane(g, 7, hd * 2, road, x, 0.05, z, a); plane(g, 0.3, hd * 2, line, x, 0.07, z, a); }
+      addSeaOk(x, z, hw, hd, a);
+    };
+    strip(240, -825, 8, 305, 0, true);   // the trunk and spine
+    const A = 55 * Math.PI / 180;
+    for (const sgn of [-1, 1]) for (let i = 0; i < 8; i++) {
+      const az = -872 - i * 36, dx = sgn * Math.sin(A), dz = -Math.cos(A), a = Math.atan2(dx, dz);
+      const cx = 240 + dx * 55, cz = az + dz * 55, c = Math.cos(a), sn = Math.sin(a);
+      strip(cx, cz, 11, 55, a, true);
+      for (const side of [-1, 1]) for (let k = -4; k <= 4; k++) {
+        const lx = side * 7.4, lz = k * 11.5;
+        const wx = cx + lx * c + lz * sn, wz = cz - lx * sn + lz * c;
+        const vm = villaM[(i + k + 8) % 3];
+        put(g, new THREE.BoxGeometry(6.4, 4.2, 7.4), vm, wx, 2.1, wz, a);
+        put(g, new THREE.BoxGeometry(7.0, 0.35, 8.0), roofM, wx, 4.4, wz, a);
+        PALM_COLS.push({ minX: wx - 4.1, maxX: wx + 4.1, minZ: wz - 4.1, maxZ: wz + 4.1, h: 4.5 });
+      }
+    }
+    // Atlantis, The Palm
+    const AX = 240, AZ = -1180;
+    strip(AX, AZ, 45, 40, 0, false);
+    plane(g, 90, 80, MAT.plaza, AX, 0.04, AZ);
+    const atl = new THREE.MeshLambertMaterial({ color: 0xe3ad90, map: winTex, emissive: 0xffffff, emissiveMap: litTex, emissiveIntensity: 0 });
+    NIGHT_MATS.push(atl);
+    for (const s of [-1, 1]) {
+      facade(g, 26, 100, 26, atl, AX + s * 26, 0, AZ);
+      facade(g, 28, 4, 28, MAT.concreteL, AX + s * 26, 100, AZ);
+      PALM_COLS.push({ minX: AX + s * 26 - 13, maxX: AX + s * 26 + 13, minZ: AZ - 13, maxZ: AZ + 13, h: 100 });
+    }
+    put(g, new THREE.BoxGeometry(30, 16, 22), atl, AX, 86, AZ);
+    put(g, new THREE.BoxGeometry(24, 8, 18), GLASS, AX, 72, AZ);
+    sign(g, 22, 3, labelMat('ATLANTIS THE PALM', '#f6e7c6', '#6a2f4a', 640, 88, 36), AX, 4, AZ + 40.2, 0);
+    mergeStatic(g);
+  }
+  function easeStop(f) { if (f < 0.375) return 0; const x = (f - 0.375) / 0.625; return x * x * (3 - 2 * x); }
+  function initDubai() {
+    // Sea to the north, sand everywhere else
+    const sea = new THREE.Mesh(new THREE.PlaneGeometry(12000, 6000).rotateX(-Math.PI / 2), SEA_MAT);
+    sea.position.set(0, -0.32, SEA_EDGE - 3000); sea.receiveShadow = true; scene.add(sea);
+    const land = new THREE.Mesh(new THREE.PlaneGeometry(12000, 6480).rotateX(-Math.PI / 2), MAT.sand);
+    land.position.set(0, -0.32, SEA_EDGE + 3240); scene.add(land);
+    const lm = new THREE.Group(); scene.add(lm);
+    buildBurjKhalifa(lm); buildBurjAlArab(lm); buildFountain(lm); buildPalm(scene); buildAinDubai(lm);
+    // Dubai Metro: three trains each way along Sheikh Zayed Road
+    for (let i = 0; i < 6; i++) {
+      const dir = i < 3 ? 1 : -1;
+      const t = makeTrain(dir); t.userData.phase = (i % 3) * 4.33 + (dir < 0 ? 2 : 0);
+      t.position.y = DECK_Y + 0.2; t.rotation.y = dir > 0 ? 0 : Math.PI;
+      scene.add(t); dubai.trains.push(t);
+    }
+  }
+  const SEG_T = 16;
+  function updateDubai(dt, now) {
+    const t = now / 1000;
+    WAVE.offset.set((t * 0.004) % 1, (t * 0.0025) % 1);
+    for (const tr of dubai.trains) {
+      const u = (((t / SEG_T + tr.userData.phase) % 13) + 13) % 13, n = Math.floor(u), f = u - n;
+      const x = -1040 + 160 * (n + easeStop(f));
+      const dir = tr.userData.dir;
+      tr.position.x = x * dir; tr.position.z = dir > 0 ? 2.1 : -2.1;
+      tr.visible = chunks.has(key(Math.round(tr.position.x / CH), 0));
+    }
+    for (const j of dubai.jets) { const h = j.userData.h0 * (0.55 + 0.45 * Math.sin(t * 2.1 + j.userData.ph)); j.scale.y = h; j.position.y = h / 2 + 0.2; }
+    if (dubai.wheel) { dubai.wheel.ring.rotation.z += dt * 0.025; for (const c of dubai.wheel.caps) c.rotation.z = -dubai.wheel.ring.rotation.z; }
+    if (dubai.sail) {
+      dubai.sail.emissive.setHSL((t * 0.04) % 1, 0.85, 0.5);
+      dubai.sail.emissiveIntensity = save.night ? 0.9 : 0;
+    }
+    const blink = Math.floor(t * 1.5) % 2 === 0;
+    if (dubai.beacon) dubai.beacon.visible = dubai.bkBeacon.visible = blink;
   }
 
   let lastChunk = '';
@@ -835,6 +1697,7 @@
     lastChunk = k;
     for (const [kk, c] of chunks) {
       const [a, b] = kk.split(',').map(Number);
+      if (c.keep) continue;
       if (Math.abs(a - ccx) > VIEW_R + 1 || Math.abs(b - ccz) > VIEW_R + 1) { scene.remove(c.g); disposeTree(c.g); chunks.delete(kk); }
     }
   }
@@ -858,6 +1721,8 @@
         }
       }
     }
+    const sf = INT.active ? null : seaFix(x, z, r);
+    if (sf) { x = sf.x; z = sf.z; hit = true; }
     return { x, z, hit };
   }
   function insideWall(x, z) {
@@ -906,7 +1771,7 @@
     car('1003', 'Hyundai Creta', 'Cars', 'csuv', 0x2b5797, [4.33, 1.79, 1.635, 2.61, 0.34, 0.19], 'creta', { tail: 'bar', max: 44, acc: 10.5 }),
     car('1004', 'Tata Nexon', 'Cars', 'csuv', 0x4d7c4a, [3.995, 1.804, 1.62, 2.498, 0.33, 0.2], 'creta', { roof: 0x16171a, max: 42, acc: 10 }),
     car('1005', 'Toyota Innova Crysta', 'Cars', 'mpv', 0xb8bcc2, [4.735, 1.83, 1.795, 2.75, 0.34, 0.18], 'innova', { tail: 'tall', max: 42, acc: 9, turn: 1.9 }),
-    car('1006', 'Maruti Dzire Taxi', 'Cars', 'sedan', 0xffcc22, [3.995, 1.735, 1.515, 2.45, 0.29, 0.16], 'swift', { extras: ['taxi'], max: 40, acc: 9.5 }),
+    car('1006', 'Maruti Dzire Taxi', 'Cars', 'sedan', 0xece3cd, [3.995, 1.735, 1.515, 2.45, 0.29, 0.16], 'swift', { roof: 0xc8102e, extras: ['taxi'], max: 40, acc: 9.5 }),
     car('1101', 'Toyota Fortuner', 'SUVs', 'suv', 0xf4f4f4, [4.795, 1.855, 1.835, 2.745, 0.385, 0.22], 'fortuner', { extras: ['rails'], tail: 'tall', max: 46, acc: 11, turn: 1.9 }),
     car('1102', 'Mahindra Thar', 'SUVs', 'boxy', 0xa4161a, [3.985, 1.82, 1.855, 2.45, 0.39, 0.23], 'thar', { roof: 0x16171a, extras: ['spare'], tail: 'small', max: 40, acc: 10, turn: 2.1 }),
     car('1103', 'Mahindra Scorpio-N', 'SUVs', 'suv', 0x1f2023, [4.662, 1.917, 1.857, 2.75, 0.38, 0.22], 'scorpio', { extras: ['rails'], tail: 'tall', max: 45, acc: 10.5 }),
@@ -925,7 +1790,8 @@
     // Game-only hypercar: 1990 km/h flat out, past 2100 km/h on nitro
     car('1306', 'Koenigsegg Jesko', 'Supercars', 'super', 0xf4f4f4, [4.61, 2.03, 1.21, 2.7, 0.36, 0.1], 'koenigsegg', { roof: 0x111111, rim: 0x1a1a1a, tail: 'round', extras: ['spoiler'], max: 1990 / 3.6, nos: 1.06, acc: 75, turn: 2.6, invincible: true }),
     // Game-only flying car: 10,000 km/h on the ground, flies at 2,000 km/h, can climb walls, indestructible
-    car('1307', 'Tesla Roadster', 'Supercars', 'roadster', 0x9a9ea5, [4.6, 2.0, 1.12, 2.65, 0.36, 0.11], 'tesla', { roof: 0x2a2d33, rim: 0x1e1f23, tail: 'bar', max: 10000 / 3.6, nos: 1.0, acc: 420, turn: 2.8, invincible: true, flyer: true }),
+    car('1307', 'Tesla Roadster', 'Supercars', 'roadster', 0x9a9ea5, [4.6, 2.0, 1.12, 2.65, 0.36, 0.11], 'tesla', { roof: 0x2a2d33, rim: 0x1e1f23, tail: 'bar', max: 5000 / 3.6, nos: 1.0, acc: 420, turn: 2.8, invincible: true, flyer: true }),
+    { num: '6001', name: 'Helicopter', group: 'Aircraft', kind: 'heli', heli: true, color: 0xf4f4f4, len: 10, wid: 2.7, H: 3.8, max: 100, acc: 28, turn: 1.7, invincible: true, cam: [19, 6.5] },
     bike('2001', 'Hero Splendor Plus', 'commuter', 0x1b1b1f, { max: 28, acc: 8 }),
     bike('2002', 'Honda Activa', 'scooter', 0xb5b9bf, { len: 1.83, max: 24, acc: 8, turn: 2.8 }),
     bike('2003', 'Royal Enfield Classic 350', 'cruiser', 0x6b1d1d, { len: 2.145, wid: 0.8, max: 36, acc: 9, turn: 2.3 }),
@@ -940,7 +1806,7 @@
     car('4003', 'Tata Signa Truck', 'Heavy', 'truck', 0xe76f51, [8.5, 2.5, 3.3, 4.8, 0.52, 0.3], 'truck', { extras: ['cargo'], tail: 'small', max: 28, acc: 5, turn: 1.3, cam: [15, 6.5] }),
     { num: '5001', name: 'Bajaj RE Auto Rickshaw', group: 'Others', kind: 'auto', color: 0x2e8b3e, len: 2.635, wid: 1.3, H: 1.7, max: 18, acc: 6, turn: 2.5 },
   ];
-  const GROUP_ORDER = ['Cars', 'SUVs', 'Luxury', 'Supercars', 'Bikes', 'Emergency', 'Heavy', 'Others'];
+  const GROUP_ORDER = ['Cars', 'SUVs', 'Luxury', 'Supercars', 'Bikes', 'Aircraft', 'Emergency', 'Heavy', 'Others'];
   const byNum = new Map(SPECS.map((s) => [s.num, s]));
   const camFor = (s) => s.cam || (s.kind === 'bike' ? [5.5, 2.4] : [Math.max(6.5, s.len + 2.8), s.H + 1.15]);
   const hpFor = (s) => (s.kind === 'bike' ? 70 : s.group === 'Heavy' ? 320 : s.kind === 'auto' ? 90 : 170);
@@ -1365,14 +2231,14 @@
   }
 
   function buildVehicle(s, col) {
-    const b = s.kind === 'bike' ? buildBike(s, col) : s.kind === 'auto' ? buildAuto(s, col) : buildCar(s, col);
+    const b = s.kind === 'heli' ? buildHeli(s, col) : s.kind === 'bike' ? buildBike(s, col) : s.kind === 'auto' ? buildAuto(s, col) : buildCar(s, col);
     b.mesh.traverse((o) => { if (o.isMesh && o.material !== BADGE && o.material !== FLAME) o.castShadow = true; });
     return b;
   }
 
   const vehicles = [];
   function vehicleState(s) {
-    return { spec: s, speed: 0, steer: 0, lean: 0, r: Math.max(s.wid * 0.6, s.len * 0.42), hp: hpFor(s), maxHp: hpFor(s), dead: false, drop: null, ai: null, called: false, home: false, mission: false, smokeT: 0 };
+    return { spec: s, speed: 0, steer: 0, lean: 0, r: Math.max(s.wid * 0.6, s.len * 0.42), hp: hpFor(s), maxHp: hpFor(s), dead: false, drop: null, ai: null, called: false, home: false, mission: false, smokeT: 0, y: 0, vy: 0, rotorW: 0, rotorA: 0 };
   }
   function createVehicle(s, x, z, h, opts = {}) {
     const b = buildVehicle(s, opts.color ?? s.color);
@@ -1393,17 +2259,33 @@
   const PANTS = [0x26324a, 0x3b3b3b, 0x6b5b45, 0x1f3d6b, 0x4a4a52];
   function makeHuman(shirtC, pantsC, skinC, cop) {
     const g = new THREE.Group();
-    const shirtM = mat(shirtC), pantsM = mat(pantsC), skinM = mat(skinC);
-    const limb = (w, h, d, m, x, y) => { const p = new THREE.Group(); p.position.set(x, y, 0); box(w, h, d, m, 0, -h / 2, 0, p); g.add(p); return p; };
-    const legL = limb(0.2, 0.9, 0.22, pantsM, -0.14, 0.9), legR = limb(0.2, 0.9, 0.22, pantsM, 0.14, 0.9);
-    const armL = limb(0.14, 0.65, 0.14, shirtM, -0.36, 1.55), armR = limb(0.14, 0.65, 0.14, shirtM, 0.36, 1.55);
-    box(0.55, 0.7, 0.3, shirtM, 0, 1.25, 0, g);
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.21, 12, 9), skinM); head.position.y = 1.8; head.castShadow = true; head.userData.own = true; g.add(head);
-    if (cop) { box(0.46, 0.12, 0.46, mat(0x1d2b4f), 0, 1.98, 0, g); box(0.46, 0.03, 0.2, mat(0x1d2b4f), 0, 1.93, -0.3, g); box(0.57, 0.06, 0.32, mat(0x0f0f12), 0, 0.96, 0, g); }
-    else box(0.44, 0.12, 0.44, mat(0x1f1a17), 0, 1.97, 0.02, g);
+    const shirtM = mat(shirtC), pantsM = mat(pantsC), skinM = mat(skinC), hairM = mat(0x1f1a17);
+    const upper = new THREE.Group(); upper.position.y = 0.9; g.add(upper); // everything above the hips, so it can bow
+    const limb = (w, h, d, m, x, y, parent) => { const p = new THREE.Group(); p.position.set(x, y, 0); box(w, h, d, m, 0, -h / 2, 0, p); parent.add(p); return p; };
+    const legL = limb(0.2, 0.9, 0.22, pantsM, -0.14, 0.9, g), legR = limb(0.2, 0.9, 0.22, pantsM, 0.14, 0.9, g);
+    const armL = limb(0.14, 0.65, 0.14, shirtM, -0.36, 0.65, upper), armR = limb(0.14, 0.65, 0.14, shirtM, 0.36, 0.65, upper);
+    box(0.55, 0.7, 0.3, shirtM, 0, 0.35, 0, upper);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.21, 12, 9), skinM); head.position.y = 0.9; head.castShadow = true; head.userData.own = true; upper.add(head);
+    if (cop) { box(0.46, 0.12, 0.46, mat(0x1d2b4f), 0, 1.08, 0, upper); box(0.46, 0.03, 0.2, mat(0x1d2b4f), 0, 1.03, -0.3, upper); box(0.57, 0.06, 0.32, mat(0x0f0f12), 0, 0.06, 0, upper); }
+    else box(0.44, 0.12, 0.44, hairM, 0, 1.07, 0.02, upper);
     const hand = new THREE.Group(); hand.position.set(0, -0.62, 0); armR.add(hand);
-    g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
-    return { g, legL, legR, armL, armR, hand };
+    g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.userData.role = o.material === shirtM ? 'shirt' : o.material === pantsM ? 'pants' : o.material === skinM ? 'skin' : o.material === hairM ? 'hair' : o.userData.role; } });
+    return { g, upper, legL, legR, armL, armR, hand, head, extras: [] };
+  }
+  // Clothes: colours for shirt and trousers, plus an optional long robe and headwear
+  function dressHuman(hum, o) {
+    hum.g.traverse((m) => {
+      if (!m.isMesh) return;
+      if (m.userData.role === 'shirt') m.material = mat(o.robe || o.shirt);
+      else if (m.userData.role === 'pants') m.material = mat(o.robe || o.pants);
+    });
+    for (const e of hum.extras) { if (e.parent) e.parent.remove(e); e.geometry.dispose(); }
+    hum.extras = [];
+    const add = (w, h, d, c, x, y, z) => { const m = box(w, h, d, mat(c), x, y, z, hum.upper); hum.extras.push(m); return m; };
+    if (o.robe) add(0.62, 1.5, 0.4, o.robe, 0, -0.07, 0);
+    if (o.head === 'ghutra') { add(0.5, 0.15, 0.5, 0xf6f4ee, 0, 1.1, 0.02); add(0.46, 0.42, 0.08, 0xf6f4ee, 0, 0.98, 0.24); add(0.5, 0.04, 0.5, 0x111111, 0, 1.03, 0.02); }
+    else if (o.head === 'cap') { add(0.46, 0.1, 0.46, o.cap || 0x222222, 0, 1.1, 0.0); add(0.4, 0.03, 0.22, o.cap || 0x222222, 0, 1.05, -0.3); }
+    else if (o.head === 'hijab') { add(0.52, 0.5, 0.48, 0x111111, 0, 0.9, 0.02); add(0.56, 0.28, 0.34, 0x111111, 0, 0.52, 0); }
   }
   function animWalk(hum, phase, amt) {
     const sw = Math.sin(phase) * amt;
@@ -1442,6 +2324,7 @@
   }
   function exit(force) {
     const v = current;
+    if (!force && v.spec.heli && (v.y - (v.floorY || 0) > 0.8 || (v.floorY || 0) > 1)) { toast(v.y - (v.floorY || 0) > 0.8 ? 'Land first. Hold Shift to go down.' : 'Land on the street to get out.'); return; }
     if (!force && (v.flight || v.climb)) { toast('Wait until you land.'); return; }
     if (!force && v.roof) { toast('You are on a roof. Use FLY to come down first.'); return; }
     if (!force && Math.abs(v.speed) > 3) { toast('Stop the vehicle first (hold S).'); return; }
@@ -1479,9 +2362,16 @@
 
   // ================= Traffic =================
   const traffic = [];
-  const TRAFFIC_SPECS = SPECS.filter((s) => s.group !== 'Emergency' && s.num !== '1306' && s.num !== '1307'); // the Jesko and Roadster are yours alone
+  const TRAFFIC_SPECS = SPECS.filter((s) => s.group !== 'Emergency' && s.kind !== 'heli' && s.num !== '1306' && s.num !== '1307'); // the Jesko and Roadster are yours alone
   const focus = () => (mode === 'drive' ? { x: current.x, z: current.z, h: current.h, y: current.y || 0 } : { x: P.x, z: P.z, h: P.h, y: 0 });
   function placeTraffic(t, near) {
+    for (let tries = 0; tries < 8; tries++) { placeTrafficOnce(t, near); if (t.z > SEA_EDGE + 40) return; }
+    // the player is out over the water (the Burj Al Arab causeway or island): keep the traffic on the beach road, never on the sea
+    const F = focus(), dir = Math.random() < 0.5 ? 1 : -1;
+    t.f = { x: dir, z: 0 }; t.h = Math.atan2(-t.f.x, -t.f.z); t.speed = t.cruise;
+    t.z = -480 - dir * 3.5; t.x = F.x + (100 + Math.random() * 70) * (Math.random() < 0.5 ? 1 : -1);
+  }
+  function placeTrafficOnce(t, near) {
     const alongZ = Math.random() < 0.5, dir = Math.random() < 0.5 ? 1 : -1, k = Math.floor(Math.random() * 5) - 2;
     const f = alongZ ? { x: 0, z: dir } : { x: dir, z: 0 };
     const left = { x: f.z, z: -f.x };
@@ -1524,12 +2414,18 @@
   const PED_N = isTouch ? 12 : 22;
   function spawnPed(x, z) {
     const hum = makeHuman(pick(SHIRTS), pick(PANTS), pick(SKINS), false);
+    const rr = Math.random();
+    if (rr < 0.3) dressHuman(hum, pick([{ robe: 0xf5f3ec, head: 'ghutra' }, { robe: 0xf5f3ec, head: 'ghutra' }, { robe: 0xd8d2c2, head: 'ghutra' }, { robe: 0x8d9096, head: 'ghutra' }]));
+    else if (rr < 0.42) dressHuman(hum, { robe: 0x121212, head: 'hijab' });
     const p = { hum, x, z, h: 0, dir: { x: 0, z: 1 }, speed: rand(1.2, 1.8), state: 'walk', hp: 40, t: 0, phase: Math.random() * 6, deadT: 0, from: null, blood: null };
     scene.add(hum.g);
     peds.push(p);
     return p;
   }
   function placePed(p, near) {
+    for (let tries = 0; tries < 8; tries++) { placePedOnce(p, near); if (p.z > SEA_EDGE + 12) break; }
+  }
+  function placePedOnce(p, near) {
     const F = focus();
     const alongZ = Math.random() < 0.5, k = Math.floor(Math.random() * 3) - 1, side = Math.random() < 0.5 ? -9.6 : 9.6, dir = Math.random() < 0.5 ? 1 : -1;
     const d = (near ? rand(15, 90) : rand(80, 110)) * (Math.random() < 0.5 ? 1 : -1);
@@ -1906,6 +2802,11 @@
     return cops.some((c) => !c.dead && !c.inCar && Math.hypot(c.x - x, c.z - z) < r) || vehicles.some((v) => v.ai && Math.hypot(v.x - x, v.z - z) < r);
   }
   function roadPoint(from, minD, maxD) {
+    let p;
+    for (let tries = 0; tries < 10; tries++) { p = roadPointOnce(from, minD, maxD); if (p.z > SEA_EDGE + 30) return p; }
+    return { x: from.x + (Math.random() - 0.5) * 200, z: -480 + (Math.random() < 0.5 ? -3.5 : 3.5), alongZ: false };
+  }
+  function roadPointOnce(from, minD, maxD) {
     const a = Math.random() * Math.PI * 2, d = minD + Math.random() * (maxD - minD);
     let x = from.x + Math.cos(a) * d, z = from.z + Math.sin(a) * d;
     const rx = Math.round(x / CH) * CH, rz = Math.round(z / CH) * CH;
@@ -2096,6 +2997,8 @@
   window.addEventListener('keydown', (e) => {
     const k = e.key.toLowerCase();
     if (!started) { if (k === 'enter') start(); return; }
+    if (panelOpen) { if (k === 'escape') closePanel(); return; }
+    if (uiBusy) return;
     if (mapOpen) { if (k === 'escape' || k === 'g') closeFlyMap(); e.preventDefault(); return; }
     if (k === 'escape' && !phoneOpen) { togglePause(!paused); e.preventDefault(); return; }
     if (paused) return;
@@ -2168,7 +3071,8 @@
   $('phoneBtn').addEventListener('click', () => togglePhone(!phoneOpen));
 
   function action() {
-    if (!started || phoneOpen || wastedT >= 0) return;
+    if (!started || phoneOpen || wastedT >= 0 || panelOpen || uiBusy) return;
+    if (lifeAction()) return;
     if (mode === 'drive') { exit(false); return; }
     setAim(false);
     const v = nearestVehicle();
@@ -2257,8 +3161,9 @@
   let dial = '', calling = false;
   function setTab(name) {
     for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('on', b.dataset.tab === name);
-    for (const p of ['dialer', 'garage', 'missions', 'help', 'home']) $('pane-' + p).hidden = p !== name;
+    for (const p of ['dialer', 'garage', 'missions', 'store', 'help', 'home']) $('pane-' + p).hidden = p !== name;
     if (name === 'missions') renderMissions();
+    if (name === 'store') renderStore();
     if (name === 'home') renderHome();
   }
   document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));
@@ -2276,13 +3181,14 @@
     $('calling').hidden = false; $('cNum').textContent = num; $('cName').textContent = s ? s.name : 'Unknown number';
     $('cState').textContent = 'Ringing...';
     beep([440, 480], 0.6, 'sine', 0.08);
+    const ringMs = 1300 / phoneTier();
     setTimeout(() => {
       $('cState').textContent = s ? 'Sure! Sending it to you now.' : 'This number does not exist.';
       setTimeout(() => {
         calling = false; $('calling').hidden = true;
         if (s) { togglePhone(false); deliver(s); dial = ''; renderDial(); }
       }, s ? 900 : 1400);
-    }, 1300);
+    }, ringMs);
   }
   $('keypad').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) dialPush(b.dataset.k); });
   $('callBtn').addEventListener('click', dialCall);
@@ -2312,14 +3218,15 @@
     trigger = false; setAim(false);
     if (open) { updateClock(); renderDial(); }
   }
-  function updateClock() { const d = new Date(); $('clock').textContent = d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); }
-  setInterval(updateClock, 15000);
+  function updateClock() { $('clock').textContent = fmtClock(GC.min); }
+  setInterval(updateClock, 2000);
 
   function renderHome() {
     $('statCash').textContent = money(save.cash);
     $('statDone').textContent = save.done;
     $('nightToggle').setAttribute('aria-pressed', String(save.night));
     $('soundToggle').setAttribute('aria-pressed', String(save.sound));
+    renderOutfits();
   }
   $('goHome').addEventListener('click', () => {
     if (stars > 0) { toast('You cannot go home while wanted.', 'fail'); return; }
@@ -2356,20 +3263,6 @@
     v.mesh.position.y = 14;
     toast('Your ' + s.name + ' has arrived! Walk up and press E.');
     return v;
-  }
-
-  // ================= Day / night =================
-  function setNight(on) {
-    save.night = on; persist();
-    const fogC = on ? 0x141a28 : 0xd8e4ea;
-    scene.fog.color.setHex(fogC); scene.background.setHex(fogC);
-    skyU.top.value.setHex(on ? 0x03060e : 0x4a95e6); skyU.bottom.value.setHex(fogC);
-    hemi.intensity = on ? 0.28 : 0.72;
-    sun.intensity = on ? 0.18 : 0.85;
-    sun.color.setHex(on ? 0x8fa8ff : 0xfff0d6);
-    for (const m of BUILD_MATS) m.emissiveIntensity = on ? 0.9 : 0;
-    if (!phoneOpen && started) toast(on ? 'Night falls over the city.' : 'Good morning!');
-    renderHome();
   }
 
   // ================= Missions =================
@@ -2480,7 +3373,7 @@
     mission = null;
     if (win) {
       const bonus = m.timed ? Math.round(m.time * 10) : 0;
-      save.cash += m.def.reward + bonus; save.done++; persist();
+      save.cash += m.def.reward + bonus; save.done++; save.gems++; persist(); addXP(120);
       toast('Mission passed! +' + money(m.def.reward) + (bonus ? ' and ' + money(bonus) + ' time bonus' : ''), 'win', 4200);
       beep([523, 659, 784, 1047], 0.6, 'sine', 0.1);
     } else {
@@ -2545,6 +3438,7 @@
 
   // ================= Update =================
   function updateFoot(dt) {
+    if (INT.frozen) return;
     const spd = keys.shift && !aiming ? 9 : aiming ? 2.6 : 4.8;
     P.h += (keys.left - keys.right) * (aiming ? 1.2 : 2.6) * dt;
     const mv = keys.up - keys.down * 0.6;
@@ -2627,7 +3521,8 @@
     for (const p of v.fronts) p.rotation.y = v.steer * (v.spec.kind === 'car' ? 0.5 : 0.35);
     if (v.spec.kind === 'bike' && !v.fly) v.lean += (v.steer * clamp(Math.abs(v.speed) / 18, 0, 1) * 0.38 - v.lean) * Math.min(1, dt * 6);
     v.mesh.position.x = v.x; v.mesh.position.z = v.z;
-    if (v.spec.flyer) v.mesh.position.y = v.y || 0;
+    if (v.spec.flyer || v.spec.heli) v.mesh.position.y = v.y || 0;
+    if (v.rotors) { if (v !== current) v.rotorW *= 1 - Math.min(1, dt * 0.4); v.rotorA += dt * v.rotorW; v.rotors.main.rotation.y = v.rotorA; v.rotors.tail.rotation.x = v.rotorA * 1.6; }
     v.mesh.rotation.set(v.pitch || 0, v.h, v.lean || 0, 'YXZ');
   }
 
@@ -2745,20 +3640,25 @@
     if (fmCv.width !== Math.round(w * dpr)) { fmCv.width = Math.round(w * dpr); fmCv.height = Math.round(h * dpr); }
     const g = fmCtx;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    g.fillStyle = '#4f6b45'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#cbb98c'; g.fillRect(0, 0, w, h);
     const s = FM.scale, spanX = w / 2 / s + CH, spanZ = h / 2 / s + CH;
     const cx0 = Math.floor((current.x - spanX) / CH), cx1 = Math.ceil((current.x + spanX) / CH);
     const cz0 = Math.floor((current.z - spanZ) / CH), cz1 = Math.ceil((current.z + spanZ) / CH);
     // pavements, then roads
-    g.fillStyle = '#8f8a80';
-    for (let i = cx0; i <= cx1; i++) for (let j = cz0; j <= cz1; j++) { const [x, y] = fmToScreen(i * CH - CH / 2, j * CH - CH / 2); g.fillRect(x, y, CH * s, CH * s); }
+    g.fillStyle = '#b9b3a3';
+    for (let i = cx0; i <= cx1; i++) for (let j = Math.max(cz0, -6); j <= cz1; j++) { const [x, y] = fmToScreen(i * CH - CH / 2, j * CH - CH / 2); g.fillRect(x, y, CH * s, CH * s); }
+    const seaY = fmToScreen(0, SEA_EDGE)[1];
+    g.fillStyle = '#2b7a9c'; g.fillRect(0, 0, w, Math.max(0, seaY));
     g.fillStyle = '#3a3d44';
-    for (let i = cx0; i <= cx1; i++) { const [x] = fmToScreen(i * CH - 7, 0); g.fillRect(x, 0, 14 * s, h); }
-    for (let j = cz0; j <= cz1; j++) { const [, y] = fmToScreen(0, j * CH - 7); g.fillRect(0, y, w, 14 * s); }
+    for (const o of SEA_OK) { const [sx, sy] = fmToScreen(o.x, o.z); g.save(); g.translate(sx, sy); g.rotate(-o.a); g.fillStyle = '#c9c2b0'; g.fillRect(-o.hw * s, -o.hd * s, o.hw * 2 * s, o.hd * 2 * s); g.fillStyle = '#3a3d44'; g.fillRect(-3.5 * s, -o.hd * s, 7 * s, o.hd * 2 * s); g.restore(); }
+    g.fillStyle = '#3a3d44';
+    for (let i = cx0; i <= cx1; i++) { const [x] = fmToScreen(i * CH - 7, 0); g.fillRect(x, Math.max(0, seaY), 14 * s, h); }
+    for (let j = cz0; j <= cz1; j++) if (j * CH >= SEA_EDGE) { const [, y] = fmToScreen(0, j * CH - 7); g.fillRect(0, y, w, 14 * s); }
+    { const [mx0, my] = fmToScreen(-1040, 0), [mx1] = fmToScreen(1040, 0); g.fillStyle = '#c62828'; g.fillRect(mx0, my - 1.5, mx1 - mx0, 3); }
     // buildings, shaded by height
     for (let i = cx0; i <= cx1; i++) for (let j = cz0; j <= cz1; j++) {
       for (const lot of chunkLayout(i, j)) {
-        if (lot.park) { const [x, y] = fmToScreen(i * CH + lot.sx * 25.5 - 14.5, j * CH + lot.sz * 25.5 - 14.5); g.fillStyle = '#5f8f45'; g.fillRect(x, y, 29 * s, 29 * s); }
+        if (lot.park || lot.water || lot.ground === 'grass' || lot.ground === 'sand') { const [x, y] = fmToScreen(i * CH + lot.sx * 25.5 - 14.5, j * CH + lot.sz * 25.5 - 14.5); g.fillStyle = lot.water ? '#2b7a9c' : lot.ground === 'sand' ? '#d6c28f' : '#5f8f45'; g.fillRect(x, y, 29 * s, 29 * s); }
       }
       for (const b of layoutCols(i, j)) {
         const [x, y] = fmToScreen(b.minX, b.minZ), bw = (b.maxX - b.minX) * s, bh = (b.maxZ - b.minZ) * s;
@@ -2839,6 +3739,8 @@
       }
       t.speed += clamp(target - t.speed, -14 * dt, 5 * dt);
       t.x += t.f.x * t.speed * dt; t.z += t.f.z * t.speed * dt;
+      if (t.f.z < 0 && t.z < SEA_EDGE + 24) { t.x = Math.round(t.x / CH) * CH * 2 - t.x; t.f = { x: 0, z: 1 }; t.h = Math.atan2(0, -1); }
+      if (t.z < SEA_EDGE + 8) placeTraffic(t, false);
       for (const w of t.wheels) w.rotation.x -= (t.speed * dt) / t.wr;
       t.mesh.position.x = t.x; t.mesh.position.z = t.z; t.mesh.rotation.y = t.h;
       if (far) placeTraffic(t, false);
@@ -2854,12 +3756,16 @@
     g.fillStyle = save.night ? '#0e121b' : '#2a3140'; g.fillRect(0, 0, W, W);
     g.save();
     g.translate(c, c); g.rotate(F.h); g.scale(scale, scale); g.translate(-F.x, -F.z);
+    g.fillStyle = save.night ? '#10304a' : '#2b6c8f'; g.fillRect(F.x - 400, SEA_EDGE - 3000, 800, 3000);
+    g.fillStyle = save.night ? '#2a2f3a' : '#9a9588';
+    for (const o of SEA_OK) { g.save(); g.translate(o.x, o.z); g.rotate(-o.a); g.fillRect(-o.hw, -o.hd, o.hw * 2, o.hd * 2); g.restore(); }
     g.strokeStyle = '#6b7385'; g.lineWidth = 14;
     const x0 = Math.floor((F.x - 160) / CH), x1 = Math.ceil((F.x + 160) / CH), z0 = Math.floor((F.z - 160) / CH), z1 = Math.ceil((F.z + 160) / CH);
     g.beginPath();
-    for (let i = x0; i <= x1; i++) { g.moveTo(i * CH, F.z - 170); g.lineTo(i * CH, F.z + 170); }
-    for (let i = z0; i <= z1; i++) { g.moveTo(F.x - 170, i * CH); g.lineTo(F.x + 170, i * CH); }
+    for (let i = x0; i <= x1; i++) { g.moveTo(i * CH, Math.max(F.z - 170, i === -2 ? -690 : i === 3 ? -1130 : SEA_EDGE)); g.lineTo(i * CH, F.z + 170); }
+    for (let i = z0; i <= z1; i++) if (i * CH >= SEA_EDGE) { g.moveTo(F.x - 170, i * CH); g.lineTo(F.x + 170, i * CH); }
     g.stroke();
+    if (Math.abs(F.z) < 200) { g.strokeStyle = '#c62828'; g.lineWidth = 3; g.beginPath(); g.moveTo(Math.max(F.x - 170, -1040), 0); g.lineTo(Math.min(F.x + 170, 1040), 0); g.stroke(); }
     g.fillStyle = '#74a957'; g.fillRect(-40, -40, 29, 29);
     g.restore();
     const f = fwd(F.h);
@@ -2878,6 +3784,7 @@
     for (const o of cops) if (!o.dead && !o.inCar) { const [mx, my] = toMap(o.x, o.z, 0); if (Math.hypot(mx - c, my - c) < c) { g.beginPath(); g.arc(mx, my, 4, 0, 7); g.fill(); } }
     const dotAt = (x, z, color, r) => { const [mx, my] = toMap(x, z, c - 14); g.fillStyle = '#12161f'; g.beginPath(); g.arc(mx, my, r + 3, 0, 7); g.fill(); g.fillStyle = color; g.beginPath(); g.arc(mx, my, r, 0, 7); g.fill(); };
     dotAt(HOME_SPAWN.x, HOME_SPAWN.z, '#ffc93c', 9);
+    dotAt(BK.x, BK.z, '#ffffff', 5); dotAt(BAA.x, BAA.z, '#9fe3ff', 5);
     const tp = targetPos();
     if (tp) dotAt(tp.x, tp.z, '#' + mission.steps[mission.i].color.toString(16).padStart(6, '0'), 9);
     g.fillStyle = '#ffffff'; g.strokeStyle = '#12161f'; g.lineWidth = 3;
@@ -2896,9 +3803,10 @@
     if (now - lastHud < 80) return;
     lastHud = now;
     const F = focus();
-    drawMap(F, now);
+    if (!INT.active) drawMap(F, now);
+    updateLifeHud();
     const dist = Math.hypot(HOME_SPAWN.x - F.x, HOME_SPAWN.z - F.z);
-    $('homeDist').textContent = 'Home ' + fmtDist(dist);
+    $('homeDist').textContent = INT.active ? 'Indoors' : 'Home ' + fmtDist(dist);
     $('homeInfo').textContent = 'Home is ' + fmtDist(dist) + ' away.';
     $('cash').textContent = money(save.cash);
     // Health and wanted level
@@ -2928,7 +3836,8 @@
     $('scope').hidden = !scope;
     $('cross').hidden = !(aiming && !scope);
     $('zoomBtn').hidden = !(wi >= 0 && mode === 'foot' && wastedT < 0);
-    $('nosBtn').hidden = mode !== 'drive';
+    $('nosBtn').hidden = mode !== 'drive'; $('nosBtn').textContent = mode === 'drive' && current.spec.heli ? 'DOWN' : 'NOS';
+    $('upBtn').hidden = !(mode === 'drive' && current.spec.heli);
     if (wastedT >= 0) { setHint(''); return; }
     if (mode === 'drive') {
       $('modeLabel').textContent = current.spec.num + ' · ' + current.spec.group;
@@ -2939,17 +3848,1270 @@
       $('climbBtn').hidden = !climbTarget(current);
       $('nitroBar').style.transform = 'scaleX(' + nitro.toFixed(2) + ')';
       $('carHpBar').style.transform = 'scaleX(' + Math.max(0, current.hp / current.maxHp).toFixed(2) + ')';
-      setHint(Math.abs(current.speed) < 1 ? '<kbd>E</kbd> get out · <kbd>Shift</kbd> nitro · <kbd>Click</kbd> shoot' : '');
+      setHint(current.spec.heli ? 'ALT ' + Math.round(current.y) + ' m · <kbd>Space</kbd> up · <kbd>Shift</kbd> down · <kbd>W</kbd> forward · land to get out with <kbd>E</kbd>' : Math.abs(current.speed) < 1 ? '<kbd>E</kbd> get out · <kbd>Shift</kbd> nitro · <kbd>Click</kbd> shoot' : '');
       $('tAct').textContent = 'Exit';
     } else {
       $('modeLabel').textContent = 'On foot';
-      $('modeValue').textContent = dist < 30 ? 'Outside your home' : 'Exploring the city';
+      $('modeValue').textContent = INT.active ? INT.active.title : dist < 30 ? 'Outside your home' : districtAt(F.x, F.z);
       $('speedo').hidden = true;
-      const v = nearestVehicle(), t = v ? null : nearestTraffic();
-      setHint(v ? '<kbd>E</kbd> drive the ' + v.spec.name : t ? '<kbd>E</kbd> steal the ' + t.spec.name : dist < 30 && !mission && stars === 0 ? 'Your Fortuner and Koenigsegg are parked outside. <kbd>M</kbd> for missions' : '');
-      $('tAct').textContent = t && !v ? 'Steal' : 'Enter';
+      const v = nearestVehicle(), t = v ? null : nearestTraffic(), lh = lifeHint();
+      setHint(lh ? lh : v ? '<kbd>E</kbd> drive the ' + v.spec.name : t ? '<kbd>E</kbd> steal the ' + t.spec.name : dist < 30 && !mission && stars === 0 ? 'Your Fortuner and Koenigsegg are parked outside. <kbd>M</kbd> for missions' : '');
+      $('tAct').textContent = lh ? 'Use' : t && !v ? 'Steal' : 'Enter';
     }
   }
+
+  // <LIFE>
+  // ================= Dubai life: clock, prayers, food, level, panels, shops =================
+  let mosqueDist = null;
+  const TEST_CASH = 10000000000000000000000; // testing money. Delete this line and the next one when the owner asks.
+  save.cash = Math.max(save.cash, TEST_CASH);
+
+  // ---- The game clock: one real second is 1.5 game minutes, so a full day lasts 16 minutes ----
+  const GC = { min: 450, total: 0, paused: false };
+  const CLOCK_SPEED = 1.5;
+  const PRAYERS = [
+    { id: 'fajr', name: 'Fajr', t: 300, rak: 2 }, { id: 'zuhr', name: 'Zuhr', t: 735, rak: 4 }, { id: 'asr', name: 'Asr', t: 930, rak: 4 },
+    { id: 'maghrib', name: 'Maghrib', t: 1095, rak: 3 }, { id: 'isha', name: 'Isha', t: 1185, rak: 4 },
+  ];
+  const prayed = { fajr: false, zuhr: false, asr: false, maghrib: false, isha: false };
+  const wrapDay = (m) => ((m % 1440) + 1440) % 1440;
+  const fmtClock = (m) => { m = Math.floor(wrapDay(m)); return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+  function currentPrayer(m) {
+    m = wrapDay(m);
+    if (m >= 1185 || m < 300) return PRAYERS[4];
+    if (m < 380) return PRAYERS[0];
+    if (m < 735) return null;
+    if (m < 930) return PRAYERS[1];
+    if (m < 1095) return PRAYERS[2];
+    return PRAYERS[3];
+  }
+  function nextPrayer(m) { m = wrapDay(m); for (const p of PRAYERS) if (p.t > m) return p; return PRAYERS[0]; }
+  const crossed = (prev, cur, t) => (cur >= prev ? prev < t && cur >= t : prev < t || cur >= t);
+  function adhan(p) {
+    prayed[p.id] = false;
+    toast(p.name + ' time. Go to a masjid and pray with the jamaat.', 'win', 6500);
+    beep([392, 440, 494, 440, 392], 1.6, 'sine', 0.1);
+  }
+  function advanceClock(mins) {
+    const prev = GC.min;
+    GC.min = wrapDay(GC.min + mins); GC.total += mins;
+    for (const p of PRAYERS) if (crossed(prev, GC.min, p.t)) adhan(p);
+  }
+
+  // ---- Light follows the clock: dawn, day, dusk, night ----
+  const C_DAY = { fog: new THREE.Color(0xe6dcc6), top: new THREE.Color(0x5aa5e6), sun: new THREE.Color(0xfff0d6) };
+  const C_NIGHT = { fog: new THREE.Color(0x141a28), top: new THREE.Color(0x03060e), sun: new THREE.Color(0x8fa8ff) };
+  const C_WARM = new THREE.Color(0xf0a070), tmpC = new THREE.Color();
+  const smooth01 = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+  const dayFactor = (m) => { m = wrapDay(m); return m < 720 ? smooth01(320, 400, m) : 1 - smooth01(1065, 1140, m); };
+  let lightF = -1;
+  function applyLight(force) {
+    const f = dayFactor(GC.min);
+    if (!force && Math.abs(f - lightF) < 0.01) return;
+    lightF = f;
+    const w = f * (1 - f) * 4 * 0.38;
+    tmpC.copy(C_NIGHT.fog).lerp(C_DAY.fog, f).lerp(C_WARM, w);
+    scene.fog.color.copy(tmpC); scene.background.copy(tmpC);
+    skyU.bottom.value.copy(tmpC);
+    skyU.top.value.copy(C_NIGHT.top).lerp(C_DAY.top, f).lerp(C_WARM, w * 0.4);
+    hemi.intensity = 0.28 + 0.44 * f; sun.intensity = 0.18 + 0.67 * f;
+    sun.color.copy(C_NIGHT.sun).lerp(C_DAY.sun, f).lerp(C_WARM, w);
+    const em = 0.9 * (1 - f);
+    for (const m of NIGHT_MATS) m.emissiveIntensity = em;
+    save.night = f < 0.45;
+  }
+  function setNight(on) {
+    GC.min = on ? 21 * 60 : 8 * 60;
+    applyLight(true);
+    if (!phoneOpen && started) toast(on ? 'Night falls over the city.' : 'Good morning!');
+    renderHome();
+  }
+  function sunPos(F) {
+    const th = (wrapDay(GC.min) - 360) / 720 * Math.PI;
+    sun.position.set(F.x + Math.cos(th) * 75, 25 + Math.max(Math.sin(th), 0.18) * 80, F.z + 30);
+  }
+
+  // ---- Food and hunger ----
+  let food = 85;
+  function addFood(n) { food = clamp(food + n, 0, 100); }
+
+  // ---- Level and experience ----
+  const LEVEL_NAMES = ['Newcomer', 'Resident', 'Local', 'Explorer', 'Regular', 'VIP', 'Sheikh', 'Legend'];
+  const lvlOf = (xp) => Math.floor(Math.sqrt(xp / 120)) + 1;
+  const xpFor = (l) => 120 * (l - 1) * (l - 1);
+  function addXP(n) {
+    const before = lvlOf(save.xp);
+    save.xp += n; persist();
+    const l = lvlOf(save.xp);
+    if (l > before) { save.gems += 3; persist(); toast('Level up! Level ' + l + ' · ' + LEVEL_NAMES[Math.min(l - 1, 7)] + '  (+3 gems)', 'win', 3600); beep([523, 659, 784, 1047], 0.6, 'sine', 0.1); }
+  }
+
+  // ---- Street names ----
+  const EW_NAMES = { '-6': 'Jumeirah Beach Rd', '-5': 'Al Hadiqa St', '-4': 'Al Wasl Rd', '-3': 'Umm Suqeim St', '-2': 'Al Safa St', '-1': 'Al Satwa Rd', '0': 'Sheikh Zayed Rd', '1': 'Trade Centre Rd', '2': 'Al Saada St', '3': 'Financial Centre Rd', '4': 'Al Asayel St', '5': 'Marsa Dubai Rd', '6': 'Al Khail Rd', '7': 'Umm Al Sheif Rd' };
+  const NS_NAMES = ['Mohammed Bin Rashid Blvd', 'Al Mustaqbal St', 'Al Sufouh Rd', 'Emirates Rd', 'Al Quoz St', 'Oud Metha Rd', 'Za\'abeel Rd', 'Al Karama St', 'Baniyas Rd'];
+  function streetAt(x, z) {
+    const row = Math.round(z / CH), col = Math.round(x / CH);
+    const dz = Math.abs(z - row * CH), dx = Math.abs(x - col * CH);
+    if (dz <= dx) return EW_NAMES[String(row)] || (row > 7 ? 'Desert Highway ' + row : 'Street ' + row);
+    return col === 3 ? NS_NAMES[0] : NS_NAMES[((col % 9) + 9) % 9];
+  }
+
+  // ---- Panels, fades, banners ----
+  let panelOpen = false, panelHandler = null, uiBusy = false;
+  function openPanel(title, html, handler) {
+    $('panelTitle').textContent = title; $('panelBody').innerHTML = html; $('panel').hidden = false;
+    panelOpen = true; panelHandler = handler || null;
+    for (const k in keys) keys[k] = 0;
+    trigger = false; setAim(false);
+  }
+  function setPanel(html) { $('panelBody').innerHTML = html; }
+  function closePanel() { $('panel').hidden = true; panelOpen = false; panelHandler = null; }
+  $('panel').addEventListener('click', (e) => {
+    if (e.target === $('panel') || e.target.closest('#panelX')) { closePanel(); return; }
+    const b = e.target.closest('[data-act]');
+    if (b && !b.disabled && panelHandler) panelHandler(b.dataset.act, b.dataset);
+  });
+  function fadeThen(fn, ms = 300) {
+    if (uiBusy) return;
+    uiBusy = true; $('fade').classList.add('on');
+    setTimeout(() => { try { fn(); } finally { setTimeout(() => { $('fade').classList.remove('on'); uiBusy = false; }, 140); } }, ms);
+  }
+  let bannerSkip = null;
+  function showBanner(title, sub, skip) {
+    $('banTitle').textContent = title; $('banSub').textContent = sub; $('banner').hidden = false;
+    bannerSkip = skip || null; $('banSkip').hidden = !skip;
+  }
+  const hideBanner = () => { $('banner').hidden = true; bannerSkip = null; };
+  $('banSkip').addEventListener('click', () => { if (bannerSkip) bannerSkip(); });
+  const fmtMoney = (n) => 'AED ' + Math.round(n).toLocaleString('en-US');
+
+  // ---- Clothes ----
+  const OUTFITS = [
+    { id: 'casual', name: 'Casual Orange', shirt: 0xe85d3f, pants: 0x26324a, price: 0 },
+    { id: 'kandura', name: 'White Kandura and Ghutra', robe: 0xf5f3ec, head: 'ghutra', price: 650 },
+    { id: 'kandura_grey', name: 'Grey Kandura and Ghutra', robe: 0x8d9096, head: 'ghutra', price: 700 },
+    { id: 'kandura_blue', name: 'Navy Kandura and Ghutra', robe: 0x24324f, head: 'ghutra', price: 720 },
+    { id: 'suit', name: 'Navy Business Suit', shirt: 0x1d2a4a, pants: 0x1d2a4a, price: 1800 },
+    { id: 'tux', name: 'Black Tuxedo', shirt: 0x14151a, pants: 0x14151a, price: 3500 },
+    { id: 'street', name: 'Street Hoodie and Cap', shirt: 0x6b6f78, pants: 0x25272e, head: 'cap', cap: 0x111111, price: 420 },
+    { id: 'kit', name: 'Football Kit', shirt: 0xc8102e, pants: 0xf4f4f4, price: 320 },
+    { id: 'beach', name: 'Beach Shirt and Shorts', shirt: 0x1fa5b8, pants: 0xe9d9ac, price: 260 },
+    { id: 'leather', name: 'Black Leather Jacket', shirt: 0x1a1a1a, pants: 0x2b3a55, price: 900 },
+    { id: 'explorer', name: 'Desert Explorer', shirt: 0xb59a68, pants: 0x6b5b45, head: 'cap', cap: 0xc2a878, price: 540 },
+    { id: 'gold', name: 'Golden Sheikh Bisht', robe: 0xd9b24a, head: 'ghutra', price: 25000 },
+  ];
+  const outfitById = new Map(OUTFITS.map((o) => [o.id, o]));
+  const hexCss = (c) => '#' + c.toString(16).padStart(6, '0');
+  const outfitColor = (o) => hexCss(o.robe || o.shirt);
+  function wearOutfit(id) {
+    const o = outfitById.get(id);
+    if (!o || !save.outfits.includes(id)) return;
+    save.outfit = id; persist();
+    dressHuman(PL, o);
+    renderOutfits();
+    toast('You are wearing: ' + o.name);
+  }
+  function renderOutfits() {
+    const list = $('outfitList'); list.innerHTML = '';
+    for (const id of save.outfits) {
+      const o = outfitById.get(id); if (!o) continue;
+      const row = document.createElement('div'); row.className = 'shop-row';
+      row.innerHTML = '<span class="sw"></span><span class="nm"></span><button></button>';
+      row.querySelector('.sw').style.background = outfitColor(o);
+      row.querySelector('.nm').textContent = o.name;
+      const b = row.querySelector('button');
+      b.textContent = save.outfit === id ? 'Wearing' : 'Wear'; b.disabled = save.outfit === id;
+      b.addEventListener('click', () => wearOutfit(id));
+      list.appendChild(row);
+    }
+  }
+
+  // ---- Phones ----
+  const PHONES = [
+    { id: 'basic', name: 'AZARR Basic', short: 'AZARR 5G', price: 0, color: '#2b303b', tier: 1 },
+    { id: 'pixel9', name: 'Google Pixel 9 Pro', short: 'Pixel 9 Pro', price: 3799, color: '#8fa595', tier: 2 },
+    { id: 'op13', name: 'OnePlus 13', short: 'OnePlus 13', price: 3299, color: '#33363c', tier: 2 },
+    { id: 'xm15', name: 'Xiaomi 15 Ultra', short: 'Xiaomi 15 Ultra', price: 4199, color: '#b7bcc6', tier: 2 },
+    { id: 'hw70', name: 'Huawei Pura 70 Ultra', short: 'Pura 70 Ultra', price: 4499, color: '#d8cfba', tier: 3 },
+    { id: 's25', name: 'Samsung Galaxy S25 Ultra', short: 'Galaxy S25 Ultra', price: 4899, color: '#3a3f4a', tier: 3 },
+    { id: 'ip16p', name: 'iPhone 16 Pro', short: 'iPhone 16 Pro', price: 4699, color: '#8d8a84', tier: 3 },
+    { id: 'ip16pm', name: 'iPhone 16 Pro Max', short: 'iPhone 16 Pro Max', price: 5499, color: '#a59b8c', tier: 4 },
+    { id: 'fold6', name: 'Samsung Galaxy Z Fold6', short: 'Galaxy Z Fold6', price: 7999, color: '#4c5a8a', tier: 4 },
+    { id: 'vertu', name: 'Vertu Signature Gold', short: 'Vertu Gold', price: 49000, color: '#c9a23c', tier: 5 },
+  ];
+  const phoneById = new Map(PHONES.map((p) => [p.id, p]));
+  const phoneTier = () => (phoneById.get(save.phone) || PHONES[0]).tier;
+  function applyPhone() {
+    const p = phoneById.get(save.phone) || PHONES[0];
+    $('phoneModel').textContent = p.short;
+    $('phone').style.borderColor = p.color;
+    $('phone').style.boxShadow = '0 20px 60px rgba(0,0,0,0.55), 0 0 0 3px ' + p.color + '66';
+  }
+  function renderStore() {
+    const list = $('storeList'); list.innerHTML = '';
+    for (const p of PHONES) {
+      const own = save.phones.includes(p.id);
+      const row = document.createElement('div'); row.className = 'shop-row';
+      row.innerHTML = '<span class="sw"></span><span class="nm"></span><button></button>';
+      row.querySelector('.sw').style.background = p.color;
+      row.querySelector('.nm').innerHTML = p.name + '<small>' + (p.price ? fmtMoney(p.price) : 'Free') + ' · speed ' + p.tier + '</small>';
+      const b = row.querySelector('button');
+      if (save.phone === p.id) { b.textContent = 'In use'; b.disabled = true; }
+      else if (own) { b.textContent = 'Use'; b.addEventListener('click', () => { save.phone = p.id; persist(); applyPhone(); renderStore(); }); }
+      else {
+        b.textContent = 'Buy';
+        b.addEventListener('click', () => {
+          if (save.cash < p.price) { toast('Not enough cash.', 'fail'); return; }
+          save.cash -= p.price; save.phones.push(p.id); save.phone = p.id; persist(); addXP(Math.round(p.price / 40));
+          applyPhone(); renderStore(); renderHome();
+          toast('You bought the ' + p.name + '!', 'win'); beep([523, 784], 0.4, 'sine', 0.1);
+        });
+      }
+      list.appendChild(row);
+    }
+  }
+
+  // ---- Per-frame life: clock, hunger, HUD ----
+  let hungerWarn = 0;
+  function tickLife(dt) {
+    if (!GC.paused) advanceClock(dt * CLOCK_SPEED);
+    applyLight(false);
+    food = Math.max(0, food - dt * (mode === 'foot' && keys.shift && !INT.active ? 0.07 : 0.045));
+    if (food < 22 && hungerWarn <= 0 && !phoneOpen) { toast('You are hungry. Eat at a restaurant or the Dubai Mall food court.', 'fail', 3600); hungerWarn = 90; }
+    hungerWarn -= dt;
+    if (stay.on && GC.total >= stay.endTotal) endStay();
+    mosqueTimer -= dt;
+    if (mosqueTimer <= 0) { mosqueTimer = 1.2; findMosque(); if (INT.active && INT.active.refreshJamaat && !pray.on) INT.active.refreshJamaat(); }
+    if (food <= 0 && wastedT < 0) { hp -= dt * 0.6; if (hp <= 0) { hp = 0; die(); } }
+  }
+  function updateLifeHud() {
+    $('timeVal').textContent = fmtClock(GC.min);
+    const cur = currentPrayer(GC.min), nxt = nextPrayer(GC.min);
+    const due = cur && !prayed[cur.id];
+    $('timeChip').classList.toggle('now', !!due);
+    $('timeNext').textContent = due ? cur.name + ' time' + (mosqueDist != null ? ' · masjid ' + fmtDist(mosqueDist) : '') : 'Next: ' + nxt.name + ' ' + fmtClock(nxt.t);
+    const F = focus();
+    $('placeVal').textContent = INT.active ? INT.active.title : streetAt(F.x, F.z) + ', ' + districtAt(F.x, F.z);
+    const l = lvlOf(save.xp), lo = xpFor(l), hi = xpFor(l + 1);
+    $('lvlLabel').textContent = 'Level ' + l + ' · ' + LEVEL_NAMES[Math.min(l - 1, 7)] + ' · ' + save.gems + ' gems';
+    $('xpBar').style.transform = 'scaleX(' + clamp((save.xp - lo) / (hi - lo), 0, 1).toFixed(3) + ')';
+    $('foodBar').style.transform = 'scaleX(' + (food / 100).toFixed(3) + ')';
+    $('foodBar').classList.toggle('low', food < 20);
+    $('stayChip').hidden = !stay.on;
+    if (stay.on) { $('stayLabel').textContent = stay.hotel + ' · room ' + stay.roomNo; $('stayVal').textContent = fmtLeft(leftMins()) + ' left'; }
+    $('foodText').textContent = food <= 0 ? 'STARVING' : 'FOOD ' + Math.ceil(food);
+  }
+
+  // ================= Interiors: hotels, restaurants, the mall and the masjid =================
+  // Each interior is built once, far out over the Gulf where nothing else lives, and you are moved there when you walk in.
+  const INTERIORS = new Map();
+  let intCount = 0;
+  const iLight = new THREE.PointLight(0xfff0d8, 0, 130, 1.1); scene.add(iLight);
+
+  const mkTex = (w, h, draw, rx, ry) => { const t = canvasTex(w, h, draw); t.repeat.set(rx, ry); return t; };
+  const lam = (tex) => new THREE.MeshLambertMaterial({ map: tex });
+  const pho = (tex, sh = 70) => new THREE.MeshPhongMaterial({ map: tex, shininess: sh, specular: 0x555555 });
+  const LIGHTBULB = new THREE.MeshBasicMaterial({ color: 0xfff1c8 });
+  const texMarble = (w, d, tile = 8, base = '#d6cfbd', alt = '#c9c0aa', line = '#a99e84') => mkTex(256, 256, (g) => {
+    g.fillStyle = base; g.fillRect(0, 0, 256, 256);
+    g.fillStyle = alt; g.fillRect(0, 0, 128, 128); g.fillRect(128, 128, 128, 128);
+    g.strokeStyle = line; g.lineWidth = 3; g.strokeRect(1.5, 1.5, 253, 253); g.beginPath(); g.moveTo(128, 0); g.lineTo(128, 256); g.moveTo(0, 128); g.lineTo(256, 128); g.stroke();
+    g.strokeStyle = 'rgba(110,100,85,0.12)'; g.lineWidth = 1.2;
+    for (let i = 0; i < 30; i++) { const x = Math.random() * 256, y = Math.random() * 256; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + 30, y + 14, x + 60 + Math.random() * 40, y + 10 + Math.random() * 20); g.stroke(); }
+  }, w / tile, d / tile);
+  const texWood = (w, d) => mkTex(128, 128, (g) => {
+    g.fillStyle = '#9a6b3f'; g.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? '#8e6038' : '#a5744a'; g.fillRect(0, i * 16, 128, 15); g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(0, i * 16 + 15, 128, 1); }
+  }, w / 2.4, d / 2.4);
+  const texCarpet = (w, d, c1 = '#7a1f2e', c2 = '#d9c27a') => mkTex(128, 128, (g) => {
+    g.fillStyle = c1; g.fillRect(0, 0, 128, 128);
+    g.strokeStyle = c2; g.lineWidth = 3; g.strokeRect(6, 6, 116, 116);
+    g.lineWidth = 1.5; g.strokeRect(14, 14, 100, 100); g.beginPath(); g.arc(64, 64, 22, 0, 7); g.stroke();
+    g.beginPath(); g.moveTo(64, 30); g.lineTo(98, 64); g.lineTo(64, 98); g.lineTo(30, 64); g.closePath(); g.stroke();
+  }, w / 2.4, d / 2.4);
+  const texPrayer = (w, d) => mkTex(128, 128, (g) => {
+    g.fillStyle = '#1b6a4b'; g.fillRect(0, 0, 128, 128);
+    g.strokeStyle = '#e3cf8a'; g.lineWidth = 3; g.strokeRect(5, 5, 118, 118);
+    g.lineWidth = 2; g.beginPath(); g.moveTo(24, 112); g.lineTo(24, 56); g.quadraticCurveTo(24, 20, 64, 14); g.quadraticCurveTo(104, 20, 104, 56); g.lineTo(104, 112); g.stroke();
+    g.fillStyle = '#e3cf8a'; g.beginPath(); g.arc(64, 70, 5, 0, 7); g.fill();
+  }, w / 1.4, d / 1.4);
+  const texTiles = (w, d, a = '#f3f6f7', b = '#2b6f94') => mkTex(64, 64, (g) => {
+    g.fillStyle = a; g.fillRect(0, 0, 64, 64); g.fillStyle = b; g.fillRect(0, 0, 32, 32); g.fillRect(32, 32, 32, 32);
+    g.strokeStyle = 'rgba(0,0,0,0.25)'; g.lineWidth = 1; g.strokeRect(0.5, 0.5, 63, 63);
+  }, w / 0.8, d / 0.8);
+
+  function newInterior(key, title) {
+    const idx = intCount++;
+    const it = { key, title, idx, bx: idx * 480, bz: -6000, g: new THREE.Group(), cols: [], spots: [], upd: [], npcs: [], spawn: { x: 0, z: 0, h: 0 }, wide: false, onEnter: null, onLeave: null };
+    it.g.position.set(it.bx, 0, it.bz); scene.add(it.g);
+    it.col = (x, z, w, d, h) => it.cols.push({ minX: it.bx + x - w / 2, maxX: it.bx + x + w / 2, minZ: it.bz + z - d / 2, maxZ: it.bz + z + d / 2, h });
+    it.box = (w, h, d, m, x, y, z, solid = false, ry = 0) => { const b = box(w, h, d, m, x, y, z, it.g); if (ry) b.rotation.y = ry; if (solid) it.col(x, z, w, d, y + h / 2); return b; };
+    it.plane = (w, d, m, x, y, z, ry = 0) => plane(it.g, w, d, m, x, y, z, ry);
+    it.cyl = (r, h, m, x, y, z, solid = false, seg = 14) => { const c = put(it.g, new THREE.CylinderGeometry(r, r, h, seg), m, x, y, z); if (solid) it.col(x, z, r * 2, r * 2, y + h / 2); return c; };
+    it.sign = (w, h, text, fg, bg, x, y, z, ry = 0, size = 40) => sign(it.g, w, h, labelMat(text, fg, bg, Math.round(w * 90), Math.round(h * 90), size), x, y, z, ry);
+    it.spot = (x, z, r, label, act, hidden) => { const s = { x: it.bx + x, z: it.bz + z, r, label, act, hidden }; it.spots.push(s); return s; };
+    it.bulb = (x, y, z, r = 0.35) => put(it.g, new THREE.SphereGeometry(r, 8, 6), LIGHTBULB, x, y, z, 0, false);
+    it.human = (hum, x, z, ry = 0) => {
+      hum.g.position.set(x, 0, z); hum.g.rotation.y = ry;
+      hum.g.traverse((o) => { o.userData.keep = true; });
+      it.g.add(hum.g); it.npcs.push(hum); return hum;
+    };
+    // The four walls, floor and ceiling of a rectangular hall (centred on the origin, door gap is only painted)
+    it.room = (W, D, H, floorM, wallM, ceilM) => {
+      it.plane(W, D, floorM, 0, 0.02, 0);
+      const c = put(it.g, new THREE.PlaneGeometry(W, D).rotateX(Math.PI / 2), ceilM || wallM, 0, H, 0, 0, false);
+      it.box(W + 1.2, H, 0.6, wallM, 0, H / 2, -D / 2 - 0.3, true);
+      it.box(W + 1.2, H, 0.6, wallM, 0, H / 2, D / 2 + 0.3, true);
+      it.box(0.6, H, D, wallM, -W / 2 - 0.3, H / 2, 0, true);
+      it.box(0.6, H, D, wallM, W / 2 + 0.3, H / 2, 0, true);
+      return c;
+    };
+    INTERIORS.set(key, it);
+    return it;
+  }
+  function registerInterior(it) {
+    mergeStatic(it.g);
+    const entry = { g: it.g, cols: it.cols, keep: true };
+    const cx = Math.round(it.bx / CH), cz = Math.round(it.bz / CH);
+    chunks.set(key(cx, cz), entry);
+    if (it.wide) for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) if (dx || dz) chunks.set(key(cx + dx, cz + dz), entry);
+    return it;
+  }
+
+  // ---- Going in and out ----
+  function resetPose() {
+    PL.upper.rotation.set(0, 0, 0); PL.legL.rotation.set(0, 0, 0); PL.legR.rotation.set(0, 0, 0); PL.armL.rotation.set(0, 0, 0); PL.armR.rotation.set(0, 0, 0);
+    PL.g.position.y = 0; player.visible = true;
+  }
+  function activateInterior(it, sp) {
+    INT.active = it; INT.frozen = false;
+    P.x = it.bx + sp.x; P.z = it.bz + sp.z; P.h = sp.h || 0;
+    resetPose(); sitPose(false);
+    player.position.set(P.x, 0, P.z); player.rotation.set(0, P.h, 0);
+    snapCam = true; setAim(false); trigger = false;
+    if (it.onEnter) it.onEnter();
+    updateLifeHud();
+  }
+  function enterInterior(it, extra) {
+    if (INT.active) return;
+    fadeThen(() => { INT.ret = { x: P.x, z: P.z, h: P.h }; activateInterior(it, it.spawn); if (extra) extra(); });
+  }
+  function leaveInterior() {
+    fadeThen(() => {
+      const it = INT.active;
+      if (it && it.onLeave) it.onLeave();
+      INT.active = null; INT.frozen = false; iLight.intensity = 0;
+      resetPose(); sitPose(false);
+      P.x = INT.ret.x; P.z = INT.ret.z; P.h = INT.ret.h;
+      player.position.set(P.x, 0, P.z); player.rotation.set(0, P.h, 0);
+      updateChunks(P.x, P.z); applyLight(true); snapCam = true;
+    });
+  }
+  function switchInterior(it2, sp, after) {
+    fadeThen(() => { const old = INT.active; if (old && old.onLeave) old.onLeave(); activateInterior(it2, sp || it2.spawn); if (after) after(); });
+  }
+
+  // ---- Spots you can use with E ----
+  function nearestSpot() {
+    const it = INT.active; if (!it) return null;
+    let best = null, bd = Infinity;
+    for (const s of it.spots) {
+      if (s.hidden && s.hidden()) continue;
+      const d = Math.hypot(P.x - s.x, P.z - s.z);
+      if (d < s.r && d < bd) { bd = d; best = s; }
+    }
+    return best;
+  }
+  function nearestDoor(x, z) {
+    if (Math.hypot(x - BAA.x, z - (BAA.z + 21.4)) < 4.6) return { kind: 'baa', name: 'Burj Al Arab Jumeirah' };
+    const ccx = Math.round(x / CH), ccz = Math.round(z / CH);
+    let best = null, bd = 3.8;
+    for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
+      if (zoneOf(ccx + dx, ccz + dz) === 'sea') continue;
+      for (const lot of chunkLayout(ccx + dx, ccz + dz)) for (const b of lot.buildings) {
+        if (!b.door) continue;
+        const wx = (ccx + dx) * CH + b.door.x, wz = (ccz + dz) * CH + b.door.z, d = Math.hypot(x - wx, z - wz);
+        if (d < bd) { bd = d; best = b.enter; }
+      }
+    }
+    return best;
+  }
+  function lifeHint() {
+    if (!started || phoneOpen || panelOpen || uiBusy || mapOpen) return null;
+    if (INT.active) {
+      const s = nearestSpot();
+      return s ? '<kbd>E</kbd> ' + (typeof s.label === 'function' ? s.label() : s.label) : null;
+    }
+    if (mode === 'drive') { const d = nearestDoor(current.x, current.z); return d ? 'Stop and get out to enter ' + d.name : null; }
+    const d = nearestDoor(P.x, P.z);
+    return d ? '<kbd>E</kbd> enter ' + d.name : null;
+  }
+  function lifeAction() {
+    if (INT.active) { const s = nearestSpot(); if (s) s.act(); return true; }
+    if (mode !== 'foot') return false;
+    const d = nearestDoor(P.x, P.z);
+    if (!d) return false;
+    openDoor(d);
+    return true;
+  }
+  function openDoor(d) {
+    if (d.kind === 'hotel') enterHotel(d.name, 'std');
+    else if (d.kind === 'baa') enterHotel(d.name, 'baa');
+    else if (d.kind === 'restaurant') enterRestaurant(d);
+    else if (d.kind === 'mall') enterMall();
+    else if (d.kind === 'mosque') enterMosque(d.name);
+  }
+
+  // Walking into a hotel, restaurant, mall or masjid pauses the street: no traffic, no police, no mission clock
+  function updateInterior(dt, now) {
+    const it = INT.active;
+    iLight.intensity = 0.5; iLight.position.set(P.x, 7, P.z);
+    hemi.intensity = 0.72; sun.intensity = 0.1;
+    for (const f of it.upd) f(dt, now / 1000);
+  }
+  function forceExitInterior() {
+    if (!INT.active) return;
+    const it = INT.active;
+    if (it.onLeave) it.onLeave();
+    INT.active = null; INT.frozen = false; INT.camFn = null; iLight.intensity = 0;
+    GC.paused = false; hideBanner(); closePanel(); pray.on = false; wuduState.on = false;
+    resetPose(); applyLight(true);
+  }
+
+  // ---------- Hotels: lobby, reception, lifts, rooms ----------
+  function dynSign(it, w, h, x, y, z, ry = 0) {
+    const cw = Math.round(w * 90), ch = Math.round(h * 90);
+    const c = document.createElement('canvas'); c.width = cw; c.height = ch;
+    const t = new THREE.CanvasTexture(c);
+    const m = new THREE.MeshBasicMaterial({ map: t });
+    sign(it.g, w, h, m, x, y, z, ry);
+    return {
+      set(text, fg, bg, size = 40) {
+        const g = c.getContext('2d'); g.fillStyle = bg; g.fillRect(0, 0, cw, ch);
+        g.fillStyle = fg; g.font = 'bold ' + size + 'px "Arial Black", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, cw / 2, ch / 2 + 2);
+        t.needsUpdate = true;
+      },
+    };
+  }
+  function sofa(it, x, z, ry, color) {
+    const m = mat(color);
+    const grp = new THREE.Group(); grp.position.set(x, 0, z); grp.rotation.y = ry;
+    box(3.2, 0.5, 1.1, m, 0, 0.45, 0, grp); box(3.2, 0.7, 0.3, m, 0, 0.95, -0.5, grp); box(0.3, 0.6, 1.1, m, -1.45, 0.75, 0, grp); box(0.3, 0.6, 1.1, m, 1.45, 0.75, 0, grp);
+    it.g.add(grp);
+    it.col(x, z, Math.abs(Math.cos(ry)) * 3.2 + Math.abs(Math.sin(ry)) * 1.2, Math.abs(Math.cos(ry)) * 1.2 + Math.abs(Math.sin(ry)) * 3.2, 1.1);
+  }
+  function plant(it, x, z, s = 1) {
+    it.cyl(0.55 * s, 0.9 * s, MAT.rock, x, 0.45 * s, z, true, 10);
+    const l = put(it.g, new THREE.IcosahedronGeometry(1.0 * s, 0), LEAF, x, 1.8 * s, z); l.scale.set(1, 1.3, 1);
+  }
+  function chandelier(it, x, y, z, r) {
+    for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; it.bulb(x + Math.cos(a) * r, y, z + Math.sin(a) * r, 0.28); }
+    it.bulb(x, y - 0.4, z, 0.45);
+    it.cyl(0.08, 3, MAT.rail, x, y + 1.5, z, false, 5);
+  }
+
+  const ROOM_CLASSES = {
+    std: [
+      { id: 'standard', name: 'Standard Room', lo: 3, hi: 12, price: 300 },
+      { id: 'deluxe', name: 'Deluxe Room', lo: 13, hi: 30, price: 650 },
+      { id: 'suite', name: 'Executive Suite', lo: 31, hi: 45, price: 1500 },
+    ],
+    baa: [
+      { id: 'dsuite', name: 'Deluxe Suite', lo: 8, hi: 20, price: 9000 },
+      { id: 'psuite', name: 'Panoramic Suite', lo: 21, hi: 40, price: 18000 },
+      { id: 'royal', name: 'Royal Suite', lo: 41, hi: 56, price: 45000 },
+    ],
+  };
+  const STAY_OPTS = [{ h: 3, mult: 1 }, { h: 6, mult: 1.8 }, { h: 12, mult: 3.2 }];
+  const stay = { on: false, hotel: '', theme: 'std', floor: 0, roomNo: '', endTotal: 0, viewed: false };
+  const stayPrice = (cls, floor, opt) => Math.round(cls.price * (1 + 0.012 * floor) * opt.mult);
+  const leftMins = () => Math.max(0, stay.endTotal - GC.total);
+  const fmtLeft = (m) => Math.floor(m / 60) + 'h ' + String(Math.floor(m % 60)).padStart(2, '0') + 'm';
+
+  function buildHotelInterior(theme) {
+    const baa = theme === 'baa';
+    const it = newInterior('hotel:' + theme, baa ? 'Burj Al Arab Jumeirah' : 'Hotel');
+    it.theme = theme;
+    const W = baa ? 96 : 70, D = baa ? 76 : 56, H = baa ? 34 : 14;
+    it.W = W; it.D = D;
+    const floorM = pho(baa ? texMarble(W, D, 8, '#dccf9e', '#cfbf86', '#b8922c') : texMarble(W, D, 8), 90);
+    const wallM = mat(baa ? 0xf3e8c6 : 0xe8dec8);
+    it.room(W, D, H, floorM, wallM, mat(baa ? 0xfaf1d6 : 0xf4efe2));
+    const colM = baa ? GOLD : mat(0xe4dcc8);
+    // columns
+    for (const x of [-W / 2 + 10, -W / 4, W / 4, W / 2 - 10]) for (const z of [-D / 2 + 20, D / 2 - 14]) it.cyl(baa ? 1.6 : 0.9, H, colM, x, H / 2, z, true, 16);
+    // reception desk and staff
+    const dz = -D / 2 + 10;
+    it.box(16, 1.2, 2.6, mat(0x4a2e1c), 0, 0.6, dz, true);
+    it.box(16.4, 0.12, 3.0, mat(baa ? 0xd8b24a : 0x2b2118), 0, 1.26, dz);
+    it.box(18, 5.5, 0.3, mat(baa ? 0x1d2c4a : 0x3a2a1a), 0, 3.5, -D / 2 + 0.5);
+    it.name = dynSign(it, 14, 2.2, 0, 4.2, -D / 2 + 0.7, 0); it.name.set(it.title, '#f4e6c0', baa ? '#1d2c4a' : '#3a2a1a', 96);
+    for (const x of [-4, 4]) it.human(makeHuman(0xf3f3f3, 0x1a1c22, SKINS[(x + 8) % 4], false), x, dz - 2.2, Math.PI);
+    // lift bank
+    for (let i = 0; i < 4; i++) { it.box(3.2, 4.4, 0.3, MAT.rail, W / 2 - 0.3, 2.2, -D / 2 + 22 + i * 4.4); it.box(0.15, 0.4, 0.4, RED_LIGHT, W / 2 - 0.55, 4.6, -D / 2 + 22 + i * 4.4); }
+    it.sign(10, 1.1, 'LIFTS', '#ffffff', '#14212e', W / 2 - 0.35, 5.6, -D / 2 + 26.5, -Math.PI / 2, 34);
+    // lounge
+    for (let i = 0; i < 3; i++) { sofa(it, -W / 2 + 7, -4 + i * 8, Math.PI / 2, baa ? 0x8a2a2a : 0x3a5a7a); it.box(1.6, 0.5, 2.4, mat(0x4a2e1c), -W / 2 + 10, 0.25, -4 + i * 8, true); }
+    plant(it, -W / 2 + 3, -D / 2 + 3, 1.2); plant(it, W / 2 - 3, D / 2 - 3, 1.2); plant(it, -W / 2 + 3, D / 2 - 3, 1.2); plant(it, W / 2 - 3, -D / 2 + 3, 1.2);
+    // central fountain
+    const fr = baa ? 6 : 4;
+    it.cyl(fr + 0.4, 0.8, MAT.concreteL, 0, 0.4, 2, true, 24); it.cyl(fr, 0.85, POOL_MAT, 0, 0.42, 2, false, 24); it.cyl(0.6, 3.2, baa ? GOLD : MAT.rail, 0, 1.6, 2, false, 10);
+    chandelier(it, 0, H - 2.5, 2, baa ? 6 : 3.5);
+    for (const x of [-W / 3, W / 3]) chandelier(it, x, H - 2.5, -D / 4, baa ? 3 : 2);
+    if (baa) {
+      // a grand gold staircase and tall gold arches
+      for (let i = 0; i < 8; i++) { it.box(10, 0.5, 2, GOLD, -W / 2 + 6, 0.25 + i * 0.5, D / 2 - 14 - i * 1.4, i === 7, 0); }
+      for (const z of [-D / 2 + 14, D / 2 - 18]) it.box(2, H * 0.7, 2, GOLD, W / 2 - 6, H * 0.35, z, true);
+    }
+    // the glass entrance
+    it.box(8, 4.4, 0.3, GLASS, 0, 2.2, D / 2 - 0.1); it.box(0.6, 4.6, 0.6, MAT.rail, -4.2, 2.3, D / 2 - 0.1); it.box(0.6, 4.6, 0.6, MAT.rail, 4.2, 2.3, D / 2 - 0.1);
+    it.sign(5, 0.9, 'EXIT', '#ffffff', '#1a6b3a', 0, 5.2, D / 2 - 0.5, Math.PI, 34);
+    it.spawn = { x: 0, z: D / 2 - 6, h: 0 };
+    it.spot(0, D / 2 - 3, 4, 'leave the hotel', () => leaveInterior());
+    it.spot(0, dz + 3.4, 5.2, 'reception: book a room', () => openBooking(it));
+    it.spot(W / 2 - 4, -D / 2 + 26.5, 5, 'lifts: go to your room', () => openLift(it));
+    it.onEnter = () => { it.name.set(INT.hotelName || it.title, '#f4e6c0', baa ? '#1d2c4a' : '#3a2a1a', 96); it.title = INT.hotelName || it.title; };
+    return registerInterior(it);
+  }
+
+  function buildRoomInterior(theme) {
+    const baa = theme === 'baa';
+    const it = newInterior('room:' + theme, 'Hotel room');
+    it.theme = theme;
+    const W = baa ? 44 : 28, D = baa ? 28 : 18, H = baa ? 6.4 : 4.4;
+    it.room(W, D, H, lam(baa ? texCarpet(W, D, '#1d2c4a', '#d9b24a') : texWood(W, D)), mat(baa ? 0xf3e8c6 : 0xe9dfca), mat(0xf7f3ea));
+    // bed
+    const bx = -W / 2 + 5;
+    it.box(5.2, 0.55, 6.4, mat(0x4a2e1c), bx, 0.28, 0, true);
+    it.box(4.9, 0.45, 6.1, mat(0xf4f4f2), bx, 0.78, 0);
+    it.box(4.9, 0.12, 2.6, mat(baa ? 0x8a2a2a : 0x2f5d8a), bx, 1.05, 1.6);
+    for (const z of [-2, 0.2]) it.box(1.9, 0.3, 1.0, mat(0xffffff), bx, 1.15, z - 0.6 + 0.0);
+    it.box(0.5, 2.2, 6.6, mat(0x3a2418), -W / 2 + 0.6, 1.5, 0, true);
+    for (const z of [-4.2, 4.2]) { it.box(1.1, 0.9, 1.1, mat(0x4a2e1c), -W / 2 + 1.5, 0.45, z, true); it.bulb(-W / 2 + 1.5, 1.35, z, 0.22); }
+    // window wall with a painted view
+    const pano = (() => { const cw = 1024, ch = 256, c = document.createElement('canvas'); c.width = cw; c.height = ch; const t = new THREE.CanvasTexture(c); sign(it.g, W * 0.7, 3.2, new THREE.MeshBasicMaterial({ map: t }), 0, H * 0.5, -D / 2 + 0.05, 0); return { c, t }; })();
+    it.box(W * 0.72, 0.25, 0.3, mat(0x2a2018), 0, H * 0.5 + 1.7, -D / 2 + 0.1); it.box(W * 0.72, 0.25, 0.3, mat(0x2a2018), 0, H * 0.5 - 1.7, -D / 2 + 0.1);
+    for (const s of [-1, 1]) it.box(1.6, H - 0.4, 0.4, mat(baa ? 0x8a2a2a : 0xb9a07a), s * (W * 0.36 + 0.8), (H - 0.4) / 2, -D / 2 + 0.4);
+    // sofa, table, TV, desk
+    sofa(it, W / 2 - 4, -3, -Math.PI / 2, baa ? 0x1d2c4a : 0x7a6a56); it.box(1.6, 0.5, 2.6, mat(0x4a2e1c), W / 2 - 7.5, 0.25, -3, true);
+    it.box(0.3, 2.2, 4.4, mat(0x14151a), W / 2 - 0.4, 2.2, -3); const tv = dynSign(it, 3.8, 1.9, W / 2 - 0.6, 2.2, -3, -Math.PI / 2); tv.set('WELCOME', '#9fd7ff', '#0e2236', 38);
+    it.box(5, 0.9, 2.2, mat(0x4a2e1c), W / 2 - 3, 0.45, 6, true);
+    // door and its number
+    it.box(2.6, 3.2, 0.25, mat(0x5a3a22), W / 2 - 4, 1.6, D / 2 - 0.1);
+    it.roomSign = dynSign(it, 3.2, 0.7, W / 2 - 4, 3.6, D / 2 - 0.2, Math.PI);
+    // minibar
+    it.box(3.6, 1.1, 1.2, mat(0x2a2018), -W / 2 + 10, 0.55, D / 2 - 1.2, true); for (let i = 0; i < 5; i++) it.box(0.2, 0.55, 0.2, mat([0xc8102e, 0x2e7d32, 0xd9a02e, 0x1d6fa5, 0x7a3b8e][i]), -W / 2 + 8.8 + i * 0.6, 1.4, D / 2 - 1.2);
+    for (let i = 0; i < 3; i++) it.bulb(-W / 4 + i * W / 4, H - 0.3, 0, 0.5);
+    it.spawn = { x: W / 2 - 4, z: D / 2 - 4, h: 0 };
+    it.spot(bx + 4.5, 0, 4.2, 'rest on the bed', () => openRest(it));
+    it.spot(-W / 2 + 10, D / 2 - 3.2, 3.4, 'room service: order food', () => openMenu({ cuisine: 'room', name: 'Room service', mode: 'room' }));
+    it.spot(0, -D / 2 + 3, 5, 'enjoy the view', () => { if (!stay.viewed) { stay.viewed = true; addXP(40); toast('What a view of Dubai! +40 XP', 'win'); } else toast('Dubai glitters below you.'); });
+    it.spot(W / 2 - 4, D / 2 - 2.5, 3.4, 'take the lift down', () => rideLift(false));
+    it.drawView = () => {
+      const g = pano.c.getContext('2d'), f = lightF < 0 ? 1 : lightF;
+      const top = tmpC.copy(C_NIGHT.top).lerp(C_DAY.top, f).getStyle(), bot = tmpC.copy(C_NIGHT.fog).lerp(C_DAY.fog, f).getStyle();
+      const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, top); gr.addColorStop(0.7, bot); g.fillStyle = gr; g.fillRect(0, 0, 1024, 256);
+      g.fillStyle = f > 0.5 ? '#2f86a8' : '#0c2a40'; g.fillRect(0, 196, 1024, 60);
+      const rnd = mulberry(stay.floor * 7 + 3);
+      for (let i = 0; i < 38; i++) { const w = 18 + rnd() * 26, h = 40 + rnd() * 110, x = rnd() * 1024; g.fillStyle = f > 0.5 ? 'rgba(120,150,175,0.85)' : 'rgba(18,26,40,0.95)'; g.fillRect(x, 196 - h, w, h); if (f < 0.5) { g.fillStyle = 'rgba(255,215,140,0.8)'; for (let k = 0; k < 6; k++) g.fillRect(x + 3 + rnd() * (w - 8), 196 - h + 6 + rnd() * (h - 10), 3, 4); } }
+      // Burj Khalifa and Burj Al Arab on the skyline
+      g.fillStyle = f > 0.5 ? 'rgba(170,195,215,0.95)' : 'rgba(30,40,60,0.95)';
+      g.beginPath(); g.moveTo(690, 196); g.lineTo(704, 90); g.lineTo(712, 20); g.lineTo(720, 90); g.lineTo(734, 196); g.fill();
+      g.beginPath(); g.moveTo(240, 196); g.lineTo(246, 60); g.quadraticCurveTo(300, 110, 312, 196); g.fill();
+      pano.t.needsUpdate = true;
+    };
+    it.onEnter = () => { it.drawView(); it.roomSign.set('ROOM ' + stay.roomNo, '#e8c76a', '#14212e', 34); };
+    return registerInterior(it);
+  }
+
+  const hotelLobby = (theme) => INTERIORS.get('hotel:' + theme) || buildHotelInterior(theme);
+  const hotelRoom = (theme) => INTERIORS.get('room:' + theme) || buildRoomInterior(theme);
+  function enterHotel(name, theme) {
+    INT.hotelName = name;
+    const it = hotelLobby(theme);
+    enterInterior(it);
+  }
+
+  function openBooking(it) {
+    if (stay.on) return openStayPanel();
+    const classes = ROOM_CLASSES[it.theme];
+    const st = { cls: null, floor: 0 };
+    const render = () => {
+      let html = '<p class="note">Welcome to ' + (INT.hotelName || it.title) + '. Pick a room, choose your floor, then how long you want to stay. You ride the lift up with your key card.</p>';
+      html += '<h4>Room type</h4>';
+      classes.forEach((c, i) => { html += '<div class="row"><div class="nm">' + c.name + '<small>Floors ' + c.lo + ' to ' + c.hi + ' · from ' + fmtMoney(stayPrice(c, c.lo, STAY_OPTS[0])) + ' for 3 hours</small></div><button class="b' + (st.cls === c ? '' : ' alt') + '" data-act="cls" data-i="' + i + '">' + (st.cls === c ? 'Selected' : 'Select') + '</button></div>'; });
+      if (st.cls) {
+        html += '<h4>Floor (higher floors cost a little more)</h4><div class="grid">';
+        for (let f = st.cls.lo; f <= st.cls.hi; f++) html += '<button class="' + (st.floor === f ? 'on' : '') + '" data-act="floor" data-v="' + f + '">' + f + '</button>';
+        html += '</div><h4>How long</h4>';
+        STAY_OPTS.forEach((o, i) => { html += '<div class="row"><div class="nm">' + o.h + ' hours' + (st.floor ? '<small>Floor ' + st.floor + '</small>' : '<small>Pick a floor first</small>') + '</div><div class="pr">' + (st.floor ? fmtMoney(stayPrice(st.cls, st.floor, o)) : '') + '</div><button class="b" data-act="book" data-i="' + i + '"' + (st.floor ? '' : ' disabled') + '>Pay and book</button></div>'; });
+      }
+      setPanel(html);
+    };
+    openPanel('Reception', '', (act, d) => {
+      if (act === 'cls') { st.cls = classes[+d.i]; st.floor = 0; render(); }
+      else if (act === 'floor') { st.floor = +d.v; render(); }
+      else if (act === 'book') {
+        const opt = STAY_OPTS[+d.i], price = stayPrice(st.cls, st.floor, opt);
+        if (save.cash < price) { toast('Not enough cash for this room.', 'fail'); return; }
+        save.cash -= price; persist();
+        Object.assign(stay, { on: true, hotel: INT.hotelName || it.title, theme: it.theme, floor: st.floor, roomNo: String(st.floor) + String(10 + Math.floor(Math.random() * 80)), endTotal: GC.total + opt.h * 60, viewed: false });
+        addXP(Math.round(price / 25) + 30);
+        closePanel();
+        toast('Room ' + stay.roomNo + ' booked on floor ' + stay.floor + '. Take the lift to your room.', 'win', 4500);
+        beep([659, 880], 0.5, 'sine', 0.1);
+      }
+    });
+    render();
+  }
+  function openStayPanel() {
+    const cls = ROOM_CLASSES[stay.theme].find((c) => stay.floor >= c.lo && stay.floor <= c.hi) || ROOM_CLASSES[stay.theme][0];
+    const price = stayPrice(cls, stay.floor, STAY_OPTS[0]);
+    const render = () => setPanel('<div class="row"><div class="nm">Room ' + stay.roomNo + ' · floor ' + stay.floor + '<small>' + stay.hotel + ' · ' + fmtLeft(leftMins()) + ' left</small></div></div>'
+      + '<div class="row"><div class="nm">Extend by 3 hours</div><div class="pr">' + fmtMoney(price) + '</div><button class="b" data-act="extend">Extend</button></div>'
+      + '<div class="row"><div class="nm">Check out now<small>Hand back your key card</small></div><button class="b alt" data-act="out">Check out</button></div>');
+    openPanel('Your stay', '', (act) => {
+      if (act === 'extend') { if (save.cash < price) { toast('Not enough cash.', 'fail'); return; } save.cash -= price; persist(); stay.endTotal += 180; toast('Stay extended by 3 hours.', 'win'); render(); }
+      else if (act === 'out') { stay.on = false; closePanel(); toast('Checked out. Thank you for staying with us!'); }
+    });
+    render();
+  }
+  function openLift(it) {
+    if (!stay.on) { openPanel('Lifts', '<p class="note">The lifts need a room key card. Book a room at reception first.</p>', null); return; }
+    openPanel('Lifts', '<div class="row"><div class="nm">Ground · Lobby</div><button class="b alt" data-act="down">Go</button></div><div class="row"><div class="nm">Floor ' + stay.floor + ' · Room ' + stay.roomNo + '<small>' + fmtLeft(leftMins()) + ' left</small></div><button class="b" data-act="up">Go</button></div>', (act) => { closePanel(); rideLift(act === 'up'); });
+  }
+  function rideLift(up) {
+    if (up) {
+      if (!stay.on) return;
+      toast('Going up to floor ' + stay.floor + '...'); beep([880, 1175], 0.5, 'sine', 0.08);
+      switchInterior(hotelRoom(stay.theme), null, () => toast('Floor ' + stay.floor + '. Room ' + stay.roomNo + '.'));
+    } else {
+      toast('Going down to the lobby...'); beep([1175, 880], 0.5, 'sine', 0.08);
+      switchInterior(hotelLobby(stay.theme), { x: hotelLobby(stay.theme).W / 2 - 8, z: -hotelLobby(stay.theme).D / 2 + 26.5, h: Math.PI / 2 });
+    }
+  }
+  function openRest(it) {
+    const left = leftMins();
+    const toMorning = wrapDay(390 - GC.min) || 1440;
+    const opts = [{ id: 'r1', name: 'Rest for 1 hour', mins: 60 }, { id: 'r3', name: 'Sleep for 3 hours', mins: 180 }, { id: 'rm', name: 'Sleep until morning', mins: Math.round(toMorning) }, { id: 're', name: 'Sleep until your stay ends', mins: Math.round(left) }];
+    let html = '<p class="note">Rest in bed to restore your health. Time passes while you sleep. Your stay has ' + fmtLeft(left) + ' left.</p>';
+    for (const o of opts) html += '<div class="row"><div class="nm">' + o.name + '<small>' + Math.floor(o.mins / 60) + 'h ' + (o.mins % 60) + 'm</small></div><button class="b" data-act="' + o.id + '" data-m="' + o.mins + '"' + (o.mins > left || o.mins < 5 ? ' disabled' : '') + '>Sleep</button></div>';
+    openPanel('Rest', html, (act, d) => {
+      const mins = +d.m; closePanel();
+      fadeThen(() => { advanceClock(mins); hp = Math.min(MAX_HP, hp + MAX_HP * Math.min(1, mins / 120)); food = Math.max(5, food - mins * 0.025); applyLight(true); it.drawView(); toast('You feel rested. HP restored.', 'win'); addXP(20); }, 500);
+    });
+  }
+  function endStay() {
+    stay.on = false;
+    if (INT.active && INT.active.key.startsWith('room:')) { toast('Your stay has ended. Time to check out.', 'fail', 3500); switchInterior(hotelLobby(stay.theme), { x: hotelLobby(stay.theme).W / 2 - 8, z: -hotelLobby(stay.theme).D / 2 + 26.5, h: Math.PI / 2 }); }
+    else toast('Your hotel stay has ended.', 'fail');
+  }
+
+  // ---------- Restaurants, the food court and paying (or not paying) ----------
+  // [name, price in AED, food points, health points]
+  const MENUS = {
+    arabic: [['Chicken Shawarma Wrap', 18, 22, 5], ['Mixed Grill Platter', 95, 60, 20], ['Lamb Mandi', 68, 55, 15], ['Hummus and Bread', 22, 14, 0], ['Fattoush Salad', 20, 10, 5], ['Kunafa', 28, 16, 0], ['Karak Chai', 5, 4, 0], ['Fresh Orange Juice', 15, 8, 5]],
+    burger: [['Classic Cheeseburger', 32, 30, 5], ['Double Beef Burger', 48, 46, 10], ['Crispy Chicken Burger', 36, 32, 5], ['Loaded Fries', 20, 16, 0], ['Onion Rings', 15, 10, 0], ['Chocolate Shake', 22, 12, 0], ['Cola', 8, 4, 0]],
+    pizza: [['Margherita Pizza', 42, 40, 5], ['Pepperoni Pizza', 52, 48, 5], ['Chicken Alfredo Pasta', 46, 42, 10], ['Garlic Bread', 16, 12, 0], ['Caesar Salad', 28, 14, 5], ['Tiramisu', 26, 14, 0], ['Lemonade', 12, 6, 0]],
+    seafood: [['Grilled Hamour Fillet', 98, 56, 25], ['Garlic Prawns', 84, 42, 15], ['Fish and Chips', 56, 44, 10], ['Seafood Soup', 38, 22, 10], ['Calamari', 44, 24, 5], ['Rice and Vegetables', 18, 18, 5], ['Fresh Lime Mint', 16, 6, 5]],
+    indian: [['Butter Chicken and Naan', 52, 50, 10], ['Chicken Biryani', 46, 52, 10], ['Paneer Tikka', 40, 32, 5], ['Dal Tadka', 30, 28, 10], ['Garlic Naan', 8, 10, 0], ['Gulab Jamun', 18, 10, 0], ['Masala Chai', 8, 5, 0]],
+    cafe: [['Karak Chai', 5, 4, 0], ['Cappuccino', 18, 6, 0], ['Date and Cardamom Latte', 22, 8, 0], ['Cheese Paratha', 14, 18, 0], ['Chicken Sandwich', 24, 22, 5], ['Luqaimat', 20, 12, 0], ['Fresh Juice', 15, 8, 5]],
+    dessert: [['Kunafa Nabulsia', 30, 18, 0], ['Baklava Box', 36, 20, 0], ['Um Ali', 26, 16, 0], ['Date Ice Cream', 18, 10, 0], ['Rose Falooda', 22, 12, 0], ['Arabic Coffee', 8, 2, 0]],
+    sushi: [['Salmon Sushi Set', 72, 40, 15], ['Dragon Roll', 58, 32, 10], ['Chicken Teriyaki Bowl', 48, 42, 10], ['Miso Soup', 14, 8, 5], ['Edamame', 16, 8, 5], ['Green Tea', 10, 2, 0]],
+    court: [['Chicken Shawarma Wrap', 18, 22, 5], ['Cheeseburger Meal', 36, 36, 5], ['Margherita Pizza Slice', 16, 18, 0], ['Chicken Biryani', 38, 46, 10], ['Loaded Fries', 20, 16, 0], ['Mixed Grill Platter', 95, 60, 20], ['Kunafa', 28, 16, 0], ['Fresh Juice', 15, 8, 5], ['Karak Chai', 5, 4, 0]],
+    room: [['Club Sandwich', 62, 36, 8], ['Grilled Chicken Plate', 88, 52, 15], ['Fruit Platter', 54, 20, 12], ['Chocolate Fondant', 48, 18, 0], ['Fresh Orange Juice', 28, 8, 5], ['Arabic Coffee and Dates', 30, 8, 0]],
+  };
+  const FOOD_COLORS = [0xd9a02e, 0xb85c2e, 0xc8102e, 0x6a9e4a, 0xe9d9ac, 0x8b5a2b, 0xe8e2d0];
+
+  const meal = { it: null, spot: null, seat: null, dir: null, tab: 0, state: 'none', food: 0, hp: 0, t: 0, plates: [], waiter: null, cuisine: 'arabic' };
+  const guards = { phase: '', t: 0, hums: [], from: null, to: null, it: null };
+
+  function mealLabel(spot) {
+    if (meal.spot === spot) {
+      if (meal.state === 'ordered') return 'waiting for your food...';
+      if (meal.state === 'served') return 'eat your meal';
+      if (meal.state === 'eating') return 'eating...';
+      return 'order food' + (meal.tab ? ' (bill ' + fmtMoney(meal.tab) + ')' : '');
+    }
+    return 'sit at this table and order food';
+  }
+  function sitAt(spot) {
+    const dx = P.x - spot.x, dz = P.z - spot.z;
+    const dir = Math.abs(dx) > Math.abs(dz) ? { x: Math.sign(dx) || 1, z: 0 } : { x: 0, z: Math.sign(dz) || 1 };
+    meal.spot = spot; meal.dir = dir; meal.seat = { x: spot.x + dir.x * 1.55, z: spot.z + dir.z * 1.55 };
+    INT.frozen = true;
+    P.x = meal.seat.x; P.z = meal.seat.z; P.h = Math.atan2(dir.x, dir.z);
+    player.position.set(P.x, -0.42, P.z); player.rotation.set(0, P.h, 0);
+    PL.upper.rotation.set(0, 0, 0); PL.legL.rotation.x = PL.legR.rotation.x = 1.45; PL.armL.rotation.x = PL.armR.rotation.x = 0.9;
+    snapCam = true;
+    if (meal.state === 'none') meal.state = 'seated';
+  }
+  function standUp() {
+    if (!meal.spot) return;
+    INT.frozen = false; resetPose();
+    P.x = meal.seat.x + meal.dir.x * 1.2; P.z = meal.seat.z + meal.dir.z * 1.2;
+    player.position.set(P.x, 0, P.z);
+    meal.spot = null;
+    if (meal.state !== 'none') { meal.state = 'none'; clearPlates(); meal.waiter = null; }
+  }
+  function clearPlates() { for (const p of meal.plates) { if (p.parent) p.parent.remove(p); } meal.plates = []; }
+  function mealAct(it, spot) {
+    if (meal.spot !== spot) { if (meal.spot) standUp(); sitAt(spot); openMenu({ cuisine: it.cuisine, name: it.title, mode: 'table', it }); return; }
+    if (meal.state === 'seated') openMenu({ cuisine: it.cuisine, name: it.title, mode: 'table', it });
+    else if (meal.state === 'ordered') toast('Your food is on its way.');
+    else if (meal.state === 'served') { meal.state = 'eating'; meal.t = 0; }
+  }
+  function openMenu(ctx) {
+    const items = MENUS[ctx.cuisine] || MENUS.arabic;
+    const cart = items.map(() => 0);
+    const total = () => cart.reduce((s, q, i) => s + q * items[i][1], 0);
+    const render = () => {
+      let html = '<p class="note">' + (ctx.mode === 'room' ? 'Room service is charged straight away.' : 'Order what you like. The waiter brings it to your table. Pay at the counter when you are done, or guards will bring you there.') + '</p>';
+      items.forEach((m, i) => { html += '<div class="row"><div class="nm">' + m[0] + '<small>+' + m[2] + ' food' + (m[3] ? ', +' + m[3] + ' HP' : '') + '</small></div><div class="pr">' + fmtMoney(m[1]) + '</div><div class="qty"><button data-act="dec" data-i="' + i + '">-</button><span>' + cart[i] + '</span><button data-act="inc" data-i="' + i + '">+</button></div></div>'; });
+      html += '<div class="total"><span>Total</span><span>' + fmtMoney(total()) + '</span></div>';
+      html += '<div class="row" style="background:none;padding:0;gap:8px"><button class="b" data-act="order"' + (total() ? '' : ' disabled') + '>' + (ctx.mode === 'room' ? 'Order and pay' : 'Order now') + '</button>' + (ctx.mode === 'table' ? '<button class="b alt" data-act="stand">Stand up</button>' : '') + '<button class="b alt" data-act="close">Close</button></div>';
+      setPanel(html);
+    };
+    openPanel(ctx.name + ' · menu', '', (act, d) => {
+      if (act === 'inc') { cart[+d.i] = Math.min(9, cart[+d.i] + 1); render(); }
+      else if (act === 'dec') { cart[+d.i] = Math.max(0, cart[+d.i] - 1); render(); }
+      else if (act === 'close') closePanel();
+      else if (act === 'stand') { closePanel(); standUp(); }
+      else if (act === 'order') {
+        const t = total(); if (!t) return;
+        let f = 0, h = 0, n = 0; cart.forEach((q, i) => { f += q * items[i][2]; h += q * items[i][3]; n += q; });
+        if (ctx.mode === 'room') {
+          if (save.cash < t) { toast('Not enough cash.', 'fail'); return; }
+          save.cash -= t; persist(); closePanel(); addFood(f); hp = Math.min(MAX_HP, hp + h); addXP(Math.round(t / 10) + 5);
+          toast('Room service delivered. +' + f + ' food', 'win'); beep([523, 659], 0.4, 'sine', 0.1);
+        } else {
+          meal.tab += t; meal.food += f; meal.hp += h; meal.plateN = Math.min(5, n);
+          meal.state = 'ordered'; meal.t = 0; meal.cuisine = ctx.cuisine;
+          closePanel(); toast('Order placed. The waiter will bring it to your table.', 'win'); beep([659], 0.25, 'sine', 0.08);
+        }
+      }
+    });
+    render();
+  }
+  function servePlates(it) {
+    clearPlates();
+    const n = Math.max(1, meal.plateN || 1);
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2, px = meal.spot.x - it.bx + Math.cos(a) * 0.55, pz = meal.spot.z - it.bz + Math.sin(a) * 0.55;
+      const grp = new THREE.Group(); grp.position.set(px, 0.86, pz);
+      const pl = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 14), mat(0xf6f4ee)); grp.add(pl);
+      const fd = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), mat(FOOD_COLORS[(i + n) % FOOD_COLORS.length])); fd.position.y = 0.14; fd.scale.y = 0.7; grp.add(fd);
+      grp.traverse((o) => { o.userData.keep = true; });
+      it.g.add(grp); meal.plates.push(grp);
+    }
+  }
+  // per-frame: waiter, eating, guards
+  function mealUpdate(it, dt) {
+    const w = it.waiter;
+    if (meal.spot && meal.state === 'ordered') {
+      meal.t += dt;
+      const tx = meal.spot.x - it.bx, tz = meal.spot.z - it.bz, cx = it.payAt.x - it.bx, cz = it.payAt.z - it.bz;
+      const T = meal.t, u = clamp(T / 3.2, 0, 1), back = clamp((T - 4.4) / 3, 0, 1);
+      if (w) {
+        const px = lerp2(cx, tx - meal.dir.x * 1.4, u), pz = lerp2(cz, tz - meal.dir.z * 1.4, u);
+        const bx = lerp2(tx - meal.dir.x * 1.4, cx, back), bz = lerp2(tz - meal.dir.z * 1.4, cz, back);
+        const x = T < 4.4 ? px : bx, z = T < 4.4 ? pz : bz;
+        w.g.position.set(x, 0, z); w.g.rotation.y = Math.atan2(-(T < 4.4 ? tx - cx : cx - tx), -(T < 4.4 ? tz - cz : cz - tz));
+        animWalk(w, T * 7, 0.5);
+      }
+      if (T > 3.4 && !meal.plates.length) servePlates(it);
+      if (T > 7.5) { meal.state = 'served'; toast('Your food has arrived. Press E to eat.', 'win'); beep([784, 988], 0.3, 'sine', 0.08); if (w) w.g.position.set(cxOf(it), 0, czOf(it)); }
+    } else if (meal.state === 'eating') {
+      meal.t += dt;
+      PL.armR.rotation.x = -1.3 + Math.sin(meal.t * 5) * 0.5; PL.upper.rotation.x = -0.12 - Math.sin(meal.t * 5) * 0.08;
+      if (meal.t > 7) {
+        PL.upper.rotation.x = 0; PL.armR.rotation.x = 0.9;
+        addFood(meal.food); hp = Math.min(MAX_HP, hp + meal.hp); addXP(Math.round(meal.tab / 8) + 10);
+        toast('Delicious! +' + meal.food + ' food. Remember to pay at the counter.', 'win', 3600);
+        meal.food = 0; meal.hp = 0; meal.state = 'seated'; clearPlates();
+      }
+    }
+    updateGuards(it, dt);
+  }
+  const lerp2 = (a, b, t) => a + (b - a) * t;
+  const cxOf = (it) => it.payAt.x - it.bx + 2.2, czOf = (it) => it.payAt.z - it.bz;
+
+  function payBill(it) {
+    if (meal.tab <= 0) { toast('Nothing to pay. Thank you!'); return; }
+    const due = meal.tab, pay = Math.min(due, save.cash);
+    save.cash -= pay; persist(); meal.tab = 0;
+    addXP(Math.round(pay / 12) + 10);
+    toast(pay < due ? 'You paid all you had: ' + fmtMoney(pay) : 'Paid ' + fmtMoney(pay) + '. Thank you!', pay < due ? 'fail' : 'win'); beep([784, 1047], 0.4, 'sine', 0.1);
+  }
+  // Trying to leave without paying: the guards come and take you back to the counter
+  function tryLeave(it) {
+    if (meal.tab <= 0 || guards.phase) { if (!guards.phase) { if (meal.spot) standUp(); leaveInterior(); } return; }
+    if (meal.spot) standUp();
+    guards.phase = 'chase'; guards.t = 0; guards.it = it;
+    toast('You did not pay! Security is coming.', 'fail', 3500); showBanner('Security!', 'You still owe ' + fmtMoney(meal.tab));
+    beep([300, 260, 300, 260], 0.8, 'square', 0.08);
+    if (!guards.hums.length) for (let i = 0; i < 2; i++) { const h = makeHuman(0x1d2b4f, 0x141820, SKINS[i + 1], true); h.g.traverse((o) => { o.userData.keep = true; }); guards.hums.push(h); }
+    guards.hums.forEach((h, i) => { h.g.position.set(it.exitAt.x - it.bx + (i ? 2 : -2), 0, it.exitAt.z - it.bz - 1.5); h.g.visible = true; it.g.add(h.g); });
+  }
+  function updateGuards(it, dt) {
+    if (!guards.phase || guards.it !== it) return;
+    guards.t += dt;
+    const g0 = guards.hums;
+    if (guards.phase === 'chase') {
+      let near = false;
+      for (const h of g0) {
+        const gx = h.g.position.x + it.bx, gz = h.g.position.z + it.bz;
+        const dx = P.x - gx, dz = P.z - gz, d = Math.hypot(dx, dz);
+        if (d < 1.5) near = true;
+        const sp = 9.5 * dt; if (d > 1.2) { h.g.position.x += dx / d * sp; h.g.position.z += dz / d * sp; }
+        h.g.rotation.y = Math.atan2(-dx, -dz); animWalk(h, guards.t * 14, 0.9);
+      }
+      if (near || guards.t > 12) {
+        guards.phase = 'escort'; guards.t = 0; guards.from = { x: P.x, z: P.z }; INT.frozen = true; resetPose();
+        player.position.set(P.x, 0, P.z);
+        showBanner('Caught!', 'The guards are taking you to the counter');
+      }
+    } else if (guards.phase === 'escort') {
+      const u = clamp(guards.t / 2.4, 0, 1), tx = it.payAt.x + 2.4, tz = it.payAt.z;
+      P.x = lerp2(guards.from.x, tx, u); P.z = lerp2(guards.from.z, tz, u);
+      P.h = Math.atan2(-(tx - guards.from.x), -(tz - guards.from.z));
+      player.position.set(P.x, 0, P.z); player.rotation.y = P.h;
+      animWalk(PL, guards.t * 7, 0.6);
+      g0.forEach((h, i) => { const ox = i ? 1.3 : -1.3; h.g.position.set(P.x - it.bx + Math.cos(P.h) * ox, 0, P.z - it.bz - Math.sin(P.h) * ox); h.g.rotation.y = P.h; animWalk(h, guards.t * 7, 0.6); });
+      if (u >= 1) {
+        const fine = Math.round(meal.tab * 0.25), due = meal.tab + fine, pay = Math.min(due, save.cash);
+        save.cash -= pay; persist(); meal.tab = 0;
+        toast('The guards made you pay ' + fmtMoney(pay) + ' (bill plus ' + fmtMoney(fine) + ' fine).', 'fail', 4500);
+        guards.phase = 'leave'; guards.t = 0; INT.frozen = false; resetPose(); hideBanner();
+      }
+    } else if (guards.phase === 'leave') {
+      for (const h of g0) { h.g.position.z += 6 * dt; animWalk(h, guards.t * 10, 0.8); }
+      if (guards.t > 2.5) { guards.phase = ''; for (const h of g0) { h.g.visible = false; } }
+    }
+  }
+
+  function buildRestaurantInterior() {
+    const it = newInterior('restaurant', 'Restaurant');
+    const W = 36, D = 28, H = 5.2;
+    it.cuisine = 'arabic';
+    it.wallMat = new THREE.MeshLambertMaterial({ color: 0xe8d9b8 });
+    it.room(W, D, H, lam(texWood(W, D)), it.wallMat, mat(0xf6f1e6));
+    // tables with four chairs each
+    const tx = [-11, -2, 7], tz = [-6, 1, 8];
+    for (const x of tx) for (const z of tz) {
+      it.cyl(1.15, 0.12, mat(0x4a2e1c), x, 0.78, z, false, 14); it.cyl(0.14, 0.78, mat(0x2a2018), x, 0.39, z, false, 6);
+      it.col(x, z, 2.3, 2.3, 0.9);
+      for (const [dx, dz] of [[1.55, 0], [-1.55, 0], [0, 1.55], [0, -1.55]]) { it.box(0.7, 0.1, 0.7, mat(0x7a2f22), x + dx, 0.5, z + dz); it.box(0.7, 0.5, 0.1, mat(0x7a2f22), x + dx + (dx ? Math.sign(dx) * 0.3 : 0), 0.85, z + dz + (dz ? Math.sign(dz) * 0.3 : 0), false, dx ? Math.PI / 2 : 0); it.box(0.1, 0.5, 0.1, mat(0x2a2018), x + dx, 0.25, z + dz); }
+      it.spot(x, z, 2.7, () => mealLabel(spt(x, z)), () => mealAct(it, spt(x, z)));
+    }
+    function spt(x, z) { return it.spots.find((s) => Math.abs(s.x - (it.bx + x)) < 0.01 && Math.abs(s.z - (it.bz + z)) < 0.01); }
+    // counter, cashier, menu board
+    it.box(3, 1.2, 14, mat(0x3a2418), W / 2 - 4, 0.6, -4, true); it.box(3.2, 0.12, 14.4, mat(0xd8b24a), W / 2 - 4, 1.26, -4);
+    it.cashier = it.human(makeHuman(0xf3f3f3, 0x1a1c22, SKINS[2], false), W / 2 - 1.6, -4, Math.PI / 2);
+    it.waiter = it.human(makeHuman(0xf3f3f3, 0x1a1c22, SKINS[1], false), W / 2 - 1.6, -8, Math.PI / 2);
+    it.board = dynSign(it, 12, 3.6, W / 2 - 0.45, 3.3, -4, -Math.PI / 2);
+    it.nameBoard = dynSign(it, 14, 1.4, 0, 4.2, -D / 2 + 0.4, 0);
+    it.awning = it.box(36, 0.6, 1, mat(0xb85c2e), 0, 4.9, -D / 2 + 0.6);
+    for (let i = 0; i < 4; i++) it.bulb(-12 + i * 8, H - 0.4, 0, 0.35);
+    plant(it, -W / 2 + 2.5, D / 2 - 3, 1); plant(it, -W / 2 + 2.5, -D / 2 + 3, 1);
+    // glass front and exit
+    it.box(8, 3.4, 0.25, GLASS, 0, 1.7, D / 2 - 0.1); it.box(0.5, 3.6, 0.5, MAT.rail, -4.2, 1.8, D / 2 - 0.1); it.box(0.5, 3.6, 0.5, MAT.rail, 4.2, 1.8, D / 2 - 0.1);
+    it.sign(4, 0.8, 'EXIT', '#ffffff', '#1a6b3a', 0, 4, D / 2 - 0.4, Math.PI, 30);
+    it.spawn = { x: 0, z: D / 2 - 5, h: 0 };
+    it.payAt = { x: it.bx + W / 2 - 7.2, z: it.bz - 4 }; it.exitAt = { x: it.bx, z: it.bz + D / 2 - 3 };
+    it.spot(0, D / 2 - 3, 3.4, () => (meal.tab > 0 ? 'leave (you owe ' + fmtMoney(meal.tab) + ')' : 'leave the restaurant'), () => tryLeave(it));
+    it.spot(W / 2 - 7.2, -4, 3.6, () => (meal.tab > 0 ? 'pay the bill (' + fmtMoney(meal.tab) + ')' : 'cashier: nothing to pay'), () => payBill(it));
+    it.upd.push((dt) => mealUpdate(it, dt));
+    it.onLeave = () => { clearPlates(); meal.spot = null; meal.state = 'none'; meal.tab = 0; guards.phase = ''; hideBanner(); };
+    return registerInterior(it);
+  }
+  function enterRestaurant(d) {
+    const it = INTERIORS.get('restaurant') || buildRestaurantInterior();
+    const r = RESTAURANTS.find((x) => x.name === d.name) || RESTAURANTS[0];
+    it.title = d.name; it.cuisine = d.cuisine || r.cuisine;
+    it.wallMat.color.setHex(r.c).lerp(new THREE.Color(0xf2e6cc), 0.78);
+    it.awning.material = mat(r.c);
+    it.nameBoard.set(d.name.toUpperCase(), '#ffffff', '#' + r.c.toString(16).padStart(6, '0'), 92);
+    const items = MENUS[it.cuisine];
+    it.board.set('MENU', '#f4e6c0', '#1b1410', 40);
+    meal.tab = 0; meal.state = 'none'; meal.spot = null; meal.food = 0; meal.hp = 0;
+    enterInterior(it);
+  }
+
+  // ---------- The Dubai Mall ----------
+  const SHOPS = [['GOLD AND JEWELS', 0xc9a23c], ['FASHION AVENUE', 0x6a2a7a], ['TECH ZONE', 0x1d4f8a], ['PERFUME PALACE', 0x8a3a5a], ['SPORTS ARENA', 0xc8102e], ['KIDS WORLD', 0x2e8a5a], ['WATCH GALLERY', 0x3a3a44], ['HOME AND DECOR', 0x8a6a3a], ['BOOK BAY', 0x4a6a8a], ['SWEETS PLAZA', 0xc85a8a]];
+  function buildMallInterior() {
+    const it = newInterior('mall', 'The Dubai Mall');
+    it.wide = true; it.cuisine = 'court';
+    const W = 150, D = 110, H = 24;
+    it.room(W, D, H, pho(texMarble(W, D, 16, '#d9d2c0', '#cdc4ae', '#a99e84'), 100), mat(0xeee6d4), mat(0xdedad0));
+    // skylight strips and warm lights
+    for (let i = -3; i <= 3; i++) it.plane(6, D - 6, new THREE.MeshBasicMaterial({ color: 0xfffbee }), i * 20, H - 0.05, 0, 0).rotation.x = Math.PI;
+    for (const x of [-50, -25, 0, 25, 50]) for (const z of [-35, 0, 35]) it.bulb(x, H - 3, z, 0.5);
+    // shop fronts along the north wall, upper floor repeated above
+    SHOPS.forEach(([name, c], i) => {
+      const x = -67.5 + i * 15;
+      it.box(13, 4.6, 0.25, GLASS, x, 2.3, -D / 2 + 3.6); it.box(13.4, 0.35, 0.5, mat(c), x, 5.3, -D / 2 + 3.6);
+      for (let k = 0; k < 4; k++) it.box(1.6, 1.0 + (k % 2) * 0.6, 1.0, mat([c, 0xffffff, 0xd9b24a, 0x222222][k]), x - 4.5 + k * 3, 0.7, -D / 2 + 1.4);
+      it.sign(11, 1.5, name, '#ffffff', '#' + c.toString(16).padStart(6, '0'), x, 6.5, -D / 2 + 3.5, 0, 34);
+      it.box(13, 4.2, 0.25, GLASS, x, 10.8, -D / 2 + 3.6); it.sign(11, 1.2, name, '#f4e6c0', '#14212e', x, 14, -D / 2 + 3.5, 0, 30);
+    });
+    it.box(150, 0.6, 5, mat(0xd9d2c0), 0, 8.6, -D / 2 + 2.5); it.box(150, 1.1, 0.2, GLASS, 0, 9.5, -D / 2 + 5.2);
+    it.box(150, 0.6, 5, mat(0xd9d2c0), 0, 8.6, D / 2 - 2.5); it.box(150, 1.1, 0.2, GLASS, 0, 9.5, D / 2 - 5.2);
+    // the aquarium wall (west)
+    it.box(1.2, 14, 62, GLASS, -W / 2 + 4, 7, 0, true);
+    it.box(4.5, 14, 62, new THREE.MeshBasicMaterial({ color: 0x1a7fa8 }), -W / 2 + 1.5, 7, 0);
+    it.sign(26, 2.4, 'DUBAI AQUARIUM', '#ffffff', '#0e3a52', -W / 2 + 4.8, 16, 0, Math.PI / 2, 38);
+    const fish = [];
+    for (let i = 0; i < 16; i++) { const f = new THREE.Group(); box(0.9, 0.4, 0.3, mat([0xf29a2e, 0xe8e8f0, 0x2e8be8, 0xf2d12e][i % 4]), 0, 0, 0, f); box(0.3, 0.5, 0.1, mat(0xf29a2e), -0.6, 0, 0, f); f.traverse((o) => { o.userData.keep = true; }); f.position.set(-W / 2 + 2 + Math.random() * 2, 1.5 + Math.random() * 11, -28 + Math.random() * 56); f.userData.sp = 1.2 + Math.random() * 2.4; f.userData.dir = i % 2 ? 1 : -1; it.g.add(f); fish.push(f); }
+    it.upd.push((dt) => { for (const f of fish) { f.position.z += f.userData.dir * f.userData.sp * dt; if (f.position.z > 29 || f.position.z < -29) { f.userData.dir *= -1; } f.rotation.y = f.userData.dir > 0 ? Math.PI / 2 : -Math.PI / 2; } });
+    // centre: fountain pond, benches, palms, pillars
+    it.cyl(9, 0.9, MAT.concreteL, -6, 0.45, 2, true, 28); it.cyl(8.3, 0.95, POOL_MAT, -6, 0.47, 2, false, 28); it.cyl(0.8, 5, SILVER, -6, 2.5, 2, false, 8); it.cyl(2.2, 0.4, SILVER, -6, 5, 2, false, 14);
+    for (const a of [0, 1, 2, 3]) { const x = -6 + Math.cos(a * 1.57) * 13, z = 2 + Math.sin(a * 1.57) * 13; it.box(4, 0.5, 1.2, mat(0x6b4a2f), x, 0.5, z, true, a * 1.57 + 1.57); plant(it, x + Math.cos(a * 1.57) * 3, z + Math.sin(a * 1.57) * 3, 1.3); }
+    for (const x of [-45, -15, 15, 45]) for (const z of [-24, 24]) it.cyl(1.4, H, mat(0xe3dac4), x, H / 2, z, true, 18);
+    // food court (east wing)
+    const tabX = [26, 38, 50, 62], tabZ = [-30, -18, -6, 6, 18];
+    for (const x of tabX) for (const z of tabZ) {
+      it.cyl(1.1, 0.12, mat(0xf0ece0), x, 0.78, z, false, 14); it.cyl(0.14, 0.78, MAT.rail, x, 0.39, z, false, 6); it.col(x, z, 2.2, 2.2, 0.9);
+      for (const [dx, dz] of [[1.5, 0], [-1.5, 0], [0, 1.5], [0, -1.5]]) { it.box(0.65, 0.1, 0.65, mat(0xd9731a), x + dx, 0.5, z + dz); it.box(0.1, 0.5, 0.1, MAT.rail, x + dx, 0.25, z + dz); }
+      const sp = it.spot(x, z, 2.7, () => mealLabel(sp), () => mealAct(it, sp));
+    }
+    const stalls = [['ARABIAN KITCHEN', 0xb85c2e], ['BURGER STATION', 0xc8102e], ['PIZZA CORNER', 0x2e7d32], ['SWEET AND JUICE', 0x7a3b8e]];
+    stalls.forEach(([name, c], i) => { const z = -33 + i * 20; it.box(3, 1.2, 14, mat(0x3a2418), W / 2 - 5, 0.6, z, true); it.box(3.2, 0.12, 14.4, mat(c), W / 2 - 5, 1.26, z); it.sign(13, 2.6, name, '#ffffff', '#' + c.toString(16).padStart(6, '0'), W / 2 - 0.5, 5, z, -Math.PI / 2, 40); it.human(makeHuman(c, 0x1a1c22, SKINS[i % 4], false), W / 2 - 2.2, z, Math.PI / 2); });
+    it.sign(24, 2.4, 'FOOD COURT', '#f4e6c0', '#14212e', 45, 10, -D / 2 + 3.6, 0, 40);
+    // cashier of the food court
+    it.box(8, 1.2, 2.2, mat(0x3a2418), 50, 0.6, 40, true); it.box(8.4, 0.12, 2.6, mat(0xd8b24a), 50, 1.26, 40);
+    it.waiter = it.human(makeHuman(0xf3f3f3, 0x1a1c22, SKINS[1], false), 50, 42, Math.PI);
+    it.board = { set() {} };
+    // Fashion Avenue spot and the exit
+    it.box(14, 4.4, 0.3, GLASS, 0, 2.2, D / 2 - 0.1);
+    it.sign(5, 0.9, 'EXIT', '#ffffff', '#1a6b3a', 0, 5.4, D / 2 - 0.4, Math.PI, 34);
+    it.spawn = { x: 0, z: D / 2 - 6, h: 0 };
+    it.payAt = { x: it.bx + 50, z: it.bz + 37.4 }; it.exitAt = { x: it.bx, z: it.bz + D / 2 - 4 };
+    it.spot(0, D / 2 - 3, 4, () => (meal.tab > 0 ? 'leave (you owe ' + fmtMoney(meal.tab) + ')' : 'leave the mall'), () => tryLeave(it));
+    it.spot(50, 37.4, 3.6, () => (meal.tab > 0 ? 'pay the bill (' + fmtMoney(meal.tab) + ')' : 'food court cashier: nothing to pay'), () => payBill(it));
+    it.spot(-52.5, -D / 2 + 9, 6, 'Fashion Avenue: buy clothes', () => openClothes());
+    it.spot(-30, -D / 2 + 9, 5, 'Tech Zone: buy phones', () => { toast('Open your phone (P) and tap Store to buy phones.'); });
+    // racks and mannequins in front of Fashion Avenue
+    for (let i = 0; i < 5; i++) { it.box(2.4, 1.6, 0.3, mat(0x6a2a7a), -60 + i * 3, 0.9, -D / 2 + 7); const m = makeHuman(OUTFITS[1 + i].robe || OUTFITS[1 + i].shirt, OUTFITS[1 + i].pants || 0xffffff, 0xe0c9b0, false); dressHuman(m, OUTFITS[1 + i]); it.human(m, -60 + i * 3, -D / 2 + 9, 0); }
+    it.onLeave = () => { clearPlates(); meal.spot = null; meal.state = 'none'; meal.tab = 0; guards.phase = ''; hideBanner(); };
+    it.upd.push((dt) => mealUpdate(it, dt));
+    return registerInterior(it);
+  }
+  function enterMall() {
+    const it = INTERIORS.get('mall') || buildMallInterior();
+    meal.tab = 0; meal.state = 'none'; meal.spot = null; meal.food = 0; meal.hp = 0;
+    enterInterior(it);
+  }
+  function openClothes() {
+    const render = () => {
+      let html = '<p class="note">Fashion Avenue. After you buy something, open your phone, go to Settings and tap Wear.</p>';
+      for (const o of OUTFITS) {
+        if (!o.price) continue;
+        const own = save.outfits.includes(o.id);
+        html += '<div class="row"><span class="sw" style="background:' + outfitColor(o) + '"></span><div class="nm">' + o.name + '<small>' + (o.robe ? 'Long robe' : 'Shirt and trousers') + (o.head ? ' · ' + (o.head === 'ghutra' ? 'ghutra' : 'cap') : '') + '</small></div><div class="pr">' + fmtMoney(o.price) + '</div><button class="b" data-act="buy" data-id="' + o.id + '"' + (own ? ' disabled' : '') + '>' + (own ? 'Owned' : 'Buy') + '</button></div>';
+      }
+      setPanel(html);
+    };
+    openPanel('Fashion Avenue', '', (act, d) => {
+      const o = outfitById.get(d.id);
+      if (!o || save.outfits.includes(o.id)) return;
+      if (save.cash < o.price) { toast('Not enough cash.', 'fail'); return; }
+      save.cash -= o.price; save.outfits.push(o.id); persist(); addXP(Math.round(o.price / 30) + 10);
+      toast('Bought ' + o.name + '. Open Phone > Settings to wear it.', 'win', 4000); beep([523, 784], 0.4, 'sine', 0.1);
+      render();
+    });
+    render();
+  }
+
+  // ---------- The masjid: wudu, jamaat and the five prayers ----------
+  let wudu = false;
+  const pray = { on: false, p: null, seq: [], i: 0, t: 0, humans: [], slot: null };
+  const WUDU_STEPS = [
+    ['Bismillah. Make the intention', 'hands'], ['Wash both hands three times', 'hands'], ['Rinse the mouth three times', 'mouth'], ['Rinse the nose three times', 'nose'],
+    ['Wash the face three times', 'face'], ['Wash the right arm up to the elbow', 'arm'], ['Wash the left arm up to the elbow', 'arm'], ['Wipe the head', 'head'],
+    ['Wipe the ears', 'ears'], ['Wash the right foot', 'foot'], ['Wash the left foot', 'foot'],
+  ];
+  const wuduState = { on: false, i: 0, t: 0, water: null };
+
+  function salahSeq(n) {
+    const seq = [{ ph: 'takbir', d: 2.4, txt: 'Allahu Akbar (the prayer begins)', r: 1 }];
+    for (let r = 1; r <= n; r++) {
+      seq.push({ ph: 'qiyam', d: 3.6, txt: 'Standing: Al-Fatiha and a surah', r });
+      seq.push({ ph: 'ruku', d: 2.6, txt: 'Ruku: Subhana Rabbiyal Azeem', r });
+      seq.push({ ph: 'qawma', d: 1.8, txt: 'Sami Allahu liman hamidah', r });
+      seq.push({ ph: 'sajdah', d: 2.8, txt: 'Sujood: Subhana Rabbiyal A\'la', r });
+      seq.push({ ph: 'jalsa', d: 1.8, txt: 'Sitting: Rabbighfir li', r });
+      seq.push({ ph: 'sajdah', d: 2.8, txt: 'Sujood: Subhana Rabbiyal A\'la', r });
+      if (r === n || (r === 2 && n > 2)) seq.push({ ph: 'tashahhud', d: 3.6, txt: 'Tashahhud: At-tahiyyatu lillah', r });
+    }
+    seq.push({ ph: 'salam', d: 3.2, txt: 'Salam: Assalamu alaikum wa rahmatullah', r: n });
+    return seq;
+  }
+  const ez = (x) => x * x * (3 - 2 * x);
+  function salahPose(h, ph, u, delay) {
+    u = clamp(u, 0, 1);
+    const L = h.legL, R = h.legR, aL = h.armL, aR = h.armR, up = h.upper, g = h.g;
+    up.rotation.set(0, 0, 0); aL.rotation.set(0, 0, 0); aR.rotation.set(0, 0, 0); L.rotation.set(0, 0, 0); R.rotation.set(0, 0, 0); h.head.rotation.set(0, 0, 0); g.position.y = 0;
+    const fold = (k) => { aL.rotation.set(-1.25 * k, 0, 0.75 * k); aR.rotation.set(-1.25 * k, 0, -0.75 * k); };
+    switch (ph) {
+      case 'takbir': { const k = u < 0.5 ? ez(u * 2) : 1 - ez((u - 0.5) * 2) * 0.0; aL.rotation.set(-2.5 * k * (u < 0.55 ? 1 : 1 - ez((u - 0.55) / 0.45)), 0, 0.2); aR.rotation.set(-2.5 * k * (u < 0.55 ? 1 : 1 - ez((u - 0.55) / 0.45)), 0, -0.2); if (u > 0.55) fold(ez((u - 0.55) / 0.45)); break; }
+      case 'qiyam': fold(1); break;
+      case 'ruku': { const k = u < 0.3 ? ez(u / 0.3) : u > 0.85 ? 1 - ez((u - 0.85) / 0.15) : 1; up.rotation.x = -1.45 * k; aL.rotation.x = aR.rotation.x = 1.45 * k - 0.1 * (1 - k); break; }
+      case 'qawma': { const k = 1 - ez(Math.min(1, u * 2)); up.rotation.x = -0.6 * k; break; }
+      case 'sajdah': {
+        const k = u < 0.3 ? ez(u / 0.3) : u > 0.85 ? 1 - ez((u - 0.85) / 0.15) : 1;
+        g.position.y = -0.2 * k; L.rotation.x = R.rotation.x = -1.0 * k; up.rotation.x = -2.3 * k; aL.rotation.x = aR.rotation.x = 2.3 * k; h.head.rotation.x = 0.2 * k; break;
+      }
+      case 'jalsa': case 'tashahhud': case 'salam': {
+        const k = ph === 'jalsa' ? (u < 0.3 ? ez(u / 0.3) : 1) : 1;
+        g.position.y = -0.5 * k; L.rotation.x = R.rotation.x = -1.35 * k; up.rotation.x = -0.05 * k; aL.rotation.set(-0.9 * k, 0, 0.1); aR.rotation.set(-0.9 * k, 0, -0.1);
+        if (ph === 'salam') h.head.rotation.y = u < 0.5 ? ez(u * 2) * 1.2 : -ez((u - 0.5) * 2) * 1.2 + 0.0;
+        break;
+      }
+    }
+  }
+
+  // ---- The hall ----
+  function buildMosqueInterior() {
+    const it = newInterior('mosque', 'Masjid');
+    const W = 46, D = 40, H = 11;
+    const ceil = it.room(W, D, H, lam(texPrayer(W, D)), mat(0xf1ebd8), mat(0xf7f2e4));
+    ceil.parent.remove(ceil); ceil.geometry.dispose();
+    // ceiling ring around the dome
+    const ring = put(it.g, new THREE.RingGeometry(14, 34, 48, 1).rotateX(Math.PI / 2), mat(0xf7f2e4), 0, H, -6, 0, false);
+    const domeTex = canvasTex(256, 128, (g) => { g.fillStyle = '#16607a'; g.fillRect(0, 0, 256, 128); g.strokeStyle = '#e3cf8a'; g.lineWidth = 2; for (let i = 0; i < 16; i++) { g.beginPath(); g.moveTo(i * 16, 0); g.lineTo(i * 16, 128); g.stroke(); } for (let j = 1; j < 6; j++) { g.beginPath(); g.moveTo(0, j * 21); g.lineTo(256, j * 21); g.stroke(); } });
+    const dome = put(it.g, new THREE.SphereGeometry(14, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ map: domeTex, side: THREE.BackSide }), 0, H, -6, 0, false); dome.scale.y = 0.85;
+    // the prayer hall floor sits at z < 7; entrance zone and wudu area use tiles
+    it.plane(W, 14, pho(texMarble(W, 14, 6, '#efe9dc', '#e1d8c3'), 80), 0, 0.04, 13);
+    it.plane(18.4, 12.4, lam(texTiles(18.4, 12.4)), -13.6, 0.06, 13.5);
+    // the qibla wall: mihrab and minbar
+    it.box(9, 7.6, 0.5, mat(0x0f4d3a), 0, 3.8, -D / 2 + 0.3);
+    it.box(5.6, 6.6, 0.4, mat(0x072b20), 0, 3.4, -D / 2 + 0.55);
+    for (const s of [-1, 1]) it.box(0.6, 6.8, 0.9, GOLD, s * 3.1, 3.4, -D / 2 + 0.75);
+    put(it.g, new THREE.CylinderGeometry(3.1, 3.1, 0.9, 20, 1, false, 0, Math.PI).rotateX(Math.PI / 2), GOLD, 0, 6.8, -D / 2 + 0.75);
+    it.qibla = dynSign(it, 13, 2.2, 0, 8.6, -D / 2 + 0.58, 0); it.qibla.set('لا إله إلا الله', '#e3cf8a', '#0f4d3a', 58);
+    for (let i = 0; i < 6; i++) it.box(3, 0.5, 1.2, mat(0x5a3a22), 8.5, 0.25 + i * 0.5, -D / 2 + 2 + (5 - i) * 0.0 + 6 - i * 1.0 - 3, i === 5);
+    it.box(3.4, 1.4, 2.4, mat(0x7a5a3a), 8.5, 3.6, -D / 2 + 3);
+    // columns and chandeliers
+    for (const x of [-15, 15]) for (const z of [-12, 0]) it.cyl(0.9, H, mat(0xe8dfc4), x, H / 2, z, true, 16);
+    for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; it.bulb(Math.cos(a) * 6, 7.6, -6 + Math.sin(a) * 6, 0.3); it.bulb(Math.cos(a) * 11, 8.2, -6 + Math.sin(a) * 11, 0.25); }
+    it.bulb(0, 7.2, -6, 0.6); it.cyl(0.06, 3.4, MAT.rail, 0, 9.2, -6, false, 5);
+    // stained glass windows along both side walls
+    for (const s of [-1, 1]) for (let i = 0; i < 4; i++) for (const [dz, c] of [[0, 0x2e8be8], [1.6, 0xf2d12e], [3.2, 0xc8102e]]) put(it.g, new THREE.PlaneGeometry(1.3, 3.2), new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide }), s * (W / 2 - 0.05), 6, -15 + i * 6 + dz - 1.6, s * Math.PI / 2, false);
+    // wudu stations
+    for (let i = 0; i < 6; i++) {
+      const z = 9.5 + i * 1.9;
+      it.box(0.9, 0.9, 1.2, mat(0xe9eef1), -W / 2 + 1.2, 0.45, z, true);
+      it.cyl(0.07, 0.5, SILVER, -W / 2 + 0.6, 1.3, z, false, 6);
+      it.box(0.5, 0.45, 0.5, mat(0x3a7aa8), -W / 2 + 3.4, 0.23, z);
+    }
+    it.box(0.4, 3, 12.6, mat(0x2b6f94), -W / 2 + 0.3, 1.5, 13.5);
+    it.sign(8, 1, 'WUDU AREA', '#ffffff', '#2b6f94', -W / 2 + 4.3, 4, 20 - 0.5, Math.PI, 32);
+    wuduState.water = box(0.08, 0.9, 0.08, new THREE.MeshBasicMaterial({ color: 0x7fd0ff, transparent: true, opacity: 0.8 }), -W / 2 + 1.0, 0.9, 12, it.g); wuduState.water.userData.keep = true; wuduState.water.visible = false;
+    // shoe racks and the door
+    for (let i = 0; i < 4; i++) it.box(3, 0.9, 0.7, mat(0x5a3a22), 6 + i * 3.4, 0.45, 18.6, true);
+    it.box(5, 5.2, 0.4, mat(0x5a3a22), 14, 2.6, D / 2 - 0.1);
+    it.sign(5, 0.9, 'EXIT', '#ffffff', '#1a6b3a', 14, 5.7, D / 2 - 0.4, Math.PI, 32);
+    // worshippers: an imam and two rows
+    it.imam = it.human(makeHuman(0xf5f3ec, 0xf5f3ec, SKINS[0], false), 0, -16.4, 0); dressHuman(it.imam, { robe: 0xf5f3ec, head: 'ghutra' });
+    it.imam.g.traverse((o) => { o.userData.keep = true; });
+    it.rows = [];
+    for (const z of [-13.4, -10.4]) for (let i = 0; i < 9; i++) {
+      const h = makeHuman(0xffffff, 0x222222, SKINS[(i + 2) % 4], false); dressHuman(h, pick([{ robe: 0xf5f3ec, head: 'ghutra' }, { robe: 0xd8d2c2, head: 'ghutra' }, { robe: 0x8d9096, head: 'ghutra' }, { shirt: 0x3b6a8a, pants: 0x222222, head: 'cap', cap: 0xf4f4f4 }]));
+      it.human(h, -6 + i * 1.5, z, 0); it.rows.push(h);
+    }
+    it.spawn = { x: 14, z: D / 2 - 5, h: 0 };
+    it.spot(14, D / 2 - 3, 3.6, () => 'leave the masjid', () => { if (!pray.on && !wuduState.on) leaveInterior(); });
+    it.spot(-W / 2 + 6, 14, 6.2, () => 'perform wudu (ablution)', () => startWudu(it), () => pray.on || wuduState.on);
+    it.spot(0, -3, 11, () => { const c = currentPrayer(GC.min); return c && !prayed[c.id] ? 'pray ' + c.name + ' with the jamaat' : c ? c.name + ' already prayed' : 'not prayer time (next ' + nextPrayer(GC.min).name + ' ' + fmtClock(nextPrayer(GC.min).t) + ')'; }, () => startPrayer(it), () => pray.on || wuduState.on);
+    it.refreshJamaat = () => {
+      const c = currentPrayer(GC.min), on = !!c && !prayed[c.id];
+      it.imam.g.visible = on; for (const h of it.rows) h.g.visible = on && h.g.userData.fill !== false;
+    };
+    it.onEnter = () => { it.title = INT.mosqueName || 'Masjid'; it.refreshJamaat(); if (!wudu) toast('Wash first: use the wudu area, then pray when it is prayer time.', '', 3600); };
+    it.upd.push((dt) => { prayUpdate(it, dt); wuduUpdate(it, dt); });
+    return registerInterior(it);
+  }
+  function enterMosque(name) {
+    INT.mosqueName = name;
+    const it = INTERIORS.get('mosque') || buildMosqueInterior();
+    for (const h of it.rows) h.g.userData.fill = Math.random() < 0.72;
+    enterInterior(it);
+  }
+
+  // ---- Wudu ----
+  function startWudu(it) {
+    if (wudu) { toast('You are already in wudu. Pray when it is prayer time.'); return; }
+    wuduState.on = true; wuduState.i = 0; wuduState.t = 0; INT.frozen = true;
+    P.x = it.bx - 23 + 3.4; P.z = it.bz + 12; P.h = Math.PI / 2;
+    player.position.set(P.x, 0, P.z); player.rotation.set(0, P.h, 0); resetPose();
+    INT.camFn = () => [P.x + 3.2, 2.1, P.z + 3.2, P.x - 1.5, 1.0, P.z];
+    showBanner('Wudu', WUDU_STEPS[0][0], () => finishWudu(it));
+    beep([523, 659], 0.4, 'sine', 0.06);
+  }
+  function wuduUpdate(it, dt) {
+    if (!wuduState.on) return;
+    wuduState.t += dt;
+    const st = WUDU_STEPS[wuduState.i], k = st[1], t = wuduState.t;
+    wuduState.water.visible = wuduState.i > 0;
+    resetPose(); player.position.y = 0;
+    const a = Math.sin(t * 8) * 0.35;
+    switch (k) {
+      case 'hands': PL.armL.rotation.set(-1.1 + a, 0, 0.5); PL.armR.rotation.set(-1.1 - a, 0, -0.5); break;
+      case 'mouth': PL.armR.rotation.set(-2.5 + a * 0.4, 0, -0.3); PL.armL.rotation.set(-1.0, 0, 0.5); break;
+      case 'nose': PL.armR.rotation.set(-2.6 + a * 0.3, 0, -0.1); PL.armL.rotation.set(-1.0, 0, 0.5); break;
+      case 'face': PL.armL.rotation.set(-2.5 + a * 0.5, 0, 0.2); PL.armR.rotation.set(-2.5 - a * 0.5, 0, -0.2); PL.upper.rotation.x = -0.1; break;
+      case 'arm': PL.armR.rotation.set(-1.2 + a * 0.3, 0, -0.5); PL.armL.rotation.set(-1.3 + a, 0, 0.6); break;
+      case 'head': PL.armR.rotation.set(-2.7, 0, -0.1 + a * 0.2); PL.armL.rotation.set(-1.0, 0, 0.5); break;
+      case 'ears': PL.armL.rotation.set(-2.5, 0, 0.5 + a * 0.2); PL.armR.rotation.set(-2.5, 0, -0.5 - a * 0.2); break;
+      case 'foot': PL.armR.rotation.set(-1.5 + a * 0.4, 0, 0.0); PL.upper.rotation.x = -0.5; (wuduState.i === 9 ? PL.legR : PL.legL).rotation.x = 0.9; break;
+    }
+    if (t > 2.1) { wuduState.i++; wuduState.t = 0; if (wuduState.i >= WUDU_STEPS.length) { finishWudu(it); return; } showBanner('Wudu · step ' + (wuduState.i + 1) + ' of ' + WUDU_STEPS.length, WUDU_STEPS[wuduState.i][0], () => finishWudu(it)); beep([660 + wuduState.i * 20], 0.15, 'sine', 0.04); }
+  }
+  function finishWudu(it) {
+    wuduState.on = false; wuduState.water.visible = false; INT.frozen = false; INT.camFn = null; resetPose(); hideBanner();
+    wudu = true; addXP(25);
+    toast('Wudu complete. You are ready to pray.', 'win', 3600); beep([523, 659, 784], 0.5, 'sine', 0.08);
+    player.position.set(P.x, 0, P.z);
+  }
+
+  // ---- The prayer ----
+  function startPrayer(it) {
+    const c = currentPrayer(GC.min);
+    if (!c) { toast('It is not prayer time. Next: ' + nextPrayer(GC.min).name + ' at ' + fmtClock(nextPrayer(GC.min).t) + '.'); return; }
+    if (prayed[c.id]) { toast('You already prayed ' + c.name + '. Next: ' + nextPrayer(GC.min).name + ' at ' + fmtClock(nextPrayer(GC.min).t) + '.'); return; }
+    if (!wudu) { toast('You need wudu first. Use the wudu area near the entrance.', 'fail', 3200); return; }
+    pray.on = true; pray.p = c; pray.seq = salahSeq(c.rak); pray.i = 0; pray.t = 0;
+    INT.frozen = true; GC.paused = true;
+    const slot = Math.round(clamp(P.x - it.bx, -6, 6) / 1.5) * 1.5;
+    P.x = it.bx + slot; P.z = it.bz - 7.4; P.h = 0;
+    resetPose(); player.position.set(P.x, 0, P.z); player.rotation.set(0, 0, 0);
+    it.refreshJamaat();
+    for (const h of it.rows) if (Math.abs(h.g.position.x - slot) < 0.6 && h.g.position.z > -11) h.g.visible = false;
+    pray.humans = [it.imam, ...it.rows.filter((h) => h.g.visible)];
+    for (const h of pray.humans) h.delay = Math.random() * 0.3;
+    INT.camFn = () => [P.x + 3.6, 2.0, P.z + 3.4, P.x - 0.4, 0.9, P.z - 2.2];
+    showBanner(c.name + ' · Rak\'ah 1 of ' + c.rak, pray.seq[0].txt, () => finishPrayer(it));
+    beep([392, 440, 494], 1.2, 'sine', 0.08);
+  }
+  function prayUpdate(it, dt) {
+    if (!pray.on) return;
+    pray.t += dt;
+    let s = pray.seq[pray.i];
+    if (pray.t >= s.d) {
+      pray.t -= s.d; pray.i++;
+      if (pray.i >= pray.seq.length) { finishPrayer(it); return; }
+      s = pray.seq[pray.i];
+      showBanner(pray.p.name + ' · Rak\'ah ' + s.r + ' of ' + pray.p.rak, s.txt, () => finishPrayer(it));
+    }
+    salahPose(PL, s.ph, pray.t / s.d);
+    player.position.y = PL.g.position.y;
+    for (const h of pray.humans) salahPose(h, s.ph, (pray.t - h.delay) / s.d);
+  }
+  function finishPrayer(it) {
+    const p = pray.p;
+    pray.on = false; INT.frozen = false; INT.camFn = null; GC.paused = false; hideBanner();
+    resetPose(); player.position.set(P.x, 0, P.z);
+    for (const h of it.rows.concat([it.imam])) { h.upper.rotation.set(0, 0, 0); h.armL.rotation.set(0, 0, 0); h.armR.rotation.set(0, 0, 0); h.legL.rotation.set(0, 0, 0); h.legR.rotation.set(0, 0, 0); h.head.rotation.set(0, 0, 0); h.g.position.y = 0; }
+    prayed[p.id] = true; wudu = false; save.prayers++; save.gems++; persist();
+    hp = Math.min(MAX_HP, hp + 40); addXP(90);
+    it.refreshJamaat();
+    P.z = it.bz - 4;
+    toast(p.name + ' prayed in jamaat. May Allah accept it. +90 XP, +1 gem', 'win', 4800);
+    beep([523, 659, 784, 1047], 0.8, 'sine', 0.08);
+  }
+
+  // the closest masjid, for the clock chip
+  let mosqueTimer = 0;
+  function findMosque() {
+    if (INT.active) { mosqueDist = null; return; }
+    const F = focus();
+    const ccx = Math.round(F.x / CH), ccz = Math.round(F.z / CH);
+    let best = null;
+    for (let dx = -3; dx <= 3; dx++) for (let dz = -3; dz <= 3; dz++) {
+      if (zoneOf(ccx + dx, ccz + dz) === 'sea') continue;
+      for (const lot of chunkLayout(ccx + dx, ccz + dz)) for (const b of lot.buildings) {
+        if (!b.door || b.enter.kind !== 'mosque') continue;
+        const d = Math.hypot(F.x - ((ccx + dx) * CH + b.door.x), F.z - ((ccz + dz) * CH + b.door.z));
+        if (best === null || d < best) best = d;
+      }
+    }
+    mosqueDist = best;
+  }
+
+  // ---------- Helicopter ----------
+  const HELIPADS = [{ x: BAA.x - 32, z: BAA.z - 1, r: 9, y: 209.5 }];
+  function buildHeli(s, col) {
+    const g = new THREE.Group();
+    const body = paint(col), dark = mat(0x23262c), stripe = paint(0x1d4fa8);
+    const fus = put(g, new THREE.SphereGeometry(1, 18, 12), body, 0, 1.55, 0.2); fus.scale.set(1.15, 1.05, 2.5);
+    const cock = put(g, new THREE.SphereGeometry(1, 16, 12), GLASS, 0, 1.75, -1.05); cock.scale.set(1.0, 0.85, 1.35);
+    box(2.34, 0.18, 3.0, stripe, 0, 1.15, 0.3, g);
+    box(1.2, 0.8, 1.6, body, 0, 2.6, 0.7, g);
+    const boom = put(g, new THREE.CylinderGeometry(0.3, 0.13, 5.4, 10).rotateX(Math.PI / 2), body, 0, 1.85, 4.0);
+    box(0.12, 1.5, 0.95, stripe, 0, 2.5, 6.4, g);
+    box(1.8, 0.08, 0.55, body, 0, 2.0, 6.0, g);
+    for (const sx of [-1, 1]) { box(0.12, 0.12, 3.8, dark, sx * 1.05, 0.14, 0.2, g); for (const z of [-0.8, 1.1]) box(0.1, 0.95, 0.1, dark, sx * 1.0, 0.62, z, g); }
+    const mast = put(g, new THREE.CylinderGeometry(0.16, 0.2, 0.9, 8), dark, 0, 3.15, 0.7);
+    const main = new THREE.Group(); main.position.set(0, 3.65, 0.7); g.add(main);
+    for (let i = 0; i < 2; i++) { const b = box(10.2, 0.05, 0.42, dark, 0, 0, 0, main); b.rotation.y = i * Math.PI / 2; }
+    box(0.5, 0.2, 0.5, dark, 0, 0, 0, main);
+    const tail = new THREE.Group(); tail.position.set(0.22, 2.55, 6.4); g.add(tail);
+    for (let i = 0; i < 2; i++) { const b = box(0.04, 1.7, 0.2, dark, 0, 0, 0, tail); b.rotation.x = i * Math.PI / 2; }
+    badge(g, 1.18, 1.55, 0.6, 'side', true);
+    return { mesh: g, wheels: [], fronts: [], blink: [], seat: { y: 1.35, z: -0.75 }, wr: 1, rotors: { main, tail } };
+  }
+  function heliCols(x, z) {
+    const out = [];
+    const ccx = Math.round(x / CH), ccz = Math.round(z / CH);
+    for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) { const c = chunks.get(key(ccx + dx, ccz + dz)); if (c) out.push(...c.cols); }
+    return out;
+  }
+  function updateHeli(v, dt, inp) {
+    const s = v.spec;
+    v.rotorW += (38 - v.rotorW) * Math.min(1, dt * 0.9);
+    const spool = clamp(v.rotorW / 30, 0, 1);
+    const cols = heliCols(v.x, v.z);
+    // ground below: the street, a roof, a helipad, or just above the sea
+    let fl = 0;
+    for (const b of cols) {
+      if (v.y < b.h - 0.7) continue;
+      const qx = clamp(v.x, b.minX, b.maxX), qz = clamp(v.z, b.minZ, b.maxZ);
+      if (Math.hypot(v.x - qx, v.z - qz) < 1.6) fl = Math.max(fl, b.h);
+    }
+    for (const p of HELIPADS) if (v.y >= p.y - 0.8 && Math.hypot(v.x - p.x, v.z - p.z) < p.r) fl = Math.max(fl, p.y);
+    if (v.z < SEA_EDGE && !seaFixOk(v.x, v.z)) fl = Math.max(fl, 2.5);
+    v.floorY = fl;
+    const air = v.y > fl + 0.35;
+    const lift = (keys.space ? 1 : 0) - (keys.shift ? 1 : 0);
+    v.vy += ((lift * 24 * spool) - v.vy) * Math.min(1, dt * 2.4);
+    v.y = Math.max(fl, v.y + v.vy * dt);
+    if (v.y <= fl && v.vy < 0) v.vy = 0;
+    if (air) {
+      const tgt = (inp.up ? s.max : 0) - (inp.down ? s.max * 0.4 : 0);
+      v.speed += clamp(tgt - v.speed, -s.acc * dt * 1.2, s.acc * dt);
+      if (!inp.up && !inp.down) v.speed *= 1 - 0.55 * dt;
+    } else v.speed *= Math.max(0, 1 - 6 * dt);
+    v.steer += (inp.steer - v.steer) * Math.min(1, dt * 4);
+    v.h += v.steer * s.turn * dt * (air ? 1 : 0.15);
+    const f = fwd(v.h);
+    let nx = v.x + f.x * v.speed * dt, nz = v.z + f.z * v.speed * dt, hit = false;
+    for (const b of cols) {
+      if (b.h < v.y + 0.5) continue;
+      const qx = clamp(nx, b.minX, b.maxX), qz = clamp(nz, b.minZ, b.maxZ), ex = nx - qx, ez = nz - qz, d2 = ex * ex + ez * ez, R = 3.8;
+      if (d2 >= R * R) continue;
+      hit = true;
+      if (d2 > 1e-8) { const d = Math.sqrt(d2); nx += ex / d * (R - d); nz += ez / d * (R - d); }
+      else { const pl = nx - b.minX, pr = b.maxX - nx, pt = nz - b.minZ, pb = b.maxZ - nz, m = Math.min(pl, pr, pt, pb); if (m === pl) nx = b.minX - R; else if (m === pr) nx = b.maxX + R; else if (m === pt) nz = b.minZ - R; else nz = b.maxZ + R; }
+    }
+    if (hit) { v.speed *= 0.4; shake = Math.max(shake, 0.25); }
+    v.x = nx; v.z = nz;
+    v.pitch = -clamp(v.speed / s.max, -0.4, 1) * 0.22;
+    v.lean = -v.steer * clamp(Math.abs(v.speed) / s.max, 0, 1) * 0.4;
+  }
+  function seaFixOk(x, z) { return !seaFix(x, z, 0.5); }
+  // </LIFE>
 
   // ================= Camera & loop =================
   let snapCam = true, shake = 0;
@@ -2959,6 +5121,13 @@
   }
   function updateCamera(dt) {
     const F = focus(), f = fwd(F.h);
+    if (INT.camFn) {
+      const c = INT.camFn();
+      camera.position.set(c[0], c[1], c[2]); camera.lookAt(c[3], c[4], c[5]);
+      if (camera.fov !== 55) { camera.fov = 55; camera.updateProjectionMatrix(); }
+      sky.position.copy(camera.position); sunPos(F); sun.target.position.set(F.x, 0, F.z); headlight.intensity = 0;
+      return;
+    }
     const baseFov = window.innerWidth / window.innerHeight < 0.8 ? 78 : 65;
     let fov = baseFov;
     if (aiming && mode === 'foot') {
@@ -2993,7 +5162,7 @@
     if (shake > 0) { camera.position.x += (Math.random() - 0.5) * shake; camera.position.y += (Math.random() - 0.5) * shake; shake = Math.max(0, shake - dt * 1.5); }
     if (Math.abs(camera.fov - fov) > 0.05) { camera.fov += (fov - camera.fov) * Math.min(1, dt * (aiming ? 12 : 3)); camera.updateProjectionMatrix(); }
     sky.position.copy(camera.position);
-    sun.position.set(F.x + 45, 90, F.z + 30);
+    sunPos(F);
     sun.target.position.set(F.x, 0, F.z);
     if (save.night && mode === 'drive') {
       const len = current.spec.len / 2;
@@ -3018,14 +5187,17 @@
     createVehicle(byNum.get('1101'), -19, -15.5, -Math.PI / 2, { home: true });
     createVehicle(byNum.get('1306'), -17, -33, -Math.PI / 2, { home: true });
     createVehicle(byNum.get('2003'), -17, -21.5, -Math.PI / 2, { home: true });
+    const hv = createVehicle(byNum.get('6001'), -31, -15.5, Math.PI / 2, { home: true });
+    hv.y = 4.3; hv.floorY = 4.3; hv.mesh.position.y = 4.3;
   }
+  initDubai();
   updateChunks(P.x, P.z);
   spawnHomeVehicles();
   player.position.set(P.x, 0, P.z); player.rotation.y = P.h;
   spawnTraffic(isTouch ? 8 : 14);
   for (let i = 0; i < PED_N; i++) placePed(spawnPed(0, 0), true);
   setWeapon(-1);
-  if (save.night) setNight(true);
+  applyLight(true); applyPhone(); dressHuman(PL, outfitById.get(save.outfit) || OUTFITS[0]); renderOutfits();
   renderHome();
   document.body.classList.add('menu-open');
 
@@ -3053,6 +5225,7 @@
   // Start the game over from home: every vehicle, person, wreck and effect is cleared and rebuilt.
   // Cash and missions passed are kept.
   function resetWorld() {
+    forceExitInterior();
     if (phoneOpen) togglePhone(false);
     calling = false; $('calling').hidden = true;
     if (mode === 'drive') exit(true);
@@ -3092,7 +5265,7 @@
     $('toast').hidden = true;
   });
 
-  if (location.hash === '#debug') window.__dbg = { P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
+  if (location.hash === '#debug') window.__dbg = { life: { INT, GC, stay, meal, pray, prayed, save, get food() { return food; }, set food(v) { food = v; }, get wudu() { return wudu; }, set wudu(v) { wudu = v; }, enterHotel, enterRestaurant, enterMall, enterMosque, nearestSpot, lifeAction, closePanel, hotelRoom, hotelLobby, switchInterior, advanceClock, nearestDoor, rideLift, openBooking, openMenu, startWudu, startPrayer, tryLeave, payBill, INTERIORS, SPECS, mealUpdate, guards, prayUpdate, wuduUpdate, finishPrayer, chunkLayout, zoneOf, CH }, info: () => JSON.stringify({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries }), P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
 
   const clock = new THREE.Clock();
   let introT = 0;
@@ -3106,7 +5279,8 @@
     if (paused) { renderer.render(scene, camera); return; }
     let dt = realDt;
     if (wastedT >= 0) { wastedT += Math.min(raw, 0.5); dt = realDt * 0.35; if (wastedT > 5) respawn(); }
-    const live = started && !phoneOpen && !mapOpen && wastedT < 0;
+    if (started && !panelOpen && !uiBusy && wastedT < 0) tickLife(dt);
+    const live = started && !phoneOpen && !mapOpen && !panelOpen && !uiBusy && wastedT < 0;
     if (live) {
       if (mode === 'foot') updateFoot(dt);
       else {
@@ -3114,21 +5288,24 @@
         const inp = { up: keys.up, down: keys.down, steer: keys.left - keys.right, brake: keys.space, boost: keys.shift };
         if (current.flight) updateFlight(current, dt);
         if (current.climb) updateClimb(current, dt);
-        const n = Math.min(current.spec.flyer ? 140 : 40, Math.max(1, Math.ceil(Math.abs(current.speed) * dt / 1.2)));
-        for (let i = 0; i < n && current; i++) updateDrive(current, dt / n, inp, true);
+        if (current.spec.heli) updateHeli(current, dt, inp);
+        else {
+          const n = Math.min(current.spec.flyer ? 140 : 40, Math.max(1, Math.ceil(Math.abs(current.speed) * dt / 1.2)));
+          for (let i = 0; i < n && current; i++) updateDrive(current, dt / n, inp, true);
+        }
         if (current && !(current.y > 1)) runOver(current); // a crash can blow the car up and throw the player out
       }
       playerStill = mode === 'foot' || !current || Math.abs(current.speed) < 3 ? playerStill + dt : 0;
       fireCool -= dt;
-      if ((trigger || triggerPressed) && fireCool <= 0 && wi >= 0) {
+      if ((trigger || triggerPressed) && fireCool <= 0 && wi >= 0 && !INT.active) {
         fire(); fireCool = WEAPONS[wi].rate; triggerPressed = false;
       }
-      if (now / 1000 - lastHurt > 6 && hp < MAX_HP) hp = Math.min(MAX_HP, hp + dt * (stars > 0 ? 1 : 4));
+      if (now / 1000 - lastHurt > 6 && hp < MAX_HP && food > 5) hp = Math.min(MAX_HP, hp + dt * (stars > 0 ? 1 : 4));
     }
     if (current) poseVehicle(current, dt);
     for (const v of vehicles.slice()) {
       if (v === current) continue;
-      if (v.ai && started) { updatePoliceCar(v, dt); continue; }
+      if (v.ai && started) { if (!INT.active) updatePoliceCar(v, dt); continue; }
       if (v.drop) {
         v.drop.t += dt;
         const p = v.drop.t / 0.7;
@@ -3142,24 +5319,27 @@
     }
     const blinkOn = Math.floor(now / 250) % 2 === 0;
     for (const v of vehicles) if (v.blink.length && !v.dead) { v.blink[0].visible = blinkOn; v.blink[1].visible = !blinkOn; }
-    updateTraffic(dt);
-    updatePeds(dt);
-    if (started) { updateCops(dt); updateWanted(dt); }
+    if (!INT.active) {
+      updateTraffic(dt);
+      updatePeds(dt);
+      if (started) { updateCops(dt); updateWanted(dt); }
+    }
     updateGrenades(dt);
     updateWrecks(dt);
     updateParticles(dt);
     updateTracers(dt);
     updateFireballs(dt);
-    if (live) updateMission(dt);
+    if (live && !INT.active) updateMission(dt);
     const F = focus();
-    updateChunks(F.x, F.z);
+    if (INT.active) updateInterior(dt, now); else updateChunks(F.x, F.z);
+    updateDubai(dt, now);
     if (started) { updateCamera(dt); updateHud(now); updateSound(now); }
     else {
       introT += dt * 0.15;
       camera.position.set(-20 + Math.cos(introT) * 20, 7, -24 + Math.sin(introT) * 20);
       camera.lookAt(-22, 1.5, -22);
       sky.position.copy(camera.position);
-      sun.position.set(F.x + 45, 90, F.z + 30); sun.target.position.set(F.x, 0, F.z);
+      sunPos(F); sun.target.position.set(F.x, 0, F.z);
     }
     renderer.render(scene, camera);
   }

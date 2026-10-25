@@ -1,4 +1,4 @@
-# 3D Driving
+# UAE Driving
 
 A 3D open-world driving and action game that runs in the browser and on Android. Your home sits in the middle of an endless city. Step outside, take the Fortuner or the Koenigsegg Jesko from your driveway, call any car or bike with your phone, run missions for cash, or cause trouble and outrun the police.
 
@@ -6,11 +6,23 @@ Built with [Three.js](https://threejs.org/). The game is a single `index.html` p
 
 ## Download the game
 Every push to `main` builds fresh downloads automatically. Open the repo's **Releases** page and take the newest release:
-- **Android:** `3D-Driving.apk`. Open it on your phone to install. Android will ask you to allow installing from this source the first time.
-- **Windows PC:** `3D-Driving.exe`. Double-click it and the game opens in its own window, no install needed. Press `F11` for fullscreen. Because the file is not code-signed, Windows may show "Windows protected your PC": click **More info**, then **Run anyway**.
+- **Android:** `UAE-Driving.apk`. Open it on your phone to install. Android will ask you to allow installing from this source the first time.
+- **Windows PC:** `UAE-Driving.exe`. Double-click it and the game opens in its own window, no install needed. Press `F11` for fullscreen. Because the file is not code-signed, Windows may show "Windows protected your PC": click **More info**, then **Run anyway**.
 
 ## Features
 - **Main menu and pause menu.** The game opens on a main menu with a Play button. In game, the ☰ button (or `Esc`) pauses with Resume, Restart and Leave to main menu. Full instructions are in the phone's **Help** tab.
+- **Dubai.** The endless city is dressed as Dubai, and the district name shows at the top left:
+  - **Sheikh Zayed Road** (the road just south of your home) runs east to west under the elevated **Dubai Metro**, with palm-lined medians, green overhead signs and stations every 160 m where silver trains stop and pull out.
+  - **Downtown Dubai** has the **Burj Khalifa** (a spiralling tiered tower with a spire), The Dubai Mall and the Dubai Fountain lake with dancing jets. **Emirates Towers**, the **Dubai Frame**, the **Museum of the Future** and the twisting **Cayan Tower** are around the city.
+  - **Jumeirah Beach** has the Arabian Gulf, beach umbrellas, lifeguard huts and resorts. A causeway leads out to the **Burj Al Arab** on its own island; at night its sail glows in changing colours. **Palm Jumeirah** and **Atlantis** are further along the coast (drive up the road at the east end of the beach).
+  - Jumeirah villas with walled gardens and pools, mosques with minarets, old Dubai with wind towers and dhows on **Dubai Creek**, Dubai Marina towers, and the desert with dunes, camels and tents beyond the city. Cash is in AED.
+- **Life in Dubai.**
+  - **Clock and prayers.** A day lasts 16 minutes, with dawn, day, dusk and night. You get a message at Fajr, Zuhr, Asr, Maghrib and Isha. Walk into a **masjid**, do **wudu** (the ablution is shown step by step), then pray with the jamaat. The prayer is acted out with the real rak'ahs for each time.
+  - **Food bar.** The FOOD bar under your health drops slowly. Eat at **restaurants** or the **Dubai Mall food court**: sit at a table, order from the menu, the waiter brings it, you eat, then pay at the counter. Leave without paying and the **guards** catch you, take you to the counter and charge you with a fine.
+  - **Hotels.** Every hotel (and the **Burj Al Arab**) has a lobby with reception and lifts. Book a room, choose the floor and how long you stay, ride the lift up, sleep, order room service and look at the view.
+  - **Dubai Mall inside.** A huge hall with an aquarium wall, shops on two levels, a food court and **Fashion Avenue**. Clothes you buy appear in **Phone > Settings > Outfit**. The phone **Store** sells real phones.
+  - **Levels.** Missions, prayers, meals and shopping give XP.
+  - **Helicopter (6001).** On the garage roof at home, or call it. Rise, fly, land on roofs and on the Burj Al Arab helipad.
 - **Endless city.** Roads, buildings, parks and street lights keep generating as you drive, with traffic on the roads.
 - **Tesla Roadster flying car (1307).** Tap **FLY** to open the map, drag a green dotted line from your car to any spot and let go: it lifts off on thrusters, flies there at 2,000 km/h and lands on that exact spot, even on a rooftop. Drive up to a building and tap **CLIMB** to drive up the wall onto the roof.
 - **Your home.** It has a garage, a driveway and a "MY HOME" sign. A Toyota Fortuner, a Koenigsegg Jesko and a Royal Enfield are parked outside.
@@ -52,7 +64,8 @@ On phones and tablets you get on-screen buttons: steering, gas, brake, nitro, FI
 | 1004 | Tata Nexon | 1304 | Ford Mustang GT |
 | 1005 | Toyota Innova Crysta | 1305 | Bugatti Chiron |
 | 1006 | Maruti Dzire Taxi | 1306 | Koenigsegg Jesko (VIP: 1990 km/h, 2100+ on nitro, bulletproof, never explodes) |
-| | | 1307 | Tesla Roadster (flying car: 10,000 km/h on the ground, flies at 2,000 km/h, climbs walls, never explodes) |
+| | | 1307 | Tesla Roadster (flying car: 5,000 km/h on the ground, flies at 2,000 km/h, climbs walls, never explodes) |
+| | | 6001 | Helicopter |
 | | | 2001 | Hero Splendor Plus |
 | 1101 | Toyota Fortuner | 2002 | Honda Activa |
 | 1102 | Mahindra Thar | 2003 | Royal Enfield Classic 350 |

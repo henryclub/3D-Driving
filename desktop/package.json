@@ -1,8 +1,8 @@
 {
-  "name": "3d-driving",
-  "productName": "3D Driving",
+  "name": "uae-driving",
+  "productName": "UAE Driving",
   "version": "1.0.0",
-  "description": "3D Driving by AZARR Motors",
+  "description": "UAE Driving by AZARR Motors",
   "author": "AZARR",
   "main": "main.js",
   "devDependencies": {
@@ -11,9 +11,9 @@
   },
   "build": {
     "appId": "com.azarr.driving3d",
-    "productName": "3D Driving",
+    "productName": "UAE Driving",
     "files": ["main.js", "index.html", "three.min.js"],
     "win": { "target": "portable" },
-    "portable": { "artifactName": "3D-Driving.exe" }
+    "portable": { "artifactName": "UAE-Driving.exe" }
   }
 }

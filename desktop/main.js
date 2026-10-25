@@ -8,7 +8,7 @@ function createWindow() {
     height: 800,
     backgroundColor: '#12161f',
     autoHideMenuBar: true,
-    title: '3D Driving',
+    title: 'UAE Driving',
     webPreferences: { contextIsolation: true },
   });
   win.removeMenu();
