@@ -521,8 +521,8 @@
 
     <div class="pane" id="pane-travel" hidden>
       <h2>Travel</h2>
-      <p>Search a city, pick a flight, class and seat. Go to the airport before it leaves.</p>
-      <input id="destSearch" class="search" type="text" placeholder="Search a city or country" autocomplete="off">
+      <p>Search a country, pick a flight, class and seat. Go to the airport before it leaves.</p>
+      <input id="destSearch" class="search" type="text" placeholder="Search a country" autocomplete="off">
       <div class="scroll" id="destList"></div>
       <h3 class="sub">My tickets</h3>
       <div class="scroll" id="ticketList"></div>
@@ -570,7 +570,11 @@
         </section>
         <section>
           <h3>Flying abroad</h3>
-          <p>Open <b>Travel</b> on your phone, search a city, pick a flight, class and seat, and pay. Go to <b>Dubai International Airport</b> (on its own island, with a causeway), check in at the desk, then walk to your gate when boarding opens. The airport bus takes you to the plane. Find your <b>green</b> seat and press <kbd>E</kbd> to sit. When the plane lands, walk to the door and press <kbd>E</kbd>, pass passport control and step out into the new city. To come home, book a flight from the airport there.</p>
+          <p>Open <b>Travel</b> on your phone, search a country, pick a flight, class and seat, and pay. Go to <b>Dubai International Airport</b> (on its own island, with a causeway), check in at the desk, then walk to your gate when boarding opens. The airport bus takes you to the plane. Find your <b>green</b> seat and press <kbd>E</kbd> to sit. When the plane lands, walk to the door and press <kbd>E</kbd>, pass passport control and step out into the new city. To come home, book a flight from the airport there. Inside India, take the train: every Indian city has a <b>Railway Station</b> where you buy a ticket and board at the platform.</p>
+        </section>
+        <section>
+          <h3>The map</h3>
+          <p>Tap the minimap (or press <kbd>B</kbd>) to open the big map with every place named. Search a place and tap it to set your destination: a pink beam shows it in the world and the minimap points to it. The Tesla FLY map shows the names too.</p>
         </section>
         <section>
           <h3>Calling a vehicle</h3>
@@ -1342,6 +1346,17 @@
         put(g, slantGeo(w + 2, 4, d + 2), mat(0x9aa4ae), x, h + 2, z);
         box(w * 0.86, 4.4, 0.2, GLASS, x, 2.6, z + nz * (d / 2 + 0.12), g);
         put(g, new THREE.CylinderGeometry(0.5, 0.5, 16, 8), SILVER, x - w * 0.4, h + 8, z); put(g, new THREE.SphereGeometry(1.6, 8, 6), mat(0xe8e8f0), x - w * 0.4, h + 17, z);
+        break;
+      }
+      case 'station': {
+        const nz = b.door.nz;
+        facade(g, w, h, d, mat(0xb5593c), x, 0, z);
+        box(w + 1.5, 1, d + 1.5, MAT.concreteL, x, h + 0.5, z, g);
+        box(5, h + 9, 5, mat(0xa94e34), x - w * 0.3, (h + 9) / 2, z, g); box(3.8, 3.8, 0.3, mat(0xf6f2e8), x - w * 0.3, h + 6, z + nz * 2.6, g); box(5.6, 1.2, 5.6, mat(0x6b2a1a), x - w * 0.3, h + 9.6, z, g);
+        box(w * 0.6, 0.5, 4.5, mat(0x2b4a7a), x, 4.6, z + nz * (d / 2 + 2.2), g);
+        for (const s of [-1, 1]) box(0.4, 4.4, 0.4, MAT.rail, x + s * w * 0.28, 2.2, z + nz * (d / 2 + 4), g);
+        box(w * 0.4, 3.4, 0.2, GLASS, x, 1.8, z + nz * (d / 2 + 0.12), g);
+        sign(g, w * 0.55, 1.2, labelMat('RAILWAY STATION', '#ffffff', '#1d4fa8', 512, 80, 40), x, 6.2, z + nz * (d / 2 + 0.2), nz > 0 ? 0 : Math.PI);
         break;
       }
       case 'house': {
@@ -4083,7 +4098,7 @@
   }
 
   // ================= Map places: names on the minimap, the big map and the fly map =================
-  const LM_NAMES = { eiffel: 'Eiffel Tower', tokyotower: 'Tokyo Tower', bigben: 'Big Ben', towerbridge: 'Tower Bridge', londoneye: 'London Eye', liberty: 'Statue of Liberty', empire: 'Empire State Building', arc: 'Arc de Triomphe', indiagate: 'India Gate', gateway: 'Gateway of India', rickshaw: 'Auto Rickshaw Stand', taj: 'Taj Mahal', qutub: 'Qutub Minar', minar: 'Minar-e-Pakistan', badshahi: 'Badshahi Mosque', pyramids: 'Pyramids of Giza', sphinx: 'Great Sphinx', hagia: 'Hagia Sophia', galata: 'Galata Tower', mbs: 'Marina Bay Sands', supertrees: 'Gardens by the Bay', opera: 'Sydney Opera House', harbourbridge: 'Harbour Bridge', pearl: 'Oriental Pearl Tower', jinmao: 'Jin Mao Tower', kingdom: 'Kingdom Centre', faisaliyah: 'Faisaliyah Tower', torii: 'Torii Gate' };
+  const LM_NAMES = { hawamahal: 'Hawa Mahal', victoria: 'Victoria Memorial', eiffel: 'Eiffel Tower', tokyotower: 'Tokyo Tower', bigben: 'Big Ben', towerbridge: 'Tower Bridge', londoneye: 'London Eye', liberty: 'Statue of Liberty', empire: 'Empire State Building', arc: 'Arc de Triomphe', indiagate: 'India Gate', gateway: 'Gateway of India', rickshaw: 'Auto Rickshaw Stand', taj: 'Taj Mahal', qutub: 'Qutub Minar', minar: 'Minar-e-Pakistan', badshahi: 'Badshahi Mosque', pyramids: 'Pyramids of Giza', sphinx: 'Great Sphinx', hagia: 'Hagia Sophia', galata: 'Galata Tower', mbs: 'Marina Bay Sands', supertrees: 'Gardens by the Bay', opera: 'Sydney Opera House', harbourbridge: 'Harbour Bridge', pearl: 'Oriental Pearl Tower', jinmao: 'Jin Mao Tower', kingdom: 'Kingdom Centre', faisaliyah: 'Faisaliyah Tower', torii: 'Torii Gate' };
   const POI_COL = { home: '#ffc93c', landmark: '#ffd54a', airport: '#7fd1ff', station: '#c792ff', hotel: '#ff8fb3', mall: '#ffa24a', mosque: '#58d68d', restaurant: '#d8d8d8', metro: '#ff6b6b' };
   const POI_ICON = { home: 'H', landmark: '★', airport: '✈', station: 'T', hotel: 'B', mall: 'M', mosque: '☪', restaurant: 'R', metro: 'm' };
   let WP = null;                                  // the destination you picked on the map
@@ -4759,7 +4774,7 @@
   // ---- Per-frame life: clock, hunger, HUD ----
   let hungerWarn = 0;
   function tickLife(dt) {
-    if (!GC.paused) advanceClock(dt * CLOCK_SPEED);
+    if (!GC.paused) advanceClock(dt * CLOCK_SPEED * timeMul());
     applyLight(false);
     food = Math.max(0, food - dt * (mode === 'foot' && keys.shift && !INT.active ? 0.07 : 0.045));
     if (food < 22 && hungerWarn <= 0 && !phoneOpen) { toast('You are hungry. Eat at a restaurant or the Dubai Mall food court.', 'fail', 3600); hungerWarn = 90; }
@@ -4951,6 +4966,7 @@
     else if (d.kind === 'mall') enterMall();
     else if (d.kind === 'mosque') enterMosque(d.name);
     else if (d.kind === 'airport') enterAirport();
+    else if (d.kind === 'station') enterStation();
   }
 
   // Walking into a hotel, restaurant, mall or masjid pauses the street: no traffic, no police, no mission clock
@@ -5797,12 +5813,12 @@
       lm: [[0, 0, 1, -1, 'gateway'], [0, 0, -1, 1, 'rickshaw']],
     },
     delhi: {
-      id: 'delhi', city: 'Delhi and Agra', country: 'India', code: 'DEL', airport: 'Indira Gandhi International Airport', lat: 28.6, lon: 77.1, flag: ['#ff9933', '#ffffff', '#138808'], local: 'india',
+      id: 'delhi', city: 'Delhi', country: 'India', code: 'DEL', airport: 'Indira Gandhi International Airport', lat: 28.6, lon: 77.1, flag: ['#ff9933', '#ffffff', '#138808'], local: 'india',
       pave: 0xb0a690, grass: 0x6aa044, day: [0x74b2e0, 0xe6dcc6], palms: true, mosque: 0.08, tall: 0.3,
       palette: [0xe8d9b4, 0xd9b98f, 0xf0e4c8, 0xc99a74, 0xe3cfa0, 0xd6c8b0, 0xbfa77d, 0xf2ead2, 0xd8a070],
       ew: ['Rajpath', 'Janpath', 'Connaught Place', 'Chandni Chowk', 'Ring Road', 'Aurangzeb Road', 'Lodhi Road'], ns: ['Barakhamba Rd', 'Akbar Road', 'Mathura Road', 'Sardar Patel Marg', 'Shanti Path'],
-      districts: ['Connaught Place', 'Lutyens Delhi', 'Chandni Chowk', 'Hauz Khas', 'Agra'], hotels: ['Imperial Palace Hotel', 'Lotus Grand', 'Red Fort Inn', 'Taj Gardens'], cuisines: ['indian', 'indian', 'dessert', 'cafe'],
-      lm: [[0, 0, 1, -1, 'indiagate'], [0, 0, -1, 1, 'taj'], [1, 0, -1, -1, 'qutub']],
+      districts: ['Connaught Place', 'Lutyens Delhi', 'Chandni Chowk', 'Hauz Khas', 'Karol Bagh'], hotels: ['Imperial Palace Hotel', 'Lotus Grand', 'Red Fort Inn', 'Taj Gardens'], cuisines: ['indian', 'indian', 'dessert', 'cafe'],
+      lm: [[0, 0, 1, -1, 'indiagate'], [0, 0, -1, 1, 'rickshaw'], [1, 0, -1, -1, 'qutub']],
     },
     lahore: {
       id: 'lahore', city: 'Lahore', country: 'Pakistan', code: 'LHE', airport: 'Allama Iqbal International Airport', lat: 31.5, lon: 74.4, flag: ['#01411c', '#ffffff'], local: 'pk',
@@ -5893,7 +5909,39 @@
       lm: [[0, 0, 1, -1, 'kingdom'], [0, 0, -1, 1, 'faisaliyah']],
     },
   };
-  const WORLD_ORDER = ['dubai', 'mumbai', 'delhi', 'lahore', 'riyadh', 'cairo', 'istanbul', 'london', 'paris', 'newyork', 'tokyo', 'singapore', 'shanghai', 'sydney'];
+  Object.assign(WORLD_DEFS, {
+    agra: {
+      id: 'agra', city: 'Agra', country: 'India', code: 'AGR', airport: 'Agra Airport', lat: 27.2, lon: 78, flag: ['#ff9933', '#ffffff', '#138808'], local: 'india',
+      pave: 0xb2a88e, grass: 0x6aa044, day: [0x78b4e0, 0xe8dcc4], palms: true, mosque: 0.1, tall: 0.1,
+      palette: [0xe6cfa0, 0xd9b98f, 0xf0e4c8, 0xc99a74, 0xe0c890, 0xd6c8b0, 0xcfa878, 0xf2ead2, 0xd8a070],
+      ew: ['Taj Road', 'Fatehabad Road', 'MG Road', 'Agra Fort Road', 'Sikandra Road', 'Mall Road'], ns: ['Kinari Bazaar', 'Strand Road', 'Itmad-ud-Daula Rd', 'Mathura Road'],
+      districts: ['Taj Ganj', 'Sadar Bazaar', 'Civil Lines', 'Fatehabad', 'Sikandra'], hotels: ['Taj View Hotel', 'Mughal Palace', 'Agra Grand', 'Yamuna Inn'], cuisines: ['indian', 'indian', 'dessert', 'cafe'],
+      lm: [[0, 0, 1, -1, 'taj'], [0, 0, -1, 1, 'rickshaw']],
+    },
+    jaipur: {
+      id: 'jaipur', city: 'Jaipur', country: 'India', code: 'JAI', airport: 'Jaipur Airport', lat: 26.9, lon: 75.8, flag: ['#ff9933', '#ffffff', '#138808'], local: 'india',
+      pave: 0xb8a590, grass: 0x6a9a40, day: [0x78b4e0, 0xebd9c0], palms: true, mosque: 0.06, tall: 0.1,
+      palette: [0xe8a090, 0xdc8a78, 0xf0b8a0, 0xd4806f, 0xe9b09a, 0xcf9a82, 0xf2c4aa, 0xd8907c, 0xe49a86],
+      ew: ['MI Road', 'Johari Bazaar', 'Tonk Road', 'Amer Road', 'Bapu Bazaar', 'JLN Marg'], ns: ['Station Road', 'Sawai Man Singh Hwy', 'Chaura Rasta', 'Ajmer Road'],
+      districts: ['Pink City', 'Malviya Nagar', 'C Scheme', 'Amer', 'Vaishali Nagar'], hotels: ['Rambagh Palace Hotel', 'Pink City Haveli', 'Amer Fort Inn', 'Jaipur Grand'], cuisines: ['indian', 'indian', 'dessert', 'cafe'],
+      lm: [[0, 0, 1, -1, 'hawamahal'], [0, 0, -1, 1, 'rickshaw']],
+    },
+    kolkata: {
+      id: 'kolkata', city: 'Kolkata', country: 'India', code: 'CCU', airport: 'Netaji Subhas Chandra Bose Airport', lat: 22.6, lon: 88.4, flag: ['#ff9933', '#ffffff', '#138808'], local: 'india',
+      pave: 0x9c9686, grass: 0x58943a, day: [0x78b0dc, 0xdad4c6], palms: true, mosque: 0.1, tall: 0.2,
+      palette: [0xe0c070, 0xd8b45a, 0xe8d8a0, 0xc8a050, 0xdcc080, 0xb89850, 0xefe0b0, 0xd0b068, 0xe4cc88],
+      ew: ['Park Street', 'Chowringhee Road', 'Esplanade', 'College Street', 'AJC Bose Road', 'Strand Road'], ns: ['Howrah Bridge Rd', 'Rashbehari Avenue', 'Maidan Road', 'Southern Avenue'],
+      districts: ['Park Street', 'Maidan', 'Howrah', 'Salt Lake', 'Ballygunge'], hotels: ['Victoria Heritage Hotel', 'Park Street Inn', 'Hooghly Grand', 'Maidan View'], cuisines: ['indian', 'indian', 'dessert', 'cafe'],
+      lm: [[0, 0, 1, -1, 'victoria'], [0, 0, -1, 1, 'rickshaw']],
+    },
+  });
+  const CID = { dubai: 'uae', mumbai: 'india', delhi: 'india', agra: 'india', jaipur: 'india', kolkata: 'india', lahore: 'pakistan', london: 'uk', newyork: 'usa', paris: 'france', tokyo: 'japan', cairo: 'egypt', istanbul: 'turkey', singapore: 'singapore', shanghai: 'china', sydney: 'australia', riyadh: 'saudi' };
+  const COUNTRIES = {};
+  for (const id of ['dubai', 'delhi', 'mumbai', 'agra', 'jaipur', 'kolkata', 'lahore', 'riyadh', 'cairo', 'istanbul', 'london', 'paris', 'newyork', 'tokyo', 'singapore', 'shanghai', 'sydney']) {
+    const d = WORLD_DEFS[id]; d.cid = CID[id];
+    (COUNTRIES[d.cid] = COUNTRIES[d.cid] || { id: d.cid, name: d.country, hub: id, cities: [], flag: d.flag }).cities.push(id);
+  }
+  const WORLD_ORDER = ['dubai', 'delhi', 'mumbai', 'agra', 'jaipur', 'kolkata', 'lahore', 'riyadh', 'cairo', 'istanbul', 'london', 'paris', 'newyork', 'tokyo', 'singapore', 'shanghai', 'sydney'];
   const wdef = () => WORLD_DEFS[WORLD.id];
   const PALS = {};
   function palFor(id) {
@@ -5992,6 +6040,23 @@
       for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { put(g, new THREE.CylinderGeometry(1.1, 1.3, 20, 10), w, b.x + sx * 10.6, 12, b.z + sz * 10.6); dome(g, b.x + sx * 10.6, 22, b.z + sz * 10.6, 1.5, w); dome(g, b.x + sx * 5.2, 14, b.z + sz * 5.2, 1.6, w); }
       plane(g, 4, 10, mat(0x4fa8c8), b.x, 2.1, b.z + 12);
     },
+    hawamahal(g, b) {
+      const p = mat(0xe39a8a), p2 = mat(0xd4806f), w = mat(0xf6efe0);
+      for (let i = 0; i < 5; i++) {
+        const ww = 22 - i * 3, hh = 5, y = 2.5 + i * hh;
+        box(ww, hh, 6 - i * 0.5, i % 2 ? p2 : p, b.x, y, b.z, g);
+        for (let k = -3; k <= 3; k++) if (Math.abs(k * 3) < ww / 2 - 1.5) box(1.4, 2.2, 0.3, w, b.x + k * 3, y + 0.4, b.z + 3.1 - i * 0.25, g);
+        dome(g, b.x - ww / 2 + 1.2, y + 2.5, b.z, 1.3, w); dome(g, b.x + ww / 2 - 1.2, y + 2.5, b.z, 1.3, w);
+      }
+      dome(g, b.x, 27.5, b.z, 2.2, p2);
+    },
+    victoria(g, b) {
+      const w = mat(0xf4f1ea);
+      box(26, 7, 18, w, b.x, 3.5, b.z, g); box(12, 6, 12, w, b.x, 10, b.z, g); put(g, new THREE.CylinderGeometry(4.2, 4.6, 5, 16), w, b.x, 15.5, b.z);
+      dome(g, b.x, 18, b.z, 5.2, mat(0xe8e4da), 1.1); put(g, new THREE.CylinderGeometry(0.15, 0.15, 5, 6), GOLD, b.x, 25.5, b.z);
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) { put(g, new THREE.CylinderGeometry(1.2, 1.3, 4, 10), w, b.x + sx * 10, 9, b.z + sz * 6); dome(g, b.x + sx * 10, 11, b.z + sz * 6, 2, w); }
+      plane(g, 5, 10, mat(0x4fa8c8), b.x, 0.2, b.z + 13);
+    },
     qutub(g, b) { const r = mat(0xb8573a); for (let i = 0; i < 5; i++) { const rb = 5.2 - i * 0.8, rt = rb - 0.8, h = 16 - i; put(g, new THREE.CylinderGeometry(rt, rb, h, 14), mat(i % 2 ? 0xc9694a : 0xb8573a), b.x, 8 + i * 14.4 + h / 2 - 6, b.z); put(g, new THREE.CylinderGeometry(rb + 0.8, rb + 0.8, 0.5, 14), r, b.x, 8 + (i + 1) * 14.4 - 6.4, b.z); } put(g, new THREE.CylinderGeometry(0.2, 1.4, 6, 8), mat(0xf4e8c8), b.x, 86, b.z); },
     minar(g, b) {
       const st = mat(0xc9a06a);
@@ -6053,7 +6118,7 @@
     faisaliyah(g, b) { const gl = mat(0xc9d2da); box(14, 70, 14, gl, b.x, 35, b.z, g); put(g, new THREE.SphereGeometry(5, 14, 10), mat(0xe8c870), b.x, 76, b.z); put(g, new THREE.CylinderGeometry(0.3, 0.8, 28, 6), mat(0xe8e4dc), b.x, 98, b.z); },
     torii(g, b) { const r = mat(0xd8321e); for (const s of [-1, 1]) put(g, new THREE.CylinderGeometry(0.9, 1.1, 14, 10), r, b.x + s * 5, 7, b.z); box(15, 1.2, 1.6, r, b.x, 12.6, b.z, g); box(11, 0.8, 1, r, b.x, 10.4, b.z, g); plane(g, 23, 23, mat(0x58903e), b.x, 0.05, b.z); },
   };
-  const LMK_H = { eiffel: 320, tokyotower: 360, bigben: 90, towerbridge: 44, londoneye: 70, liberty: 56, empire: 140, arc: 40, indiagate: 36, gateway: 34, rickshaw: 2.6, taj: 26, qutub: 90, minar: 54, badshahi: 28, pyramids: 22, sphinx: 12, hagia: 38, galata: 56, mbs: 66, supertrees: 32, opera: 14, harbourbridge: 20, pearl: 170, jinmao: 128, kingdom: 82, faisaliyah: 100, torii: 14 };
+  const LMK_H = { hawamahal: 30, victoria: 28, eiffel: 320, tokyotower: 360, bigben: 90, towerbridge: 44, londoneye: 70, liberty: 56, empire: 140, arc: 40, indiagate: 36, gateway: 34, rickshaw: 2.6, taj: 26, qutub: 90, minar: 54, badshahi: 28, pyramids: 22, sphinx: 12, hagia: 38, galata: 56, mbs: 66, supertrees: 32, opera: 14, harbourbridge: 20, pearl: 170, jinmao: 128, kingdom: 82, faisaliyah: 100, torii: 14 };
 
   // ---- how a foreign city is laid out ----
   const worldZone = (cx, cz) => { const m = Math.max(Math.abs(cx), Math.abs(cz)); return m <= 3 ? 'cbd' : m <= 9 ? 'mid' : 'outer'; };
@@ -6071,6 +6136,7 @@
         for (const [x, z] of [[14, 14], [37, 14], [14, 37], [37, 37]]) lot.trees.push([sx * x, sz * z]);
         continue;
       }
+      if (cx === -1 && cz === 0 && sx === -1 && sz === 1 && COUNTRIES[d.cid].cities.length > 1) { lot.ground = 'plaza'; bld(lot, 'station', sx * 25.5, sz * 25.5, 26, 20, 10, 0, { enter: { kind: 'station', name: d.city + ' Railway Station' } }); continue; }
       if (cx === 1 && cz === 0 && sx === 1 && sz === 1) { lot.ground = 'plaza'; bld(lot, 'terminal', sx * 25.5, sz * 25.5, 24, 22, 14, 0, { enter: { kind: 'airport', name: d.airport } }); continue; }
       const r = rnd();
       if (r < 0.1) { lot.park = true; lot.ground = 'grass'; for (let i = 0; i < 6; i++) lot.trees.push([sx * (14 + rnd() * 23), sz * (14 + rnd() * 23)]); }
@@ -6319,13 +6385,13 @@
   function renderTravel() {
     const q = ($('destSearch') ? $('destSearch').value : '').trim().toLowerCase();
     const list = $('destList'); list.innerHTML = '';
-    for (const id of WORLD_ORDER) {
-      if (id === WORLD.id) continue;
-      const d = WORLD_DEFS[id];
-      if (q && !(d.city + ' ' + d.country + ' ' + d.code).toLowerCase().includes(q)) continue;
+    for (const cid in COUNTRIES) {
+      if (cid === wdef().cid) continue;
+      const C = COUNTRIES[cid], id = C.hub, d = WORLD_DEFS[id];
+      if (q && !(C.name + ' ' + C.cities.map((c) => WORLD_DEFS[c].city + ' ' + WORLD_DEFS[c].code).join(' ')).toLowerCase().includes(q)) continue;
       const row = document.createElement('div'); row.className = 'shop-row';
       row.innerHTML = '<span class="sw" style="width:22px;height:14px;background:' + flagCss(d) + '"></span><span class="nm"></span><button>Flights</button>';
-      row.querySelector('.nm').innerHTML = d.city + ', ' + d.country + '<small>' + d.code + ' · ' + Math.round(distKm(WORLD.id, id)).toLocaleString('en-US') + ' km · from ' + fmtMoney(flightsFor(WORLD.id, id)[0].eco) + '</small>';
+      row.querySelector('.nm').innerHTML = d.country + '<small>' + (COUNTRIES[d.cid].cities.length > 1 ? COUNTRIES[d.cid].cities.map((c) => WORLD_DEFS[c].city).join(', ') + ' · ' : '') + 'lands in ' + d.city + ' (' + d.code + ') · ' + Math.round(distKm(WORLD.id, id)).toLocaleString('en-US') + ' km · from ' + fmtMoney(flightsFor(WORLD.id, id)[0].eco) + '</small>';
       row.querySelector('button').addEventListener('click', () => openFlightBooking(id));
       list.appendChild(row);
     }
@@ -6347,7 +6413,7 @@
     const d = WORLD_DEFS[to], fl = flightsFor(WORLD.id, to);
     const st = { f: null, cls: 'Economy', seat: null };
     const render = () => {
-      let html = '<div class="row"><span class="sw" style="width:30px;height:20px;background:' + flagCss(d) + '"></span><div class="nm">' + WORLD_DEFS[WORLD.id].city + ' to ' + d.city + '<small>' + d.airport + ' (' + d.code + ') · ' + Math.round(distKm(WORLD.id, to)).toLocaleString('en-US') + ' km</small></div></div>';
+      let html = '<div class="row"><span class="sw" style="width:30px;height:20px;background:' + flagCss(d) + '"></span><div class="nm">' + WORLD_DEFS[WORLD.id].city + ' to ' + d.country + '<small>' + d.city + ' · ' + d.airport + ' (' + d.code + ') · ' + Math.round(distKm(WORLD.id, to)).toLocaleString('en-US') + ' km</small></div></div>';
       html += '<h4>Flights today and tomorrow</h4>';
       fl.forEach((f, i) => { const dep = nextDepTotal(f.m); html += '<div class="row"><div class="nm">' + f.no + ' · ' + fmtTotal(dep) + '<small>Duration ' + fmtLeft(f.dur) + ' · arrives ' + fmtTotal(dep + f.dur) + ' · Gate S' + (f.stand + 1) + '</small></div><button class="b' + (st.f === i ? '' : ' alt') + '" data-act="flight" data-i="' + i + '">' + (st.f === i ? 'Selected' : 'Select') + '</button></div>'; });
       if (st.f !== null) {
@@ -6469,7 +6535,7 @@
   function refreshBoard(it) {
     const g = it.board2; if (!g) return;
     const here = it.world, rows = [];
-    const to = WORLD_ORDER.filter((x) => x !== here);
+    const to = Object.values(COUNTRIES).filter((c) => c.id !== WORLD_DEFS[here].cid).map((c) => c.hub);
     for (const id of to) for (const f of flightsFor(here, id)) { const dep = nextDepTotal(f.m, -30); rows.push({ dep, id, f }); }
     rows.sort((a, b) => a.dep - b.dep);
     const pick8 = rows.filter((r) => r.dep >= GC.total - 30).slice(0, 9);
@@ -6778,6 +6844,180 @@
     chip.classList.toggle('now', t.status === 'booked' && left <= 45);
   }
   // </TRAVEL>
+
+  // <TRAVEL2>
+  // ================= Countries, railway stations and trains =================
+  const timeMul = () => (flight.phase === 'cruise' ? flight.speed : 1) * (ride.phase === 'cruise' ? ride.speed : 1);
+  const ride = { t: null, phase: '', timer: 0, speed: 1 };
+  function countryMulti(d) { return COUNTRIES[d.cid].cities.length > 1; }
+  function stationPoi(add) { const d = wdef(); if (countryMulti(d)) add(d.city + ' Railway Station', -105.5, 25.5, 'station'); }
+  function trainsFor(from, to) {
+    const km = Math.round(distKm(from, to) * 1.25), dur = Math.round(km / 190 * 60 + 15);
+    return { km, dur, classes: [['Second Class', Math.round(20 + km * 0.12)], ['AC Chair Car', Math.round(30 + km * 0.28)], ['First Class AC', Math.round(60 + km * 0.55)]] };
+  }
+  const nextTrainTotal = (lead = 6) => { const t0 = GC.total + lead, day = Math.floor((t0 + 450) / 1440), off = day * 1440 - 450; return off + Math.ceil((t0 - off) / 30) * 30; };
+
+  function openTrainBooking(it) {
+    const d = wdef(), others = COUNTRIES[d.cid].cities.filter((c) => c !== WORLD.id);
+    const st = { to: null, cls: 0 };
+    const render = () => {
+      let html = '<p class="note">Trains to the other cities of ' + d.country + ' leave every 30 minutes. Buy a ticket, then go to the platform.</p>';
+      for (const c of others) {
+        const cd = WORLD_DEFS[c], tr = trainsFor(WORLD.id, c);
+        html += '<div class="row"><div class="nm">' + cd.city + '<small>' + tr.km + ' km · ' + fmtLeft(tr.dur) + ' · from ' + fmtMoney(tr.classes[0][1]) + '</small></div><button class="b' + (st.to === c ? '' : ' alt') + '" data-act="to" data-c="' + c + '">' + (st.to === c ? 'Selected' : 'Select') + '</button></div>';
+      }
+      if (st.to) {
+        const tr = trainsFor(WORLD.id, st.to), dep = nextTrainTotal();
+        html += '<h4>Class</h4>';
+        tr.classes.forEach(([n, p], i) => { html += '<div class="row"><div class="nm">' + n + '</div><div class="pr">' + fmtMoney(p) + '</div><button class="b' + (st.cls === i ? '' : ' alt') + '" data-act="cls" data-i="' + i + '">' + n.split(' ')[0] + '</button></div>'; });
+        html += '<div class="total"><span>Next train ' + fmtTotal(dep) + '</span><span>' + fmtMoney(tr.classes[st.cls][1]) + '</span></div><button class="b" data-act="pay">Buy ticket</button>';
+      }
+      setPanel(html);
+    };
+    openPanel('Railway ticket', '', (act, dd) => {
+      if (act === 'to') { st.to = dd.c; render(); }
+      else if (act === 'cls') { st.cls = +dd.i; render(); }
+      else if (act === 'pay') {
+        const tr = trainsFor(WORLD.id, st.to), price = tr.classes[st.cls][1];
+        if (save.cash < price) { toast('Not enough cash for this ticket.', 'fail'); return; }
+        save.cash -= price; addXP(20); persist();
+        ride.t = { from: WORLD.id, to: st.to, dep: nextTrainTotal(), dur: tr.dur, cls: tr.classes[st.cls][0], price };
+        closePanel();
+        toast('Ticket bought: ' + WORLD_DEFS[st.to].city + ', ' + tr.classes[st.cls][0] + ', departs ' + fmtTotal(ride.t.dep) + '. Go to the platform and board the train.', 'win', 6000);
+      }
+    });
+    render();
+  }
+
+  // the station hall and platform
+  function buildStationHall(wid) {
+    const d = WORLD_DEFS[wid], it = newInterior('station:' + wid, d.city + ' Railway Station');
+    const W = 100, D = 80, H = 14;
+    it.world = wid;
+    it.room(W, D, H, pho(texMarble(W, D, 10, '#d4cebe', '#c4bda9', '#a69c82'), 90), mat(0xd9cfb8), mat(0xe8e4da));
+    for (let i = 0; i < 8; i++) it.plane(4, D - 6, new THREE.MeshBasicMaterial({ color: 0xfffbee }), -42 + i * 12, H - 0.06, 0).rotation.x = Math.PI;
+    // hall (z > 0) and platform (z < 0) separated by a gate line
+    it.box(W - 20, 1, 0.6, mat(0x2b3a52), 0, 0.5, 0, true); it.box(8, 2.4, 0.4, GLASS, 0, 1.2, 0);
+    it.sign(26, 2.4, d.city.toUpperCase() + ' RAILWAY STATION', '#ffffff', '#1d4fa8', 0, 11, D / 2 - 0.6, Math.PI, 36);
+    // ticket counter
+    it.box(14, 1.2, 3, mat(0x3a2a1a), -26, 0.6, 14, true); it.box(14.2, 0.12, 3.2, mat(0xd8b24a), -26, 1.26, 14);
+    it.human(makeHuman(0x1d4fa8, 0x1a1c22, SKINS[2], true), -26, 16.6, Math.PI);
+    it.sign(14, 1.6, 'TICKETS', '#ffffff', '#1d4fa8', -26, 5, 15.8, 0, 38);
+    it.spot(-26, 11.6, 5, 'buy a railway ticket', () => openTrainBooking(it));
+    // benches and plants
+    for (let i = 0; i < 4; i++) it.box(7, 0.5, 1.2, mat(0x5a4632), 14 + i * 10, 0.5, 14, true);
+    for (const x of [-W / 2 + 4, W / 2 - 4]) plant(it, x, D / 2 - 4, 1.3);
+    // departures board
+    const cv = document.createElement('canvas'); cv.width = 900; cv.height = 300; const tex = new THREE.CanvasTexture(cv);
+    sign(it.g, 20, 6.6, new THREE.MeshBasicMaterial({ map: tex }), 24, 7, D / 2 - 0.7, Math.PI);
+    it.refreshBoard = () => {
+      const g = cv.getContext('2d'); g.fillStyle = '#0a1420'; g.fillRect(0, 0, 900, 300);
+      g.fillStyle = '#ffcc33'; g.font = 'bold 30px Arial'; g.fillText('DEPARTURES', 20, 38); g.font = 'bold 24px "Courier New", monospace';
+      const others = COUNTRIES[d.cid].cities.filter((c) => c !== wid); let n = 0, t = nextTrainTotal(0);
+      for (let k = 0; k < 8 && n < 7; k++, t += 30) for (const c of others) { if (n >= 7) break; g.fillStyle = k === 0 ? '#5fe08a' : '#e8e8e8'; g.fillText(fmtTotal(t) + '  ' + WORLD_DEFS[c].city.toUpperCase().padEnd(12).slice(0, 12) + ' PLAT ' + (1 + others.indexOf(c) % 3), 20, 76 + n * 30); n++; }
+      tex.needsUpdate = true;
+    };
+    // platform with the train
+    it.plane(W - 6, 28, mat(0x6f6a60), 0, 0.04, -24);
+    it.box(W - 6, 0.5, 4, mat(0xd8b24a), 0, 0.3, -12);
+    for (const sx of [-36, -12, 12, 36]) it.box(1, 12, 1, mat(0x3a3f4a), sx, 6, -10);
+    it.box(W - 10, 0.6, 12, mat(0xe8e4da), 0, 12.3, -12);
+    const tr = new THREE.Group();
+    for (let i = 0; i < 6; i++) { const x = -42 + i * 15; const body = i === 0 ? 0xb3141d : 0x1d4fa8; box(14, 3.4, 3.2, mat(body), x, 2.2, 0, tr); box(14.05, 1.1, 3.25, GLASS, x, 2.8, 0, tr); box(14.1, 0.4, 3.3, mat(0xf0eee8), x, 1.2, 0, tr); for (const wx of [-4, 4]) put(tr, new THREE.CylinderGeometry(0.7, 0.7, 3.4, 12).rotateX(Math.PI / 2), mat(0x1b1c1f), x + wx, 0.7, 0); }
+    tr.traverse((o) => { o.userData.keep = true; }); tr.position.set(0, 0, -20); it.g.add(tr);
+    it.col(0, -20, 92, 3.4, 4);
+    it.sign(12, 1.2, 'PLATFORM 1', '#ffffff', '#2b3a52', 20, 8.6, -9.8, 0, 38);
+    it.spot(0, -15, 8, () => (ride.t && ride.t.from === wid ? 'board the train to ' + WORLD_DEFS[ride.t.to].city : 'platform 1 (buy a ticket first)'), () => {
+      if (!ride.t || ride.t.from !== wid) { toast('You need a ticket. Buy one at the counter.', 'fail'); return; }
+      if (GC.total > ride.t.dep - 1) { ride.t.dep = nextTrainTotal(); toast('You missed that train. Your ticket is moved to the next one at ' + fmtTotal(ride.t.dep) + '.'); }
+      startRide();
+    });
+    it.spot(0, D / 2 - 3, 4, 'leave the station', () => leaveInterior());
+    it.box(12, 4.4, 0.3, GLASS, 0, 2.2, D / 2 - 0.1);
+    it.spawn = { x: 0, z: D / 2 - 6, h: 0 };
+    it.onEnter = () => { it.title = d.city + ' Railway Station'; it.refreshBoard(); };
+    it.upd.push((dt) => { it.bt = (it.bt || 0) - dt; if (it.bt <= 0) { it.bt = 3; it.refreshBoard(); } });
+    return registerInterior(it);
+  }
+  function enterStation() { enterInterior(INTERIORS.get('station:' + WORLD.id) || buildStationHall(WORLD.id)); }
+
+  // the carriage
+  function buildCoachInterior() {
+    const it = newInterior('coach', 'On the train');
+    const L = 36, Wd = 6, Hh = 4;
+    it.plane(Wd, L, mat(0x5a4a3a), 0, 0.02, 0);
+    const shellM = mat(0xe8e4da);
+    it.box(0.5, Hh, L, shellM, -Wd / 2 - 0.25, Hh / 2, 0, true); it.box(0.5, Hh, L, shellM, Wd / 2 + 0.25, Hh / 2, 0, true);
+    it.box(Wd + 1, Hh, 0.5, shellM, 0, Hh / 2, -L / 2 - 0.25, true); it.box(Wd + 1, Hh, 0.5, shellM, 0, Hh / 2, L / 2 + 0.25, true);
+    put(it.g, new THREE.PlaneGeometry(Wd, L).rotateX(Math.PI / 2), mat(0xf4f2ec), 0, Hh, 0, 0, false);
+    for (let z = -15; z <= 15; z += 5) it.bulb(0, Hh - 0.25, z, 0.14);
+    const wc = document.createElement('canvas'); wc.width = 128; wc.height = 128; const wt = new THREE.CanvasTexture(wc); wt.wrapS = wt.wrapT = THREE.RepeatWrapping; it.winTex = wt; it.winCv = wc;
+    const winM = new THREE.MeshBasicMaterial({ map: wt });
+    for (const s of [-1, 1]) for (let i = 0; i < 8; i++) put(it.g, new THREE.PlaneGeometry(2.2, 1.4), winM, s * (Wd / 2 - 0.03), 2.1, -15 + i * 4.2, -s * Math.PI / 2, false);
+    for (const s of [-1, 1]) for (let r = 0; r < 8; r++) for (const dx of [1.1, 2.0]) {
+      const x = s * dx + (s > 0 ? 0 : 0), z = -15 + r * 4.2;
+      it.box(0.8, 0.4, 0.9, mat(0x2a4a8a), s * (dx + 0.4), 0.5, z); it.box(0.8, 1.0, 0.2, mat(0x2a4a8a), s * (dx + 0.4), 1.0, z + 0.4);
+    }
+    it.door = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3, 1.4), mat(0xd0d4da)); it.door.position.set(-Wd / 2 + 0.1, 1.5, 16.5); it.door.userData.keep = true; it.g.add(it.door);
+    it.sign(5, 1.2, 'COACH B', '#ffffff', '#1d4fa8', 0, 3.2, -L / 2 + 0.4, 0, 34);
+    it.spot(-Wd / 2 + 1.6, 16.5, 2.6, () => (ride.phase === 'arrived' ? 'leave the train' : 'the train door'), () => { if (ride.phase === 'arrived') arriveTrain(); else toast('The door opens at the station.'); }, () => !ride.t);
+    it.spawn = { x: 0, z: 16, h: Math.PI };
+    it.onEnter = () => coachEnter(it);
+    it.upd.push((dt) => coachUpdate(it, dt));
+    return registerInterior(it);
+  }
+  function setTrainView(it, mode) {
+    const g = it.winCv.getContext('2d');
+    if (mode === 'station') { g.fillStyle = '#8a8f98'; g.fillRect(0, 0, 128, 128); g.fillStyle = '#6f6a60'; g.fillRect(0, 80, 128, 48); g.fillStyle = '#d8b24a'; g.fillRect(0, 78, 128, 3); return; }
+    const night = minOfDay(GC.total) > 1100 || minOfDay(GC.total) < 330;
+    const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, night ? '#0a1020' : '#7fb6e6'); gr.addColorStop(0.55, night ? '#10182a' : '#cfe4f4'); gr.addColorStop(1, night ? '#10182a' : '#cfe4f4');
+    g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+    g.fillStyle = night ? '#16301c' : '#5a9a48'; g.fillRect(0, 70, 128, 58); g.fillStyle = night ? '#1d3a22' : '#6aae56'; g.fillRect(0, 100, 128, 28);
+    g.fillStyle = night ? '#223' : '#3a2e22'; for (let i = 0; i < 3; i++) g.fillRect(10 + i * 44, 52, 3, 36);
+    g.fillStyle = night ? 'rgba(255,214,140,0.8)' : '#4a7a3a'; for (let i = 0; i < 6; i++) g.fillRect(Math.random() * 120, 76 + Math.random() * 40, 6, 5);
+    it.winTex.needsUpdate = true;
+  }
+  function startRide() {
+    const t = ride.t; ride.phase = 'wait'; ride.timer = 0; ride.speed = 1;
+    switchInterior(INTERIORS.get('coach') || buildCoachInterior(), null);
+  }
+  function coachEnter(it) {
+    const t = ride.t; if (!t) return;
+    ride.phase = 'wait'; ride.timer = 0; setTrainView(it, 'station'); it.winTex.needsUpdate = true; it.door.position.z = 16.5;
+    toast('You are on the train to ' + WORLD_DEFS[t.to].city + '. It leaves at ' + fmtTotal(t.dep) + '.', 'win', 4500);
+  }
+  function coachUpdate(it, dt) {
+    const t = ride.t; if (!t || INT.active !== it) return;
+    ride.timer += dt;
+    const head = t.from === 'x' ? '' : WORLD_DEFS[t.from].city + ' to ' + WORLD_DEFS[t.to].city;
+    if (ride.phase === 'wait') {
+      const left = t.dep - GC.total;
+      showBanner(head, 'Departs ' + fmtTotal(t.dep) + ' (in ' + fmtLeft(Math.max(0, left)) + ')');
+      if (left <= 0.5) { ride.phase = 'depart'; ride.timer = 0; setTrainView(it, 'moving'); toast('The train is leaving the station.'); beep([660, 523], 0.6, 'sine', 0.07); }
+    } else if (ride.phase === 'depart') {
+      shake = Math.max(shake, 0.03);
+      if (ride.timer > 5) { ride.phase = 'cruise'; ride.timer = 0; t.arr = GC.total + t.dur; }
+    } else if (ride.phase === 'cruise') {
+      it.winTex.offset.x = (it.winTex.offset.x + dt * 0.5 * ride.speed) % 1; shake = Math.max(shake, 0.012);
+      const left = t.arr - GC.total;
+      showBanner(head, 'Arrives ' + fmtTotal(t.arr) + ' (in ' + fmtLeft(Math.max(0, left)) + ')' + (ride.speed > 1 ? ' · speed x4' : ''), () => { ride.speed = ride.speed > 1 ? 1 : 4; });
+      $('banSkip').textContent = ride.speed > 1 ? 'Normal speed' : 'Speed up x4';
+      if (left <= 8) { ride.phase = 'arriving'; ride.timer = 0; ride.speed = 1; hideBanner(); toast('Next stop: ' + WORLD_DEFS[t.to].city + '. Please get ready to leave.', '', 4000); beep([523, 440], 0.8, 'sine', 0.06); }
+    } else if (ride.phase === 'arriving') {
+      const left = t.arr - GC.total; shake = Math.max(shake, 0.02);
+      if (left <= 0) { ride.phase = 'arrived'; ride.timer = 0; setTrainView(it, 'station'); toast('Welcome to ' + WORLD_DEFS[t.to].city + '. Go to the door and press E to get off.', 'win', 6500); beep([784, 988], 0.8, 'sine', 0.08); }
+    }
+  }
+  function arriveTrain() {
+    const t = ride.t; if (!t) return;
+    fadeThen(() => {
+      switchWorld(t.to, { x: -105.5, z: 9.5, h: 0 });
+      addXP(80); persist(); hideBanner();
+      toast('You are in ' + WORLD_DEFS[t.to].city + ', ' + WORLD_DEFS[t.to].country + '. The railway station is behind you.', 'win', 5500);
+      ride.t = null; ride.phase = '';
+    }, 400);
+  }
+  // </TRAVEL2>
   // <MALL>
   // ================= The Dubai Mall: five floors, shops, the Gold Souk, and your Bag =================
   save.inventory = save.inventory || {};
@@ -8050,7 +8290,7 @@
     $('toast').hidden = true;
   });
 
-  if (location.hash === '#debug') window.__dbg = { life: { tickets, flight, startBoarding, enterAirport, openFlightBooking, flightsFor, nextDepTotal, finishArrival, switchWorld, WORLD, WORLD_DEFS, INT, GC, stay, meal, pray, prayed, save, get food() { return food; }, set food(v) { food = v; }, get wudu() { return wudu; }, set wudu(v) { wudu = v; }, enterHotel, enterRestaurant, enterMall, enterMosque, nearestSpot, lifeAction, closePanel, hotelRoom, hotelLobby, switchInterior, advanceClock, nearestDoor, rideLift, openBooking, openMenu, startWudu, startPrayer, tryLeave, payBill, INTERIORS, SPECS, mealUpdate, guards, prayUpdate, wuduUpdate, finishPrayer, chunkLayout, zoneOf, CH }, info: () => JSON.stringify({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries }), P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
+  if (location.hash === '#debug') window.__dbg = { life: { ride, enterStation, tickets, flight, startBoarding, enterAirport, openFlightBooking, flightsFor, nextDepTotal, finishArrival, switchWorld, WORLD, WORLD_DEFS, INT, GC, stay, meal, pray, prayed, save, get food() { return food; }, set food(v) { food = v; }, get wudu() { return wudu; }, set wudu(v) { wudu = v; }, enterHotel, enterRestaurant, enterMall, enterMosque, nearestSpot, lifeAction, closePanel, hotelRoom, hotelLobby, switchInterior, advanceClock, nearestDoor, rideLift, openBooking, openMenu, startWudu, startPrayer, tryLeave, payBill, INTERIORS, SPECS, mealUpdate, guards, prayUpdate, wuduUpdate, finishPrayer, chunkLayout, zoneOf, CH }, info: () => JSON.stringify({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries }), P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
 
   const clock = new THREE.Clock();
   let introT = 0;
