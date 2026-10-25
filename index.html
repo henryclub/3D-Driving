@@ -267,6 +267,20 @@
   .fm-top { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; pointer-events: none; }
   .fm-top b { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 9px 14px; font-size: 14px; max-width: 70%; }
   .fm-top button { pointer-events: auto; }
+  .bigmap { z-index: 10; }
+  .bigmap canvas { cursor: grab; }
+  .bm-btns { display: flex; gap: 8px; pointer-events: auto; }
+  .bm-side { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: min(300px, 62vw); display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+  .bm-side input { pointer-events: auto; background: var(--panel); }
+  .bm-list { pointer-events: auto; max-height: 34vh; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
+  .bm-row { display: flex; align-items: center; gap: 8px; width: 100%; background: none; border: 0; color: var(--ink); padding: 7px 8px; border-radius: 8px; font: 700 13px var(--body); text-align: left; cursor: pointer; }
+  .bm-row:hover { background: rgba(243,241,234,0.08); }
+  .bm-row i { width: 20px; height: 20px; border-radius: 50%; flex: none; display: grid; place-items: center; color: #12161f; font-style: normal; font-size: 11px; font-weight: 800; }
+  .bm-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bm-row b { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .bm-none { padding: 10px; color: var(--muted); font-size: 12px; margin: 0; }
+  .wpchip { border-color: #ff4fd8; cursor: pointer; pointer-events: auto; }
+  .map { cursor: pointer; pointer-events: auto; }
   .fm-zoom { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 8px; }
   .fm-zoom button { width: 50px; height: 50px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); font-size: 26px; font-weight: 800; cursor: pointer; }
   .tbtns { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); display: none; flex-direction: row; gap: 6px; }
@@ -409,6 +423,7 @@
   </div>
   <div class="col right">
     <div class="map"><canvas id="map" width="296" height="296"></canvas></div>
+    <div class="chip small wpchip" id="wpChip" hidden><span class="label" id="wpName">Destination</span><span class="value" id="wpDist"></span></div>
     <div class="map-legend"><span><i class="dot" style="background:#ffc93c"></i><span id="homeDist">0 m</span></span><span id="tgtLegend" hidden><i class="dot" style="background:#3ccf7a"></i><span id="tgtDist">0 m</span></span></div>
     <div class="cash" id="cash">AED 0</div>
     <div class="chip timechip" id="timeChip"><span class="value" id="timeVal">07:30</span><span class="label" id="timeNext">Next: Zuhr 12:15</span></div>
@@ -442,6 +457,12 @@
 <button class="phone-btn" id="phoneBtn" aria-label="Open phone"><svg viewBox="0 0 24 24"><path d="M7 1h10a2 2 0 012 2v18a2 2 0 01-2 2H7a2 2 0 01-2-2V3a2 2 0 012-2zm0 3v14h10V4zm5 15.5a1 1 0 100 2 1 1 0 000-2z"/></svg>Phone <kbd>P</kbd></button>
 
 <div class="fly-btns"><button class="fly-btn fly" id="flyBtn" hidden>FLY</button><button class="fly-btn climb" id="climbBtn" hidden>CLIMB</button></div>
+<div class="flymap bigmap" id="bigMap" hidden>
+  <canvas id="bmCanvas"></canvas>
+  <div class="fm-top"><b id="bmHint">Tap a place to set your destination</b><span class="bm-btns"><button class="big-btn ghost" id="bmClear">Clear</button><button class="big-btn ghost" id="bmClose">Close</button></span></div>
+  <div class="bm-side"><input id="bmSearch" class="search" type="text" placeholder="Search a place" autocomplete="off"><div class="bm-list" id="bmList"></div></div>
+  <div class="fm-zoom"><button id="bmIn" aria-label="Zoom in">+</button><button id="bmOut" aria-label="Zoom out">&minus;</button><button id="bmMe" aria-label="My position" style="font-size:13px">ME</button></div>
+</div>
 <div class="flymap" id="flyMap" hidden>
   <canvas id="flyCanvas"></canvas>
   <div class="fm-top"><b id="fmHint">Drag a line from your car to where you want to land</b><button class="big-btn ghost" id="fmClose">Close</button></div>
@@ -3436,6 +3457,7 @@
     if (!started) { if (k === 'enter') start(); return; }
     if (panelOpen) { if (k === 'escape') closePanel(); return; }
     if (uiBusy) return;
+    if (BM.open) { if (k === 'escape' || k === 'b') closeBigMap(); e.preventDefault(); return; }
     if (mapOpen) { if (k === 'escape' || k === 'g') closeFlyMap(); e.preventDefault(); return; }
     if (k === 'escape' && !phoneOpen) { togglePause(!paused); e.preventDefault(); return; }
     if (paused) return;
@@ -3459,6 +3481,7 @@
     else if (k === 'h') horn();
     else if (k === 'n') setNight(!save.night);
     else if (k === 'g') openFlyMap();
+    else if (k === 'b') openBigMap();
     else if (k === 'v') { if (current) startClimb(); }
   });
   window.addEventListener('keyup', (e) => { const k = e.key.toLowerCase(); const m = KEYMAP[k]; if (m) keys[m] = 0; if (k === 'f') trigger = false; });
@@ -4059,6 +4082,240 @@
     }
   }
 
+  // ================= Map places: names on the minimap, the big map and the fly map =================
+  const LM_NAMES = { eiffel: 'Eiffel Tower', tokyotower: 'Tokyo Tower', bigben: 'Big Ben', towerbridge: 'Tower Bridge', londoneye: 'London Eye', liberty: 'Statue of Liberty', empire: 'Empire State Building', arc: 'Arc de Triomphe', indiagate: 'India Gate', gateway: 'Gateway of India', rickshaw: 'Auto Rickshaw Stand', taj: 'Taj Mahal', qutub: 'Qutub Minar', minar: 'Minar-e-Pakistan', badshahi: 'Badshahi Mosque', pyramids: 'Pyramids of Giza', sphinx: 'Great Sphinx', hagia: 'Hagia Sophia', galata: 'Galata Tower', mbs: 'Marina Bay Sands', supertrees: 'Gardens by the Bay', opera: 'Sydney Opera House', harbourbridge: 'Harbour Bridge', pearl: 'Oriental Pearl Tower', jinmao: 'Jin Mao Tower', kingdom: 'Kingdom Centre', faisaliyah: 'Faisaliyah Tower', torii: 'Torii Gate' };
+  const POI_COL = { home: '#ffc93c', landmark: '#ffd54a', airport: '#7fd1ff', station: '#c792ff', hotel: '#ff8fb3', mall: '#ffa24a', mosque: '#58d68d', restaurant: '#d8d8d8', metro: '#ff6b6b' };
+  const POI_ICON = { home: 'H', landmark: '★', airport: '✈', station: 'T', hotel: 'B', mall: 'M', mosque: '☪', restaurant: 'R', metro: 'm' };
+  let WP = null;                                  // the destination you picked on the map
+  const poiStatic = {};
+  function staticPois() {
+    const id = WORLD.id;
+    if (poiStatic[id]) return poiStatic[id];
+    const L = [];
+    const add = (n, x, z, k, major = true) => L.push({ n, x, z, k, major });
+    if (id === 'dubai') {
+      add('Home', HOME_SPAWN.x, HOME_SPAWN.z, 'home');
+      add('Burj Khalifa', BK.x, BK.z + 8, 'landmark'); add('Burj Al Arab', BAA.x, BAA.z, 'landmark'); add('Dubai Fountain', FOUNTAIN.x, FOUNTAIN.z, 'landmark');
+      add('Emirates Towers', 80, -25.5, 'landmark'); add('Museum of the Future', 134.5, -54.5, 'landmark'); add('Dubai Frame', 105.5, -265.5, 'landmark');
+      add('Cayan Tower', -294.5, 185.5, 'landmark'); add('Ain Dubai', -430, -840, 'landmark'); add('Atlantis, The Palm', 240, -1180, 'landmark');
+      add('Dubai International Airport', AIR.door.x, AIR.door.z + 14, 'airport');
+      for (const k in STATIONS) add(STATIONS[k] + ' Metro', +k * CH, 0, 'metro', false);
+    } else {
+      const d = wdef();
+      add(d.airport, 105.5, 25.5, 'airport');
+      for (const e of d.lm) add(LM_NAMES[e[4]] || 'Landmark', e[0] * CH + e[2] * 25.5, e[1] * CH + e[3] * 25.5, 'landmark');
+      if (typeof stationPoi === 'function') stationPoi(add);
+    }
+    return (poiStatic[id] = L);
+  }
+  const doorPoi = new Map();
+  function chunkPois(cx, cz) {
+    const key = WORLD.id + ':' + cx + ',' + cz;
+    let r = doorPoi.get(key);
+    if (r) return r;
+    r = [];
+    if (zoneOf(cx, cz) !== 'sea') for (const lot of chunkLayout(cx, cz)) for (const b of lot.buildings || []) {
+      const e = b.enter;
+      if (!e || e.kind === 'airport' || e.kind === 'station') continue;
+      const k = e.kind === 'hotel' || e.kind === 'baa' ? 'hotel' : e.kind === 'mall' ? 'mall' : e.kind === 'mosque' ? 'mosque' : e.kind === 'restaurant' ? 'restaurant' : null;
+      if (k) r.push({ n: e.name, x: cx * CH + b.x, z: cz * CH + b.z, k, major: k === 'mall' });
+    }
+    doorPoi.set(key, r);
+    return r;
+  }
+  function poisIn(x0, z0, x1, z1) {
+    const out = [];
+    for (const p of staticPois()) if (p.x >= x0 && p.x <= x1 && p.z >= z0 && p.z <= z1) out.push(p);
+    for (let i = Math.floor(x0 / CH); i <= Math.ceil(x1 / CH); i++) for (let j = Math.floor(z0 / CH); j <= Math.ceil(z1 / CH); j++) for (const p of chunkPois(i, j)) out.push(p);
+    return out;
+  }
+  function allPoisSorted(F) {
+    const out = staticPois().filter((p) => !p.k.startsWith('metro')).slice();
+    for (let i = -6; i <= 6; i++) for (let j = -6; j <= 6; j++) for (const p of chunkPois(Math.round(F.x / CH) + i, Math.round(F.z / CH) + j)) if (p.k !== 'restaurant') out.push(p);
+    out.sort((a, b) => Math.hypot(a.x - F.x, a.z - F.z) - Math.hypot(b.x - F.x, b.z - F.z));
+    return out;
+  }
+  // Draw place icons and names. ts maps world to screen; returns what was drawn so a tap can pick it.
+  function drawPois(g, ts, s, w, h, F) {
+    const hits = [], boxes = [];
+    const x0 = F.cx - w / 2 / s - 40, x1 = F.cx + w / 2 / s + 40, z0 = F.cz - h / 2 / s - 40, z1 = F.cz + h / 2 / s + 40;
+    const list = poisIn(x0, z0, x1, z1);
+    list.sort((a, b) => (b.major ? 1 : 0) - (a.major ? 1 : 0));
+    g.textAlign = 'left'; g.textBaseline = 'middle';
+    for (const p of list) {
+      const minor = !p.major;
+      const showIcon = p.major || (p.k === 'metro' ? s >= 0.45 : p.k === 'restaurant' ? s >= 1.3 : s >= 0.8), showName = p.major ? s >= 0.1 : p.k === 'restaurant' ? s >= 1.8 : p.k === 'metro' ? s >= 0.9 : s >= 1.1;
+      if (!showIcon) continue;
+      const [sx, sy] = ts(p.x, p.z);
+      if (sx < -40 || sy < -40 || sx > w + 40 || sy > h + 40) continue;
+      const r = minor ? 7 : 10;
+      g.fillStyle = '#12161f'; g.beginPath(); g.arc(sx, sy, r + 2, 0, 7); g.fill();
+      g.fillStyle = POI_COL[p.k] || '#fff'; g.beginPath(); g.arc(sx, sy, r, 0, 7); g.fill();
+      g.fillStyle = '#12161f'; g.font = 'bold ' + (minor ? 9 : 12) + 'px sans-serif'; g.textAlign = 'center'; g.fillText(POI_ICON[p.k] || '', sx, sy + 0.5); g.textAlign = 'left';
+      hits.push({ p, sx, sy, r: r + 6 });
+      if (!showName) continue;
+      g.font = 'bold ' + (minor ? 11 : 13) + 'px sans-serif';
+      const tw = g.measureText(p.n).width, lx = sx + r + 5, ly = sy, rect = [lx - 2, ly - 9, lx + tw + 2, ly + 9];
+      if (boxes.some((b) => rect[0] < b[2] && rect[2] > b[0] && rect[1] < b[3] && rect[3] > b[1])) continue;
+      boxes.push(rect);
+      g.lineWidth = 4; g.strokeStyle = 'rgba(14,18,28,0.9)'; g.strokeText(p.n, lx, ly);
+      g.fillStyle = '#ffffff'; g.fillText(p.n, lx, ly);
+    }
+    // district names, faint, when zoomed out
+    if (s < 0.6 && s >= 0.08) {
+      const step = Math.max(1, Math.ceil(260 / (CH * s)));
+      g.font = 'italic bold 12px sans-serif'; g.textAlign = 'center'; g.fillStyle = 'rgba(255,255,255,0.55)';
+      for (let i = Math.floor(x0 / CH / step) * step; i <= x1 / CH; i += step) for (let j = Math.floor(z0 / CH / step) * step; j <= z1 / CH; j += step) {
+        const x = i * CH + CH / 2, z = j * CH + CH / 2;
+        if (WORLD.id === 'dubai' && z < SEA_EDGE) continue;
+        const [sx, sy] = ts(x, z), t = districtAt(x, z);
+        const tw = g.measureText(t).width, rect = [sx - tw / 2, sy - 8, sx + tw / 2, sy + 8];
+        if (boxes.some((b) => rect[0] < b[2] && rect[2] > b[0] && rect[1] < b[3] && rect[3] > b[1])) continue;
+        boxes.push(rect); g.fillText(t, sx, sy);
+      }
+    }
+    g.textAlign = 'center';
+    // destination pin and line from you
+    if (WP) {
+      const [px, py] = ts(WP.x, WP.z), [mx, my] = ts(F.px, F.pz);
+      g.save(); g.setLineDash([8, 7]); g.lineWidth = 3; g.strokeStyle = '#ff4fd8'; g.beginPath(); g.moveTo(mx, my); g.lineTo(px, py); g.stroke(); g.restore();
+      g.fillStyle = '#ff4fd8'; g.strokeStyle = '#12161f'; g.lineWidth = 3; g.beginPath(); g.arc(px, py - 14, 11, 0, 7); g.fill(); g.stroke();
+      g.beginPath(); g.moveTo(px - 7, py - 7); g.lineTo(px, py); g.lineTo(px + 7, py - 7); g.fill();
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(px, py - 14, 4, 0, 7); g.fill();
+      const t = WP.n + ' · ' + fmtDist(Math.hypot(WP.x - F.px, WP.z - F.pz));
+      g.font = 'bold 13px sans-serif'; const tw = g.measureText(t).width;
+      g.fillStyle = 'rgba(18,22,31,0.92)'; g.fillRect(px - tw / 2 - 7, py - 52, tw + 14, 22); g.fillStyle = '#ff9bea'; g.fillText(t, px, py - 41);
+    }
+    return hits;
+  }
+  // 3D beam so the destination can be seen while driving
+  const wpBeam = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 700, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0xff4fd8, transparent: true, opacity: 0.28, depthWrite: false, fog: false, side: THREE.DoubleSide }));
+  wpBeam.visible = false; wpBeam.frustumCulled = false; scene.add(wpBeam);
+  function setWaypoint(p) {
+    WP = p ? { n: p.n, x: p.x, z: p.z } : null;
+    wpBeam.visible = !!WP;
+    if (WP) wpBeam.position.set(WP.x, 340, WP.z);
+    const c = $('wpChip'); c.hidden = !WP;
+    if (WP) toast('Destination: ' + WP.n + '. Follow the pink beam and the pink dot on the minimap.', 'win', 3800);
+  }
+  function updateWpHud(F) {
+    if (!WP) return;
+    const d = Math.hypot(WP.x - F.x, WP.z - F.z);
+    $('wpName').textContent = WP.n; $('wpDist').textContent = fmtDist(d);
+    if (d < 14 && !INT.active) { toast('You have arrived: ' + WP.n, 'win'); setWaypoint(null); }
+  }
+  $('wpChip').addEventListener('click', () => setWaypoint(null));
+
+  // ---- the big map ----
+  const BM = { x: 0, z: 0, s: 0.35, hits: [], ptrs: new Map(), moved: 0, open: false, q: '' };
+  const bmCv = $('bmCanvas'), bmCtx = bmCv.getContext('2d');
+  function openBigMap() {
+    if (INT.active) { toast('Go outside to use the map.'); return; }
+    if (!started || wastedT >= 0 || mapOpen) return;
+    const F = focus();
+    BM.open = true; BM.x = F.x; BM.z = F.z; BM.s = Math.max(BM.s, 0.2);
+    $('bigMap').hidden = false;
+    for (const k in keys) keys[k] = 0;
+    trigger = false; setAim(false);
+    renderBmList(); drawBigMap();
+  }
+  function closeBigMap() { BM.open = false; $('bigMap').hidden = true; }
+  function renderBmList() {
+    const F = focus(), q = BM.q.trim().toLowerCase(), list = $('bmList'); list.innerHTML = '';
+    for (const p of allPoisSorted(F)) {
+      if (q && !p.n.toLowerCase().includes(q)) continue;
+      const row = document.createElement('button'); row.className = 'bm-row';
+      row.innerHTML = '<i style="background:' + (POI_COL[p.k] || '#fff') + '">' + (POI_ICON[p.k] || '') + '</i><span></span><b></b>';
+      row.children[1].textContent = p.n; row.children[2].textContent = fmtDist(Math.hypot(p.x - F.x, p.z - F.z));
+      row.addEventListener('click', () => { BM.x = p.x; BM.z = p.z; BM.s = Math.max(BM.s, 0.6); setWaypoint(p); drawBigMap(); });
+      list.appendChild(row);
+      if (list.children.length > 60) break;
+    }
+    if (!list.children.length) list.innerHTML = '<p class="bm-none">No place found.</p>';
+  }
+  function drawBigMap() {
+    if (!BM.open) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2), w = bmCv.clientWidth, h = bmCv.clientHeight;
+    if (bmCv.width !== Math.round(w * dpr)) { bmCv.width = Math.round(w * dpr); bmCv.height = Math.round(h * dpr); }
+    const g = bmCtx, s = BM.s, F = focus();
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    paintWorld(g, w, h, BM.x, BM.z, s);
+    const ts = (x, z) => [w / 2 + (x - BM.x) * s, h / 2 + (z - BM.z) * s];
+    BM.hits = drawPois(g, ts, s, w, h, { cx: BM.x, cz: BM.z, px: F.x, pz: F.z });
+    // you
+    const [mx, my] = ts(F.x, F.z), f = fwd(F.h), ang = Math.atan2(f.z, f.x);
+    g.save(); g.translate(mx, my); g.rotate(ang + Math.PI / 2);
+    g.fillStyle = '#ffffff'; g.strokeStyle = '#111'; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(0, -15); g.lineTo(10, 12); g.lineTo(0, 6); g.lineTo(-10, 12); g.closePath(); g.fill(); g.stroke(); g.restore();
+    g.strokeStyle = 'rgba(61,255,134,0.95)'; g.lineWidth = 2; g.beginPath(); g.arc(mx, my, 20, 0, 7); g.stroke();
+    g.fillStyle = '#3dff86'; g.font = 'bold 12px sans-serif'; g.textAlign = 'center'; g.fillText('YOU', mx, my + 34);
+    $('bmHint').textContent = WP ? 'Destination: ' + WP.n + ' · ' + fmtDist(Math.hypot(WP.x - F.x, WP.z - F.z)) : 'Tap a place to set it as your destination. Drag to move, pinch or +/- to zoom.';
+  }
+  const bmZoom = (k, cx, cy) => { const w = bmCv.clientWidth, h = bmCv.clientHeight; if (cx !== undefined) { const wx = BM.x + (cx - w / 2) / BM.s, wz = BM.z + (cy - h / 2) / BM.s; BM.s = clamp(BM.s * k, 0.06, 4); BM.x = wx - (cx - w / 2) / BM.s; BM.z = wz - (cy - h / 2) / BM.s; } else BM.s = clamp(BM.s * k, 0.06, 4); drawBigMap(); };
+  bmCv.addEventListener('pointerdown', (e) => { bmCv.setPointerCapture(e.pointerId); BM.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); BM.moved = 0; });
+  bmCv.addEventListener('pointermove', (e) => {
+    const p = BM.ptrs.get(e.pointerId); if (!p) return;
+    if (BM.ptrs.size === 2) {
+      const [a, b] = [...BM.ptrs.values()], d0 = Math.hypot(a.x - b.x, a.y - b.y);
+      p.x = e.clientX; p.y = e.clientY;
+      const d1 = Math.hypot(a.x - b.x, a.y - b.y); if (d0 > 0) bmZoom(d1 / d0);
+      BM.moved = 99; return;
+    }
+    const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+    BM.moved += Math.abs(dx) + Math.abs(dy); BM.x -= dx / BM.s; BM.z -= dy / BM.s; drawBigMap();
+  });
+  bmCv.addEventListener('pointerup', (e) => {
+    BM.ptrs.delete(e.pointerId);
+    if (BM.moved > 8) return;
+    const r = bmCv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    let best = null, bd = 1e9;
+    for (const h of BM.hits) { const d = Math.hypot(h.sx - x, h.sy - y); if (d < h.r + 6 && d < bd) { bd = d; best = h.p; } }
+    if (best) setWaypoint(best);
+    else setWaypoint({ n: 'Pinned place', x: BM.x + (x - bmCv.clientWidth / 2) / BM.s, z: BM.z + (y - bmCv.clientHeight / 2) / BM.s });
+    drawBigMap();
+  });
+  bmCv.addEventListener('pointercancel', (e) => BM.ptrs.delete(e.pointerId));
+  bmCv.addEventListener('wheel', (e) => { e.preventDefault(); const r = bmCv.getBoundingClientRect(); bmZoom(e.deltaY < 0 ? 1.2 : 1 / 1.2, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+  $('bmIn').addEventListener('click', () => bmZoom(1.5)); $('bmOut').addEventListener('click', () => bmZoom(1 / 1.5));
+  $('bmMe').addEventListener('click', () => { const F = focus(); BM.x = F.x; BM.z = F.z; drawBigMap(); });
+  $('bmClose').addEventListener('click', closeBigMap);
+  $('bmClear').addEventListener('click', () => { setWaypoint(null); drawBigMap(); });
+  $('bmSearch').addEventListener('input', (e) => { BM.q = e.target.value; renderBmList(); });
+  document.querySelector('.map').addEventListener('click', openBigMap);
+  window.addEventListener('resize', drawBigMap);
+
+  // The ground, roads and buildings of the map, centred on camx, camz at s pixels per metre
+  function paintWorld(g, w, h, camx, camz, s) {
+    const ts = (x, z) => [w / 2 + (x - camx) * s, h / 2 + (z - camz) * s];
+    g.fillStyle = '#cbb98c'; g.fillRect(0, 0, w, h);
+    const spanX = w / 2 / s + CH, spanZ = h / 2 / s + CH;
+    const cx0 = Math.floor((camx - spanX) / CH), cx1 = Math.ceil((camx + spanX) / CH);
+    const cz0 = Math.floor((camz - spanZ) / CH), cz1 = Math.ceil((camz + spanZ) / CH);
+    // pavements, then roads
+    g.fillStyle = '#b9b3a3';
+    for (let i = cx0; i <= cx1; i++) for (let j = Math.max(cz0, WORLD.id === 'dubai' ? -6 : -1e6); j <= cz1; j++) { const [x, y] = ts(i * CH - CH / 2, j * CH - CH / 2); g.fillRect(x, y, CH * s, CH * s); }
+    const seaY = ts(0, SEA_EDGE)[1];
+    g.fillStyle = '#2b7a9c'; g.fillRect(0, 0, w, Math.max(0, seaY));
+    g.fillStyle = '#3a3d44';
+    for (const o of SEA_OK) { const [sx, sy] = ts(o.x, o.z); g.save(); g.translate(sx, sy); g.rotate(-o.a); g.fillStyle = '#c9c2b0'; g.fillRect(-o.hw * s, -o.hd * s, o.hw * 2 * s, o.hd * 2 * s); g.fillStyle = '#3a3d44'; g.fillRect(-3.5 * s, -o.hd * s, 7 * s, o.hd * 2 * s); g.restore(); }
+    g.fillStyle = '#3a3d44';
+    for (let i = cx0; i <= cx1; i++) { const [x] = ts(i * CH - 7, 0); g.fillRect(x, Math.max(0, seaY), 14 * s, h); }
+    for (let j = cz0; j <= cz1; j++) if (j * CH >= SEA_EDGE) { const [, y] = ts(0, j * CH - 7); g.fillRect(0, y, w, 14 * s); }
+    if (WORLD.id === 'dubai') { const [mx0, my] = ts(-1040, 0), [mx1] = ts(1040, 0); g.fillStyle = '#c62828'; g.fillRect(mx0, my - 1.5, mx1 - mx0, 3); }
+    // buildings, shaded by height
+    if (s >= 0.22) for (let i = cx0; i <= cx1; i++) for (let j = cz0; j <= cz1; j++) {
+      for (const lot of chunkLayout(i, j)) {
+        if (lot.park || lot.water || lot.ground === 'grass' || lot.ground === 'sand') { const [x, y] = ts(i * CH + lot.sx * 25.5 - 14.5, j * CH + lot.sz * 25.5 - 14.5); g.fillStyle = lot.water ? '#2b7a9c' : lot.ground === 'sand' ? '#d6c28f' : '#5f8f45'; g.fillRect(x, y, 29 * s, 29 * s); }
+      }
+      for (const b of layoutCols(i, j)) {
+        const [x, y] = ts(b.minX, b.minZ), bw = (b.maxX - b.minX) * s, bh = (b.maxZ - b.minZ) * s;
+        const l = Math.round(clamp(110 + b.h * 1.8, 110, 235));
+        g.fillStyle = 'rgb(' + l + ',' + l + ',' + (l + 10) + ')'; g.fillRect(x, y, bw, bh);
+        g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, bw - 1, bh - 1);
+      }
+    }
+  }
+
   // ---------- Fly map ----------
   let mapOpen = false;
   const FM = { scale: 0.9, drag: null };
@@ -4080,37 +4337,12 @@
     if (fmCv.width !== Math.round(w * dpr)) { fmCv.width = Math.round(w * dpr); fmCv.height = Math.round(h * dpr); }
     const g = fmCtx;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    g.fillStyle = '#cbb98c'; g.fillRect(0, 0, w, h);
-    const s = FM.scale, spanX = w / 2 / s + CH, spanZ = h / 2 / s + CH;
-    const cx0 = Math.floor((current.x - spanX) / CH), cx1 = Math.ceil((current.x + spanX) / CH);
-    const cz0 = Math.floor((current.z - spanZ) / CH), cz1 = Math.ceil((current.z + spanZ) / CH);
-    // pavements, then roads
-    g.fillStyle = '#b9b3a3';
-    for (let i = cx0; i <= cx1; i++) for (let j = Math.max(cz0, -6); j <= cz1; j++) { const [x, y] = fmToScreen(i * CH - CH / 2, j * CH - CH / 2); g.fillRect(x, y, CH * s, CH * s); }
-    const seaY = fmToScreen(0, SEA_EDGE)[1];
-    g.fillStyle = '#2b7a9c'; g.fillRect(0, 0, w, Math.max(0, seaY));
-    g.fillStyle = '#3a3d44';
-    for (const o of SEA_OK) { const [sx, sy] = fmToScreen(o.x, o.z); g.save(); g.translate(sx, sy); g.rotate(-o.a); g.fillStyle = '#c9c2b0'; g.fillRect(-o.hw * s, -o.hd * s, o.hw * 2 * s, o.hd * 2 * s); g.fillStyle = '#3a3d44'; g.fillRect(-3.5 * s, -o.hd * s, 7 * s, o.hd * 2 * s); g.restore(); }
-    g.fillStyle = '#3a3d44';
-    for (let i = cx0; i <= cx1; i++) { const [x] = fmToScreen(i * CH - 7, 0); g.fillRect(x, Math.max(0, seaY), 14 * s, h); }
-    for (let j = cz0; j <= cz1; j++) if (j * CH >= SEA_EDGE) { const [, y] = fmToScreen(0, j * CH - 7); g.fillRect(0, y, w, 14 * s); }
-    { const [mx0, my] = fmToScreen(-1040, 0), [mx1] = fmToScreen(1040, 0); g.fillStyle = '#c62828'; g.fillRect(mx0, my - 1.5, mx1 - mx0, 3); }
-    // buildings, shaded by height
-    for (let i = cx0; i <= cx1; i++) for (let j = cz0; j <= cz1; j++) {
-      for (const lot of chunkLayout(i, j)) {
-        if (lot.park || lot.water || lot.ground === 'grass' || lot.ground === 'sand') { const [x, y] = fmToScreen(i * CH + lot.sx * 25.5 - 14.5, j * CH + lot.sz * 25.5 - 14.5); g.fillStyle = lot.water ? '#2b7a9c' : lot.ground === 'sand' ? '#d6c28f' : '#5f8f45'; g.fillRect(x, y, 29 * s, 29 * s); }
-      }
-      for (const b of layoutCols(i, j)) {
-        const [x, y] = fmToScreen(b.minX, b.minZ), bw = (b.maxX - b.minX) * s, bh = (b.maxZ - b.minZ) * s;
-        const l = Math.round(clamp(110 + b.h * 1.8, 110, 235));
-        g.fillStyle = 'rgb(' + l + ',' + l + ',' + (l + 10) + ')'; g.fillRect(x, y, bw, bh);
-        g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, bw - 1, bh - 1);
-      }
-    }
+    paintWorld(g, w, h, current.x, current.z, FM.scale);
     // home
     const [hx, hy] = fmToScreen(HOME_SPAWN.x, HOME_SPAWN.z);
     g.fillStyle = '#ffc93c'; g.beginPath(); g.arc(hx, hy, 8, 0, 7); g.fill();
     g.fillStyle = '#12161f'; g.font = 'bold 12px sans-serif'; g.textAlign = 'center'; g.fillText('HOME', hx, hy - 12);
+    drawPois(g, fmToScreen, FM.scale, w, h, { cx: current.x, cz: current.z, px: current.x, pz: current.z });
     // route
     const [cxs, cys] = fmToScreen(current.x, current.z);
     if (FM.drag) {
@@ -4225,6 +4457,17 @@
     const dotAt = (x, z, color, r) => { const [mx, my] = toMap(x, z, c - 14); g.fillStyle = '#12161f'; g.beginPath(); g.arc(mx, my, r + 3, 0, 7); g.fill(); g.fillStyle = color; g.beginPath(); g.arc(mx, my, r, 0, 7); g.fill(); };
     dotAt(HOME_SPAWN.x, HOME_SPAWN.z, '#ffc93c', 9);
     if (WORLD.id === 'dubai') { dotAt(BK.x, BK.z, '#ffffff', 5); dotAt(BAA.x, BAA.z, '#9fe3ff', 5); }
+    if (WP) { dotAt(WP.x, WP.z, '#ff4fd8', 8); }
+    { g.font = 'bold 10px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      for (const p of poisIn(F.x - 120, F.z - 120, F.x + 120, F.z + 120)) {
+        if (p.k === 'restaurant' || p.k === 'metro') continue;
+        const [mx, my] = toMap(p.x, p.z, 0), dd = Math.hypot(mx - c, my - c);
+        if (dd > c - 12) continue;
+        g.fillStyle = POI_COL[p.k] || '#fff'; g.beginPath(); g.arc(mx, my, 3.5, 0, 7); g.fill();
+        const nm = p.n.length > 16 ? p.n.slice(0, 15) + '.' : p.n;
+        g.lineWidth = 3; g.strokeStyle = 'rgba(10,14,22,0.95)'; g.strokeText(nm, mx, my - 9); g.fillStyle = '#fff'; g.fillText(nm, mx, my - 9);
+      }
+      g.textBaseline = 'alphabetic'; }
     const tp = targetPos();
     if (tp) dotAt(tp.x, tp.z, '#' + mission.steps[mission.i].color.toString(16).padStart(6, '0'), 9);
     g.fillStyle = '#ffffff'; g.strokeStyle = '#12161f'; g.lineWidth = 3;
@@ -4244,6 +4487,7 @@
     lastHud = now;
     const F = focus();
     if (!INT.active) drawMap(F, now);
+    updateWpHud(F);
     updateLifeHud();
     const dist = Math.hypot(HOME_SPAWN.x - F.x, HOME_SPAWN.z - F.z);
     $('homeDist').textContent = INT.active ? 'Indoors' : WORLD.id !== 'dubai' ? wdef().city : 'Home ' + fmtDist(dist);
@@ -5888,7 +6132,7 @@
     if (INT.active) forceExitInterior();
     if (mode === 'drive') exit(true);
     if (mission) endMission(false, 'You left the country.');
-    WORLD.id = id;
+    WORLD.id = id; if (typeof setWaypoint === 'function') setWaypoint(null);
     for (const [k, c] of chunks) { if (c.keep) continue; scene.remove(c.g); disposeTree(c.g); chunks.delete(k); }
     layoutCache.clear(); lastChunk = '';
     applyWorldTheme(id);
