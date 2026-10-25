@@ -548,6 +548,10 @@
           </dl>
         </section>
         <section>
+          <h3>Flying abroad</h3>
+          <p>Open <b>Travel</b> on your phone, search a city, pick a flight, class and seat, and pay. Go to <b>Dubai International Airport</b> (on its own island, with a causeway), check in at the desk, then walk to your gate when boarding opens. The airport bus takes you to the plane. Find your <b>green</b> seat and press <kbd>E</kbd> to sit. When the plane lands, walk to the door and press <kbd>E</kbd>, pass passport control and step out into the new city. To come home, book a flight from the airport there.</p>
+        </section>
+        <section>
           <h3>Calling a vehicle</h3>
           <p>Open the <b>Garage</b> tab to see every vehicle and its number, such as 1101 for the Toyota Fortuner or 1301 for the Lamborghini Huracán. The fastest is the Koenigsegg Jesko (1306): 1990 km/h, over 2100 km/h on nitro. It is bulletproof and can never be damaged or blown up, and nothing can hurt you while you sit in it. Tap a vehicle, or type its number in the <b>Dialer</b> and press <b>Call</b>. It drops in right beside you. You can have up to 8 called vehicles at once.</p>
         </section>
@@ -6501,7 +6505,7 @@
     return registerInterior(it);
   }
   function finishArrival(wid) {
-    const sp = wid === 'dubai' ? { x: 720, z: -1096, h: 0 } : { x: 105.5, z: 9.5, h: 0 };
+    const sp = wid === 'dubai' ? { x: 720, z: -1096, h: Math.PI } : { x: 105.5, z: 9.5, h: 0 };
     fadeThen(() => {
       switchWorld(wid, sp);
       flight.t = null; flight.phase = '';
