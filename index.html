@@ -279,6 +279,7 @@
   .bm-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .bm-row b { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
   .bm-none { padding: 10px; color: var(--muted); font-size: 12px; margin: 0; }
+  #flightChip { cursor: pointer; pointer-events: auto; }
   .wpchip { border-color: #ff4fd8; cursor: pointer; pointer-events: auto; }
   .map { cursor: pointer; pointer-events: auto; }
   .fm-zoom { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 8px; }
@@ -4220,6 +4221,13 @@
     if (d < 14 && !INT.active) { toast('You have arrived: ' + WP.n, 'win'); setWaypoint(null); }
   }
   $('wpChip').addEventListener('click', () => setWaypoint(null));
+  $('flightChip').addEventListener('click', () => {
+    const t = nextTicket();
+    if (INT.active || !t) return;
+    if (WORLD.id !== t.from) { toast('Your flight leaves from ' + WORLD_DEFS[t.from].city + '.'); return; }
+    const a = staticPois().find((q) => q.k === 'airport');
+    if (a) setWaypoint(a);
+  });
 
   // ---- the big map ----
   const BM = { x: 0, z: 0, s: 0.35, hits: [], ptrs: new Map(), moved: 0, open: false, q: '' };
@@ -6502,9 +6510,23 @@
     it.board2 = true;
     // gate desks S1..S4
     for (let i = 0; i < 4; i++) {
-      const x = -42 + i * 14, z = -34;
+      const x = 22 + i * 12, z = -34;
       it.box(7, 1.2, 1.6, mat(0x3a3f4a), x, 0.6, z, true); it.sign(7, 1.6, 'GATE S' + (i + 1), '#ffffff', '#1d4fa8', x, 3.4, z - 1.2, 0, 34);
+      const bm = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 16, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0x3dff86, transparent: true, opacity: 0.3, depthWrite: false, side: THREE.DoubleSide })); bm.position.set(x, 8, z + 2.4); bm.visible = false; bm.userData.keep = true; it.g.add(bm); (it.gateBeams = it.gateBeams || [])[i] = bm;
       it.spot(x, z + 2.4, 3.6, () => gateLabel(i), () => gateAction(it, i));
+    }
+    // a green path on the floor from the entrance to the gates, with signs
+    {
+      const ac = document.createElement('canvas'); ac.width = 64; ac.height = 64; const ag = ac.getContext('2d');
+      ag.clearRect(0, 0, 64, 64); ag.fillStyle = '#2bd86c'; ag.beginPath(); ag.moveTo(32, 6); ag.lineTo(58, 40); ag.lineTo(42, 40); ag.lineTo(42, 58); ag.lineTo(22, 58); ag.lineTo(22, 40); ag.lineTo(6, 40); ag.closePath(); ag.fill();
+      const am = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(ac), transparent: true, depthWrite: false });
+      const pts = [[0, 33], [19, 33], [19, -28]];
+      for (let k = 0; k < pts.length - 1; k++) {
+        const [x0, z0] = pts[k], [x1, z1] = pts[k + 1], len = Math.hypot(x1 - x0, z1 - z0), ang = Math.atan2(x1 - x0, z1 - z0);
+        for (let u = 3; u < len; u += 4) { const a = it.plane(1.6, 1.6, am, x0 + (x1 - x0) * u / len, 0.09, z0 + (z1 - z0) * u / len); a.rotation.y = ang + Math.PI; }
+      }
+      it.sign(22, 2.2, 'GATES S1 - S4  \u2192', '#ffffff', '#1d4fa8', 10, 10, 36, Math.PI, 40);
+      it.sign(22, 2.2, '\u2190 CHECK-IN', '#ffffff', '#b3141d', -12, 10, 36, Math.PI, 40);
     }
     // seating
     for (let i = 0; i < 5; i++) for (let j = 0; j < 2; j++) it.box(8, 0.5, 1.2, mat(0x4a5a7a), -45 + i * 11, 0.5, -14 + j * 3.6, true);
@@ -6527,9 +6549,10 @@
     it.spot(0, D / 2 - 3, 4, () => (meal.tab > 0 ? 'leave (you owe ' + fmtMoney(meal.tab) + ')' : 'leave the airport'), () => tryLeave(it));
     it.box(14, 4.4, 0.3, GLASS, 0, 2.2, D / 2 - 0.1); it.sign(5, 0.9, 'EXIT', '#ffffff', '#1a6b3a', 0, 5.4, D / 2 - 0.4, Math.PI, 34);
     it.spawn = { x: 0, z: D / 2 - 6, h: 0 };
-    it.onEnter = () => { it.title = d.airport; refreshBoard(it); };
+    const markGate = () => { const t = myTicketHere(); (it.gateBeams || []).forEach((b, i) => { b.visible = !!t && t.stand === i; }); };
+    it.onEnter = () => { it.title = d.airport; refreshBoard(it); markGate(); const t = myTicketHere(); if (t) toast('Follow the green arrows on the floor to Gate S' + (t.stand + 1) + ' (green beam).', 'win', 5000); };
     it.onLeave = () => { clearPlates(); meal.spot = null; meal.state = 'none'; meal.tab = 0; guards.phase = ''; hideBanner(); };
-    it.upd.push((dt) => { mealUpdate(it, dt); it.bt = (it.bt || 0) - dt; if (it.bt <= 0) { it.bt = 2; refreshBoard(it); } });
+    it.upd.push((dt) => { mealUpdate(it, dt); it.bt = (it.bt || 0) - dt; if (it.bt <= 0) { it.bt = 2; refreshBoard(it); markGate(); } });
     return registerInterior(it);
   }
   function refreshBoard(it) {
