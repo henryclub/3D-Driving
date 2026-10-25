@@ -6548,7 +6548,7 @@
     return registerInterior(it);
   }
   function finishArrival(wid) {
-    const sp = wid === 'dubai' ? { x: 720, z: -1096, h: 0 } : { x: 105.5, z: 9.5, h: Math.PI };
+    const sp = wid === 'dubai' ? { x: 720, z: -1096, h: 0 } : { x: 105.5, z: 9.5, h: 0 };
     fadeThen(() => {
       switchWorld(wid, sp);
       flight.t = null; flight.phase = '';
