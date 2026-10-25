@@ -4749,35 +4749,220 @@
   ];
   const phoneById = new Map(PHONES.map((p) => [p.id, p]));
   const phoneTier = () => (phoneById.get(save.phone) || PHONES[0]).tier;
-  function applyPhone() {
-    const p = phoneById.get(save.phone) || PHONES[0];
-    $('phoneModel').textContent = p.short;
-    $('phone').style.borderColor = p.color;
-    $('phone').style.boxShadow = '0 20px 60px rgba(0,0,0,0.55), 0 0 0 3px ' + p.color + '66';
+  // <PHONES2>
+  // ================= Phone brands: real-looking models, foldables and the phone shop =================
+  const PH = (id, brand, name, short, price, color, tier, look, spec) => Object.assign({ id, brand, name, short, price, color, tier, bezel: 'thin', cut: 'punch', corner: 34, frame: color, back: '', spec }, look);
+  const PHONE_CAT = [
+    PH('basic', 'AZARR', 'AZARR Basic', 'AZARR 5G', 0, '#2b303b', 1, { bezel: 'thick', corner: 30, frame: '#2b303b', back: 'Graphite' }, '6.1" LCD · basic 5G'),
+    // Apple
+    PH('ipse', 'Apple', 'iPhone SE', 'iPhone SE', 1699, '#2a2a2e', 1, { bezel: 'thick', cut: 'home', corner: 26, frame: '#3a3a3f', back: 'Midnight' }, '4.7" Retina · Home button'),
+    PH('ip15', 'Apple', 'iPhone 15', 'iPhone 15', 2999, '#e8c3c8', 2, { cut: 'island', corner: 40, frame: '#d9c4c0', back: 'Pink' }, '6.1" OLED · Dynamic Island'),
+    PH('ip16', 'Apple', 'iPhone 16', 'iPhone 16', 3399, '#8fa4d9', 2, { cut: 'island', corner: 40, frame: '#8fa4d9', back: 'Ultramarine' }, '6.1" OLED · A18 · Camera Control'),
+    PH('ip16plus', 'Apple', 'iPhone 16 Plus', 'iPhone 16 Plus', 3799, '#7fb5a6', 2, { cut: 'island', corner: 42, frame: '#7fb5a6', back: 'Teal' }, '6.7" OLED · long battery'),
+    PH('ip16p', 'Apple', 'iPhone 16 Pro', 'iPhone 16 Pro', 4699, '#8d8a84', 3, { cut: 'island', corner: 42, frame: '#9b978f', back: 'Natural Titanium' }, '6.3" ProMotion · titanium'),
+    PH('ip16pm', 'Apple', 'iPhone 16 Pro Max', 'iPhone 16 Pro Max', 5499, '#a59b8c', 4, { cut: 'island', corner: 44, frame: '#b3a898', back: 'Desert Titanium' }, '6.9" ProMotion · 5x zoom'),
+    PH('ipfold', 'Apple', 'iPhone Fold', 'iPhone Fold', 9999, '#b8b8bd', 4, { cut: 'punch', corner: 36, frame: '#c4c4c9', back: 'Silver', fold: 'book' }, '7.8" folding OLED · book style'),
+    // Samsung
+    PH('a56', 'Samsung', 'Galaxy A56', 'Galaxy A56', 1499, '#b7a6d8', 1, { bezel: 'thick', corner: 30, frame: '#a99bc8', back: 'Awesome Lilac' }, '6.7" AMOLED · 50MP'),
+    PH('s25b', 'Samsung', 'Galaxy S25', 'Galaxy S25', 3199, '#7cb4c9', 2, { corner: 36, frame: '#9aa7b0', back: 'Icyblue' }, '6.2" Dynamic AMOLED · Galaxy AI'),
+    PH('s25p', 'Samsung', 'Galaxy S25+', 'Galaxy S25+', 3999, '#2b3f5c', 2, { corner: 36, frame: '#8d96a0', back: 'Navy' }, '6.7" Dynamic AMOLED · 45W'),
+    PH('s25', 'Samsung', 'Samsung Galaxy S25 Ultra', 'Galaxy S25 Ultra', 4899, '#3a3f4a', 3, { corner: 22, frame: '#9ea3ab', back: 'Titanium Black' }, '6.9" flat AMOLED · S Pen · 200MP'),
+    PH('zflip6', 'Samsung', 'Galaxy Z Flip6', 'Galaxy Z Flip6', 4099, '#c8d7ef', 3, { corner: 36, frame: '#a8b4c8', back: 'Blue', fold: 'flip' }, '6.7" folding · flip clamshell'),
+    PH('fold6', 'Samsung', 'Samsung Galaxy Z Fold6', 'Galaxy Z Fold6', 7999, '#4c5a8a', 4, { corner: 30, frame: '#7d86a8', back: 'Navy', fold: 'book' }, '7.6" folding AMOLED · book style'),
+    PH('zfoldse', 'Samsung', 'Galaxy Z Fold Special Edition', 'Z Fold SE', 8999, '#2a2d34', 4, { corner: 30, frame: '#6a6f7a', back: 'Black', fold: 'book' }, '8.0" thin folding · lightest Fold'),
+    PH('ztri', 'Samsung', 'Galaxy Z TriFold', 'Z TriFold', 13999, '#3b3f48', 5, { corner: 28, frame: '#8a8f99', back: 'Titanium', fold: 'tri' }, '10" tri-fold · two hinges'),
+    // Google
+    PH('pixel9b', 'Google', 'Google Pixel 9', 'Pixel 9', 3099, '#e3b8b0', 2, { corner: 36, frame: '#d8bdb6', back: 'Peony' }, '6.3" Actua · Tensor G4'),
+    PH('pixel9', 'Google', 'Google Pixel 9 Pro', 'Pixel 9 Pro', 3799, '#8fa595', 2, { corner: 36, frame: '#a6b5aa', back: 'Hazel' }, '6.3" LTPO · camera bar'),
+    PH('pixel9f', 'Google', 'Google Pixel 9 Pro Fold', 'Pixel 9 Pro Fold', 6999, '#c9c1b2', 4, { corner: 30, frame: '#c9c1b2', back: 'Porcelain', fold: 'book' }, '8" Super Actua Flex'),
+    // OnePlus
+    PH('op13r', 'OnePlus', 'OnePlus 13R', 'OnePlus 13R', 2299, '#2e3f52', 1, { corner: 34, frame: '#59687a', back: 'Nebula Noir' }, '6.78" AMOLED · 6000 mAh'),
+    PH('op13', 'OnePlus', 'OnePlus 13', 'OnePlus 13', 3299, '#33363c', 2, { corner: 34, frame: '#50545c', back: 'Black Eclipse' }, '6.82" 2K · Hasselblad'),
+    PH('opopen', 'OnePlus', 'OnePlus Open', 'OnePlus Open', 6999, '#2f4a3f', 4, { corner: 30, frame: '#59705f', back: 'Emerald Dusk', fold: 'book' }, '7.8" folding · 3 Hasselblad cameras'),
+    // Oppo
+    PH('reno12', 'Oppo', 'Oppo Reno 12', 'Reno 12', 1799, '#c9b9a0', 1, { corner: 36, frame: '#c9b9a0', back: 'Sunset Peach' }, '6.7" AMOLED · AI portrait'),
+    PH('findx8', 'Oppo', 'Oppo Find X8 Pro', 'Find X8 Pro', 4499, '#d6d2cc', 3, { corner: 40, frame: '#cfcbc4', back: 'Pearl White' }, '6.78" curved · twin periscope'),
+    PH('findn5', 'Oppo', 'Oppo Find N5', 'Find N5', 6999, '#b9bcc4', 4, { corner: 30, frame: '#aeb2ba', back: 'Dusk Purple', fold: 'book' }, '8.12" folding · 8.9mm folded'),
+    // Vivo
+    PH('v40', 'Vivo', 'Vivo V40', 'Vivo V40', 1999, '#7f92a8', 1, { corner: 34, frame: '#7f92a8', back: 'Ganges Blue' }, '6.78" AMOLED · Zeiss'),
+    PH('x200p', 'Vivo', 'Vivo X200 Pro', 'X200 Pro', 4299, '#33445a', 3, { corner: 38, frame: '#4a5b72', back: 'Cosmos Black' }, '6.78" LTPO · Zeiss 200MP tele'),
+    PH('xfold3', 'Vivo', 'Vivo X Fold3', 'X Fold3', 7199, '#2b3a40', 4, { corner: 30, frame: '#4e5f66', back: 'Celestial Black', fold: 'book' }, '8.03" folding · 5700 mAh'),
+    // Xiaomi
+    PH('xm14t', 'Xiaomi', 'Xiaomi 14T', 'Xiaomi 14T', 1999, '#6d7fa6', 1, { corner: 34, frame: '#7d8cae', back: 'Titan Blue' }, '6.67" AMOLED · Leica'),
+    PH('xm15', 'Xiaomi', 'Xiaomi 15 Ultra', 'Xiaomi 15 Ultra', 4199, '#b7bcc6', 2, { corner: 24, frame: '#aab0ba', back: 'Silver Chrome' }, '6.73" LTPO · Leica 1" sensor'),
+    PH('mixflip', 'Xiaomi', 'Xiaomi Mix Flip', 'Mix Flip', 4299, '#c97a73', 3, { corner: 36, frame: '#d88f88', back: 'Lilac Gold', fold: 'flip' }, '6.86" folding · flip clamshell'),
+    // Realme
+    PH('rm13p', 'Realme', 'Realme 13 Pro', 'Realme 13 Pro', 1799, '#7a9f6a', 1, { corner: 34, frame: '#8fae80', back: 'Emerald Green' }, '6.7" curved · 50MP'),
+    PH('rmgt7', 'Realme', 'Realme GT 7 Pro', 'GT 7 Pro', 2899, '#d8d1c3', 2, { corner: 34, frame: '#c8c1b3', back: 'Mars Orange' }, '6.78" 2K · Snapdragon 8 Elite'),
+    // Nothing
+    PH('nothing3', 'Nothing', 'Nothing Phone (3)', 'Nothing (3)', 2999, '#e8e8ea', 2, { corner: 34, frame: '#f0f0f2', back: 'Transparent White' }, '6.7" AMOLED · Glyph back'),
+    // Huawei
+    PH('hw70', 'Huawei', 'Huawei Pura 70 Ultra', 'Pura 70 Ultra', 4499, '#d8cfba', 3, { corner: 38, frame: '#d0c6af', back: 'Brown', cut: 'punch' }, '6.8" quad-curve · pop-out camera'),
+    PH('matext', 'Huawei', 'Huawei Mate XT Ultimate', 'Mate XT', 12999, '#c9a23c', 5, { corner: 28, frame: '#d1ad47', back: 'Gold', fold: 'tri' }, '10.2" tri-fold · world first'),
+    // Motorola
+    PH('razr50u', 'Motorola', 'Motorola Razr 50 Ultra', 'Razr 50 Ultra', 3999, '#d69aa0', 3, { corner: 36, frame: '#d69aa0', back: 'Spring Green', fold: 'flip' }, '6.9" folding · 4" cover screen'),
+    // Honor
+    PH('magicv3', 'Honor', 'Honor Magic V3', 'Magic V3', 6999, '#4a4f3f', 4, { corner: 30, frame: '#69705a', back: 'Black Velvet', fold: 'book' }, '7.92" folding · 9.2mm'),
+    // Vertu
+    PH('vertu', 'Vertu', 'Vertu Signature Gold', 'Vertu Gold', 49000, '#c9a23c', 5, { bezel: 'thick', corner: 26, frame: '#c9a23c', back: 'Gold & leather' }, 'Hand-made · gold frame · sapphire glass'),
+  ];
+  PHONES.splice(0, PHONES.length, ...PHONE_CAT);
+  phoneById.clear(); for (const p of PHONES) phoneById.set(p.id, p);
+  const PHONE_BRANDS = ['All', 'Apple', 'Samsung', 'Google', 'OnePlus', 'Oppo', 'Vivo', 'Xiaomi', 'Realme', 'Nothing', 'Huawei', 'Motorola', 'Honor', 'Vertu'];
+  const BRAND_MARK = { AZARR: ['Z', '#ffc93c', '#1b1606'], Apple: ['A', '#e8e8ea', '#111'], Samsung: ['S', '#1428a0', '#fff'], Google: ['G', '#ffffff', '#4285f4'], OnePlus: ['1+', '#eb0028', '#fff'], Oppo: ['O', '#1a9a6b', '#fff'], Vivo: ['V', '#415fff', '#fff'], Xiaomi: ['mi', '#ff6900', '#fff'], Realme: ['R', '#ffc915', '#111'], Nothing: ['N', '#f2f2f2', '#d71921'], Huawei: ['H', '#cf0a2c', '#fff'], Motorola: ['M', '#5c92fa', '#fff'], Honor: ['H', '#2a2f3a', '#6cc7ff'], Vertu: ['V', '#c9a23c', '#111'] };
+  const foldMax = (p) => (p.fold === 'tri' ? 2 : 1);
+  const foldState = {};
+  const foldStep = (p) => (p && p.fold ? foldState[p.id] || 0 : 0);
+
+  const phStyle = document.createElement('style');
+  phStyle.textContent = `
+    .phone { transition: width .5s ease, height .5s ease, border-radius .3s ease, padding .3s ease; }
+    .phone .notch { display: none; transition: all .3s ease; }
+    .phone.ph-island .notch { display: block; width: 92px; height: 26px; top: 8px; border-radius: 14px; background: #000; }
+    .phone.ph-notch .notch { display: block; width: 130px; height: 24px; top: 0; border-radius: 0 0 16px 16px; background: #000; }
+    .phone.ph-punch .notch { display: block; width: 13px; height: 13px; top: 10px; border-radius: 50%; background: #000; box-shadow: 0 0 0 2px #1a1d25; }
+    .phone.ph-punchL .notch { display: block; width: 13px; height: 13px; top: 10px; left: 26px; transform: none; border-radius: 50%; background: #000; box-shadow: 0 0 0 2px #1a1d25; }
+    .phone .phome { display: none; }
+    .phone.ph-home .phome { display: block; position: absolute; bottom: 8px; left: 50%; width: 24px; height: 24px; margin-left: -12px; border: 2px solid #4a4f5c; border-radius: 50%; }
+    .phone .bm { display: inline-grid; place-items: center; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 8px; font-size: 9px; font-style: normal; font-weight: 900; margin-right: 5px; vertical-align: -3px; }
+    #foldArrow { position: absolute; z-index: 5; display: none; border: 0; background: var(--accent); color: #1b1606; font-weight: 900; font-size: 20px; line-height: 1; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.45); animation: fpulse 1.6s ease-in-out infinite; }
+    .phone.ph-fold-book #foldArrow, .phone.ph-fold-tri #foldArrow { display: block; right: -15px; top: 50%; width: 24px; height: 64px; margin-top: -32px; border-radius: 0 14px 14px 0; }
+    .phone.ph-fold-flip #foldArrow { display: block; bottom: -15px; left: 50%; width: 64px; height: 24px; margin-left: -32px; border-radius: 0 0 14px 14px; }
+    @keyframes fpulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.25); } }
+    .phone .crease { position: absolute; z-index: 4; pointer-events: none; opacity: 0; transition: opacity .4s ease; }
+    .phone .crease.v { top: 0; bottom: 0; width: 4px; margin-left: -2px; background: linear-gradient(90deg, rgba(0,0,0,.6), rgba(255,255,255,.14), rgba(0,0,0,.6)); }
+    .phone .crease.h { left: 0; right: 0; height: 4px; margin-top: -2px; background: linear-gradient(180deg, rgba(0,0,0,.6), rgba(255,255,255,.14), rgba(0,0,0,.6)); }
+    .phone .crease.on { opacity: 1; }
+    .pchips { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 8px; flex: none; }
+    .panel .pchips { flex-wrap: wrap; overflow: visible; }
+    .pchips button { flex: none; border: 1px solid var(--line); background: rgba(243,241,234,0.06); color: var(--ink); border-radius: 999px; padding: 5px 11px; font: 800 12px var(--body); cursor: pointer; }
+    .pchips button.on { background: var(--accent); color: #1b1606; border-color: var(--accent); }
+    .ppw { display: inline-flex; gap: 4px; align-items: flex-end; flex: none; min-width: 40px; justify-content: center; }
+    .pp { position: relative; display: inline-block; box-sizing: border-box; border: 2px solid #888; overflow: hidden; flex: none; }
+    .pp .pc { position: absolute; left: 50%; background: #000; transform: translateX(-50%); }
+    .pp .pc.island { top: 3px; width: 11px; height: 4px; border-radius: 3px; }
+    .pp .pc.notch { top: 0; width: 14px; height: 4px; border-radius: 0 0 3px 3px; }
+    .pp .pc.punch { top: 3px; width: 3px; height: 3px; border-radius: 50%; }
+    .pp .pc.punchL { top: 3px; left: 7px; width: 3px; height: 3px; border-radius: 50%; transform: none; }
+    .pp .pc.home { display: none; }
+    .pp .hb { position: absolute; bottom: 2px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border: 1px solid #667; border-radius: 50%; }
+    .pp .cr { position: absolute; background: rgba(0,0,0,.55); }
+    .shop-row .nm small.sp { color: var(--muted); }
+    .phone.ph-island .status, .phone.ph-notch .status { padding-top: 36px; }
+    .phone.ph-fold-book .status span:last-child, .phone.ph-fold-tri .status span:last-child { font-size: 10px; }
+  `;
+  document.head.appendChild(phStyle);
+
+  function phonePic(p, open) {
+    let w = 30, h = 62;
+    if (p.fold === 'book') w = open ? 56 : 32;
+    else if (p.fold === 'tri') w = open ? 80 : 30;
+    else if (p.fold === 'flip') h = open ? 62 : 34;
+    const thick = p.bezel === 'thick', cut = p.cut;
+    const r = Math.max(5, Math.round(p.corner / 3.4));
+    let html = '<span class="pp" style="width:' + w + 'px;height:' + h + 'px;border-radius:' + r + 'px;border-color:' + p.frame + ';border-width:' + (thick ? 3 : 2) + 'px;background:linear-gradient(160deg,' + p.color + ',#0b0d12 75%)">';
+    if (cut !== 'none') html += '<i class="pc ' + cut + '"></i>';
+    if (cut === 'home') html += '<i class="hb"></i>';
+    if (p.fold && open) {
+      if (p.fold === 'flip') html += '<i class="cr" style="left:0;right:0;top:50%;height:2px"></i>';
+      else if (p.fold === 'tri') html += '<i class="cr" style="top:0;bottom:0;left:33%;width:2px"></i><i class="cr" style="top:0;bottom:0;left:66%;width:2px"></i>';
+      else html += '<i class="cr" style="top:0;bottom:0;left:50%;width:2px"></i>';
+    }
+    return html + '</span>';
+  }
+  const phoneBigPic = (p) => '<span class="ppw">' + phonePic(p, false) + (p.fold ? phonePic(p, true) : '') + '</span>';
+
+  function phoneChips(sel, pick) {
+    const row = document.createElement('div'); row.className = 'pchips';
+    for (const b of PHONE_BRANDS) {
+      const btn = document.createElement('button'); btn.textContent = b; if (b === sel) btn.className = 'on';
+      btn.addEventListener('click', () => pick(b));
+      row.appendChild(btn);
+    }
+    return row;
+  }
+  function phoneRowEl(p, refresh) {
+    const own = save.phones.includes(p.id);
+    const row = document.createElement('div'); row.className = 'shop-row';
+    row.innerHTML = phoneBigPic(p) + '<span class="nm"></span><button></button>';
+    row.querySelector('.nm').innerHTML = p.name + '<small>' + (p.price ? fmtMoney(p.price) : 'Free') + ' · ' + p.back + (p.fold ? ' · foldable' : '') + '</small><small class="sp">' + p.spec + ' · speed ' + p.tier + '</small>';
+    const b = row.querySelector('button');
+    if (save.phone === p.id) { b.textContent = 'In use'; b.disabled = true; }
+    else { b.textContent = own ? 'Use' : 'Buy'; b.addEventListener('click', () => { buyPhoneNow(p); refresh(); }); }
+    return row;
+  }
+  let storeBrand = 'All';
+  function fillPhones(root, brand, refresh) {
+    for (const p of PHONES) if (brand === 'All' || p.brand === brand) root.appendChild(phoneRowEl(p, refresh));
   }
   function renderStore() {
     const list = $('storeList'); list.innerHTML = '';
-    for (const p of PHONES) {
-      const own = save.phones.includes(p.id);
-      const row = document.createElement('div'); row.className = 'shop-row';
-      row.innerHTML = '<span class="sw"></span><span class="nm"></span><button></button>';
-      row.querySelector('.sw').style.background = p.color;
-      row.querySelector('.nm').innerHTML = p.name + '<small>' + (p.price ? fmtMoney(p.price) : 'Free') + ' · speed ' + p.tier + '</small>';
-      const b = row.querySelector('button');
-      if (save.phone === p.id) { b.textContent = 'In use'; b.disabled = true; }
-      else if (own) { b.textContent = 'Use'; b.addEventListener('click', () => { save.phone = p.id; persist(); applyPhone(); renderStore(); }); }
-      else {
-        b.textContent = 'Buy';
-        b.addEventListener('click', () => {
-          if (save.cash < p.price) { toast('Not enough cash.', 'fail'); return; }
-          save.cash -= p.price; save.phones.push(p.id); save.phone = p.id; persist(); addXP(Math.round(p.price / 40));
-          applyPhone(); renderStore(); renderHome();
-          toast('You bought the ' + p.name + '!', 'win'); beep([523, 784], 0.4, 'sine', 0.1);
-        });
-      }
-      list.appendChild(row);
-    }
+    list.appendChild(phoneChips(storeBrand, (b) => { storeBrand = b; renderStore(); }));
+    fillPhones(list, storeBrand, renderStore);
   }
+  function openPhoneShop(brand) {
+    let sel = brand && PHONE_BRANDS.includes(brand) ? brand : 'All';
+    const draw = () => {
+      const body = $('panelBody'); body.innerHTML = '';
+      const note = document.createElement('p'); note.className = 'note'; note.textContent = 'Every phone you buy shows up as your phone at the bottom, with its real look. Foldables open with the arrow on their side.';
+      body.appendChild(note);
+      body.appendChild(phoneChips(sel, (b) => { sel = b; draw(); }));
+      fillPhones(body, sel, draw);
+    };
+    togglePhone(false);
+    openPanel('Phone shop', '', null);
+    draw();
+  }
+
+  // ---- the phone UI takes the look of the phone you hold ----
+  function ensureFoldUI() {
+    const el = $('phone');
+    if ($('foldArrow')) return;
+    const a = document.createElement('button'); a.id = 'foldArrow'; a.setAttribute('aria-label', 'Fold or unfold the phone'); el.appendChild(a);
+    const home = document.createElement('i'); home.className = 'phome'; el.appendChild(home);
+    const scr = el.querySelector('.screen');
+    for (const [id, cls] of [['crease1', 'v'], ['crease2', 'v'], ['crease3', 'h']]) { const c = document.createElement('i'); c.id = id; c.className = 'crease ' + cls; scr.appendChild(c); }
+    a.addEventListener('click', () => {
+      const p = phoneById.get(save.phone); if (!p || !p.fold) return;
+      const s = foldStep(p), m = foldMax(p);
+      foldState[p.id] = s >= m ? 0 : s + 1;
+      sizeFold();
+    });
+  }
+  function sizeFold() {
+    const p = phoneById.get(save.phone) || PHONES[0], el = $('phone'), a = $('foldArrow');
+    const s = foldStep(p);
+    if (!p.fold) { el.style.width = ''; el.style.height = ''; }
+    else if (p.fold === 'book') el.style.width = 'min(' + [205, 412][s] + 'px, calc(100% - 32px))';
+    else if (p.fold === 'tri') el.style.width = 'min(' + [185, 310, 520][s] + 'px, calc(100% - 32px))';
+    else { el.style.width = ''; el.style.height = 'min(' + [340, 620][s] + 'px, calc(100% - 40px))'; }
+    if (p.fold !== 'flip') el.style.height = '';
+    const c1 = $('crease1'), c2 = $('crease2'), c3 = $('crease3');
+    c1.classList.toggle('on', p.fold === 'book' && s === 1 || p.fold === 'tri' && s >= 1);
+    c2.classList.toggle('on', p.fold === 'tri' && s === 2);
+    c3.classList.toggle('on', p.fold === 'flip' && s === 1);
+    c1.style.left = p.fold === 'tri' ? (s === 2 ? '33.3%' : '50%') : '50%'; c2.style.left = '66.6%'; c3.style.top = '50%';
+    if (p.fold === 'flip') a.textContent = s ? '⌃' : '⌄';
+    else a.textContent = s >= foldMax(p) ? '‹' : '›';
+    a.title = s >= foldMax(p) ? 'Fold' : 'Unfold';
+  }
+  function applyPhone() {
+    ensureFoldUI();
+    const p = phoneById.get(save.phone) || PHONES[0], el = $('phone');
+    for (const c of [...el.classList]) if (c.startsWith('ph-')) el.classList.remove(c);
+    el.classList.add('ph-' + p.cut, 'ph-' + p.bezel);
+    if (p.fold) el.classList.add('ph-fold', 'ph-fold-' + p.fold);
+    const bw = p.bezel === 'thick' ? 5 : 3, pad = p.bezel === 'thick' ? 13 : 6;
+    el.style.borderWidth = bw + 'px'; el.style.borderColor = p.frame;
+    el.style.padding = p.cut === 'home' ? '20px 8px 44px' : pad + 'px';
+    el.style.borderRadius = p.corner + 'px';
+    el.querySelector('.screen').style.borderRadius = Math.max(8, p.corner - pad - bw) + 'px';
+    el.style.boxShadow = '0 20px 60px rgba(0,0,0,0.55), 0 0 0 3px ' + p.frame + '55';
+    const bm = BRAND_MARK[p.brand] || BRAND_MARK.AZARR;
+    $('phoneModel').innerHTML = '<i class="bm" style="background:' + bm[1] + ';color:' + bm[2] + '">' + bm[0] + '</i>' + p.short;
+    sizeFold();
+  }
+  // </PHONES2>
 
   // ---- Per-frame life: clock, hunger, HUD ----
   let hungerWarn = 0;
@@ -8315,7 +8500,7 @@
     $('toast').hidden = true;
   });
 
-  if (location.hash === '#debug') window.__dbg = { life: { ride, enterStation, tickets, flight, startBoarding, enterAirport, openFlightBooking, flightsFor, nextDepTotal, finishArrival, switchWorld, WORLD, WORLD_DEFS, INT, GC, stay, meal, pray, prayed, save, get food() { return food; }, set food(v) { food = v; }, get wudu() { return wudu; }, set wudu(v) { wudu = v; }, enterHotel, enterRestaurant, enterMall, enterMosque, nearestSpot, lifeAction, closePanel, hotelRoom, hotelLobby, switchInterior, advanceClock, nearestDoor, rideLift, openBooking, openMenu, startWudu, startPrayer, tryLeave, payBill, INTERIORS, SPECS, mealUpdate, guards, prayUpdate, wuduUpdate, finishPrayer, chunkLayout, zoneOf, CH }, info: () => JSON.stringify({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries }), P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
+  if (location.hash === '#debug') window.__dbg = { life: { openPhoneShop, applyPhone, ride, enterStation, tickets, flight, startBoarding, enterAirport, openFlightBooking, flightsFor, nextDepTotal, finishArrival, switchWorld, WORLD, WORLD_DEFS, INT, GC, stay, meal, pray, prayed, save, get food() { return food; }, set food(v) { food = v; }, get wudu() { return wudu; }, set wudu(v) { wudu = v; }, enterHotel, enterRestaurant, enterMall, enterMosque, nearestSpot, lifeAction, closePanel, hotelRoom, hotelLobby, switchInterior, advanceClock, nearestDoor, rideLift, openBooking, openMenu, startWudu, startPrayer, tryLeave, payBill, INTERIORS, SPECS, mealUpdate, guards, prayUpdate, wuduUpdate, finishPrayer, chunkLayout, zoneOf, CH }, info: () => JSON.stringify({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries }), P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
 
   const clock = new THREE.Clock();
   let introT = 0;
