@@ -6549,7 +6549,7 @@
     it.spot(0, D / 2 - 3, 4, () => (meal.tab > 0 ? 'leave (you owe ' + fmtMoney(meal.tab) + ')' : 'leave the airport'), () => tryLeave(it));
     it.box(14, 4.4, 0.3, GLASS, 0, 2.2, D / 2 - 0.1); it.sign(5, 0.9, 'EXIT', '#ffffff', '#1a6b3a', 0, 5.4, D / 2 - 0.4, Math.PI, 34);
     it.spawn = { x: 0, z: D / 2 - 6, h: 0 };
-    const markGate = () => { const t = myTicketHere(); (it.gateBeams || []).forEach((b, i) => { b.visible = !!t && t.stand === i; }); };
+    const markGate = () => { const l = ticketsHere(); (it.gateBeams || []).forEach((b, i) => { b.visible = l.some((t) => t.stand === i); }); };
     it.onEnter = () => { it.title = d.airport; refreshBoard(it); markGate(); const t = myTicketHere(); if (t) toast('Follow the green arrows on the floor to Gate S' + (t.stand + 1) + ' (green beam).', 'win', 5000); };
     it.onLeave = () => { clearPlates(); meal.spot = null; meal.state = 'none'; meal.tab = 0; guards.phase = ''; hideBanner(); };
     it.upd.push((dt) => { mealUpdate(it, dt); it.bt = (it.bt || 0) - dt; if (it.bt <= 0) { it.bt = 2; refreshBoard(it); markGate(); } });
@@ -6577,17 +6577,19 @@
     it.boardTex.needsUpdate = true;
   }
 
-  function myTicketHere() { return tickets.find((t) => (t.status === 'booked') && t.from === WORLD.id) || null; }
+  const ticketsHere = () => tickets.filter((t) => t.status === 'booked' && t.from === WORLD.id).sort((a, b) => a.depTotal - b.depTotal);
+  // the ticket for gate i if you have one, otherwise your soonest flight from this airport
+  function myTicketHere(i) { const l = ticketsHere(); return (i !== undefined && l.find((t) => t.stand === i)) || l[0] || null; }
   function gateLabel(i) {
-    const t = myTicketHere();
-    if (!t || t.stand !== i) return 'Gate S' + (i + 1) + ': not your gate';
+    const t = myTicketHere(i);
+    if (!t || t.stand !== i) return 'Gate S' + (i + 1) + ': not your gate' + (t ? ' (yours is S' + (t.stand + 1) + ')' : '');
     const left = t.depTotal - GC.total;
     if (!t.checkedIn) return 'Gate S' + (i + 1) + ': check in first at the desks';
     if (left > 45) return 'Gate S' + (i + 1) + ': boarding opens at ' + fmtTotal(t.depTotal - 45);
     return 'board your flight ' + t.flightNo + ' to ' + WORLD_DEFS[t.to].city;
   }
   function gateAction(it, i) {
-    const t = myTicketHere();
+    const t = myTicketHere(i);
     if (!t) { toast('You have no flight from this airport. Book one on your phone (Travel tab).'); return; }
     if (t.stand !== i) { toast('Your gate is S' + (t.stand + 1) + '.'); return; }
     if (!t.checkedIn) { toast('Check in first at the check-in desks.', 'fail'); return; }
@@ -6863,7 +6865,7 @@
     if (!t) return;
     const left = t.depTotal - GC.total;
     $('flightLabel').textContent = t.flightNo + ' to ' + WORLD_DEFS[t.to].city + ' · seat ' + t.seat;
-    $('flightVal').textContent = t.status === 'flying' ? 'In flight' : left > 45 ? 'Boards in ' + fmtLeft(left - 45) : left > 5 ? 'BOARDING · Gate S' + (t.stand + 1) : 'Gate closed';
+    $('flightVal').textContent = t.status === 'flying' ? 'In flight' : left > 45 ? 'Gate S' + (t.stand + 1) + ' · boards in ' + fmtLeft(left - 45) : left > 5 ? 'BOARDING · Gate S' + (t.stand + 1) : 'Gate closed';
     chip.classList.toggle('now', t.status === 'booked' && left <= 45);
   }
   // </TRAVEL>
