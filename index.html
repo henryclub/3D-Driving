@@ -1515,7 +1515,7 @@
   }
 
   // ================= Dubai: landmarks that are always in view =================
-  const dubai = { trains: [], jets: [], sail: null, beacon: null, bkBeacon: null };
+  const dubai = { trains: [], jets: [], sail: null, beacon: null, bkBeacon: null, wheel: null };
   function buildBurjKhalifa(parent) {
     const g = new THREE.Group(); g.position.set(BK.x, 0, BK.z); parent.add(g);
     const glass = glassMat(0xc4d9ea); NIGHT_MATS.push(glass);
@@ -1561,6 +1561,25 @@
     for (const [x, z, h0] of [[-9, -5, 6], [-6, -5, 9], [-3, -5, 12], [0, -5, 16], [3, -5, 12], [6, -5, 9], [9, -5, 6], [-9, 5, 6], [-6, 5, 9], [-3, 5, 12], [0, 5, 16], [3, 5, 12], [6, 5, 9], [9, 5, 6], [0, 0, 24], [-5, 0, 14], [5, 0, 14], [-10, 0, 8], [10, 0, 8]]) {
       const m = new THREE.Mesh(geo, jetM); m.position.set(x, 0.2, z); m.userData.h0 = h0; m.userData.ph = x * 0.7 + z * 0.3; g.add(m); dubai.jets.push(m);
     }
+  }
+  // Ain Dubai: the giant observation wheel off Bluewaters, turning slowly
+  function buildAinDubai(parent) {
+    const g = new THREE.Group(); g.position.set(-430, 0, -840); parent.add(g);
+    const base = new THREE.Group(); g.add(base);
+    box(80, 0.8, 50, MAT.beach, 0, -0.3, 0, base); box(84, 0.6, 54, MAT.rock, 0, -0.6, 0, base);
+    for (const s of [-1, 1]) { const leg = box(4, 128, 4, SILVER, s * 22, 62, 0, base); leg.rotation.z = -s * 0.36; }
+    box(6, 6, 10, SILVER, 0, 122, 0, base);
+    const ring = new THREE.Group(); ring.position.set(0, 122, 0); g.add(ring);
+    const torus = new THREE.Mesh(new THREE.TorusGeometry(105, 2.2, 8, 80), SILVER); torus.castShadow = true; ring.add(torus);
+    const caps = [];
+    for (let i = 0; i < 24; i++) {
+      const a = i / 24 * Math.PI * 2;
+      const spoke = box(0.7, 105, 0.7, SILVER, 0, 52, 0, new THREE.Group()); const sp = new THREE.Group(); sp.rotation.z = a; sp.add(spoke); ring.add(sp);
+      const cap = new THREE.Group(); cap.position.set(Math.sin(a) * 105, -Math.cos(a) * 105, 0);
+      box(7, 5, 5, i % 3 ? mat(0xf4f4f4) : mat(0xd9b24a), 0, -3, 0, cap); box(7.2, 1.6, 5.2, GLASS, 0, -2.6, 0, cap);
+      ring.add(cap); caps.push(cap);
+    }
+    dubai.wheel = { ring, caps };
   }
   function makeTrain(dirSign) {
     const t = new THREE.Group();
@@ -1628,7 +1647,7 @@
     const land = new THREE.Mesh(new THREE.PlaneGeometry(12000, 6480).rotateX(-Math.PI / 2), MAT.sand);
     land.position.set(0, -0.32, SEA_EDGE + 3240); scene.add(land);
     const lm = new THREE.Group(); scene.add(lm);
-    buildBurjKhalifa(lm); buildBurjAlArab(lm); buildFountain(lm); buildPalm(scene);
+    buildBurjKhalifa(lm); buildBurjAlArab(lm); buildFountain(lm); buildPalm(scene); buildAinDubai(lm);
     // Dubai Metro: three trains each way along Sheikh Zayed Road
     for (let i = 0; i < 6; i++) {
       const dir = i < 3 ? 1 : -1;
@@ -1649,6 +1668,7 @@
       tr.visible = chunks.has(key(Math.round(tr.position.x / CH), 0));
     }
     for (const j of dubai.jets) { const h = j.userData.h0 * (0.55 + 0.45 * Math.sin(t * 2.1 + j.userData.ph)); j.scale.y = h; j.position.y = h / 2 + 0.2; }
+    if (dubai.wheel) { dubai.wheel.ring.rotation.z += dt * 0.025; for (const c of dubai.wheel.caps) c.rotation.z = -dubai.wheel.ring.rotation.z; }
     if (dubai.sail) {
       dubai.sail.emissive.setHSL((t * 0.04) % 1, 0.85, 0.5);
       dubai.sail.emissiveIntensity = save.night ? 0.9 : 0;
