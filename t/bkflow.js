@@ -1,0 +1,46 @@
+const { chromium } = require('playwright');
+const S = '/tmp/forks/landmarks/t/';
+(async () => {
+  const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+  const errs = [];
+  p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
+  p.on('pageerror', (e) => errs.push('PAGEERR ' + e.message));
+  await p.goto('file:///tmp/forks/landmarks/index.html#debug');
+  await p.waitForTimeout(1500);
+  await p.click('#startBtn');
+  await p.waitForTimeout(500);
+  const ev = (js) => p.evaluate(`(() => { const d = window.__dbg, L = d.life, P = d.P; ${js} })()`);
+  const goSpot = (i) => ev(`const s = L.INT.active.spots[${i}]; P.x = s.x; P.z = s.z + 0.2; return s.label instanceof Function ? s.label() : s.label;`);
+  if (process.env.NIGHT) { await p.keyboard.press('n'); await p.waitForTimeout(500); }
+  await ev(`L.enterHotel('Burj Khalifa','bk')`); await p.waitForTimeout(1500);
+  console.log('spots', await ev(`return L.INT.active.spots.slice(0,5).map((s,i)=>i+':'+(s.label instanceof Function ? s.label() : s.label)).join(' | ')`));
+  console.log(await goSpot(1));
+  await ev(`L.lifeAction()`); await p.waitForTimeout(300);
+  await p.click('#panelBody button[data-act="cls"][data-i="3"]');
+  await p.click('#panelBody button[data-act="floor"][data-v="150"]');
+  await p.screenshot({ path: S + 'shots/bk_book.png' });
+  await p.click('#panelBody button[data-act="book"][data-i="0"]'); await p.waitForTimeout(300);
+  console.log('stay', await ev(`return JSON.stringify(L.stay)`));
+  console.log(await goSpot(2));
+  await ev(`L.lifeAction()`); await p.waitForTimeout(300);
+  await p.click('#panelBody button[data-act="up"]'); await p.waitForTimeout(1600);
+  console.log('room', await ev(`return L.INT.active.key + ' ' + L.INT.active.title`));
+  await p.screenshot({ path: S + 'shots/bk_room.png' });
+  // back to the lobby, then the roof deck
+  await ev(`L.rideLift(false)`); await p.waitForTimeout(1600);
+  console.log('lobby', await ev(`return L.INT.active.key`));
+  console.log(await goSpot(3));
+  await ev(`L.lifeAction()`); await p.waitForTimeout(300);
+  await p.screenshot({ path: S + 'shots/bk_ticket.png' });
+  await p.click('#panelBody button[data-act="d1"]'); await p.waitForTimeout(1800);
+  console.log('deck', await ev(`return L.INT.active.key + ' pass=' + L.GC.total.toFixed(0)`));
+  await p.waitForTimeout(1500);
+  await p.screenshot({ path: S + 'shots/bk_deck.png' });
+  await ev(`const it = L.INT.active; L.INT.camFn = () => [it.bx + 0, 2.2, it.bz + 4, it.bx + 0, -60, it.bz - 90];`); await p.waitForTimeout(800);
+  await p.screenshot({ path: S + 'shots/bk_deck2.png' });
+  await ev(`L.INT.camFn = null; const it = L.INT.active; const s = it.spots[0]; P.x = s.x; P.z = s.z; L.lifeAction();`); await p.waitForTimeout(1800);
+  console.log('after', await ev(`return L.INT.active.key + ' cashOK=' + (L.save.cash > 9e21)`));
+  console.log(errs.slice(0, 10).join('\n') || 'no errors');
+  await b.close();
+})();
