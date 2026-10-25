@@ -46,7 +46,7 @@ jobs:
         run: |
           npm init -y > /dev/null
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
-          npx cap init "3D Driving" com.azarr.driving3d --web-dir www
+          npx cap init "UAE Driving" com.azarr.driving3d --web-dir www
           npx cap add android
           # Play in landscape
           sed -i 's/<activity/<activity android:screenOrientation="sensorLandscape"/' android/app/src/main/AndroidManifest.xml
@@ -57,12 +57,12 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
-          cp app/build/outputs/apk/debug/app-debug.apk ../3D-Driving.apk
+          cp app/build/outputs/apk/debug/app-debug.apk ../UAE-Driving.apk
 
       - uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: 3D-Driving.apk
+          path: UAE-Driving.apk
 
   exe:
     runs-on: windows-latest
@@ -80,12 +80,12 @@ jobs:
           cd desktop
           npm install
           npx electron-builder --win portable --publish never
-          cp dist/3D-Driving.exe ../3D-Driving.exe
+          cp dist/UAE-Driving.exe ../UAE-Driving.exe
 
       - uses: actions/upload-artifact@v4
         with:
           name: exe
-          path: 3D-Driving.exe
+          path: UAE-Driving.exe
 
   release:
     needs: [apk, exe]
@@ -100,11 +100,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
-          name: 3D Driving (build ${{ github.run_number }})
+          name: UAE Driving (build ${{ github.run_number }})
           body: |
-            - **Android:** download `3D-Driving.apk` and open it on your phone to install.
-            - **Windows:** download `3D-Driving.exe` and double-click it. No install needed. If Windows shows "Windows protected your PC", click **More info** then **Run anyway**.
+            - **Android:** download `UAE-Driving.apk` and open it on your phone to install.
+            - **Windows:** download `UAE-Driving.exe` and double-click it. No install needed. If Windows shows "Windows protected your PC", click **More info** then **Run anyway**.
           files: |
-            out/3D-Driving.apk
-            out/3D-Driving.exe
+            out/UAE-Driving.apk
+            out/UAE-Driving.exe
           make_latest: true

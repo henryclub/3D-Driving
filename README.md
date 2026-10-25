@@ -1,4 +1,4 @@
-# 3D Driving
+# UAE Driving
 
 A 3D open-world driving and action game that runs in the browser and on Android. Your home sits in the middle of an endless city. Step outside, take the Fortuner or the Koenigsegg Jesko from your driveway, call any car or bike with your phone, run missions for cash, or cause trouble and outrun the police.
 
@@ -6,8 +6,8 @@ Built with [Three.js](https://threejs.org/). The game is a single `index.html` p
 
 ## Download the game
 Every push to `main` builds fresh downloads automatically. Open the repo's **Releases** page and take the newest release:
-- **Android:** `3D-Driving.apk`. Open it on your phone to install. Android will ask you to allow installing from this source the first time.
-- **Windows PC:** `3D-Driving.exe`. Double-click it and the game opens in its own window, no install needed. Press `F11` for fullscreen. Because the file is not code-signed, Windows may show "Windows protected your PC": click **More info**, then **Run anyway**.
+- **Android:** `UAE-Driving.apk`. Open it on your phone to install. Android will ask you to allow installing from this source the first time.
+- **Windows PC:** `UAE-Driving.exe`. Double-click it and the game opens in its own window, no install needed. Press `F11` for fullscreen. Because the file is not code-signed, Windows may show "Windows protected your PC": click **More info**, then **Run anyway**.
 
 ## Features
 - **Main menu and pause menu.** The game opens on a main menu with a Play button. In game, the ☰ button (or `Esc`) pauses with Resume, Restart and Leave to main menu. Full instructions are in the phone's **Help** tab.
