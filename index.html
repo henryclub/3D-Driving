@@ -361,7 +361,17 @@
   .shop-row .sw { width: 14px; height: 14px; border-radius: 4px; flex: none; border: 1px solid rgba(255,255,255,0.25); }
   .shop-row button { border: 0; border-radius: 9px; padding: 6px 10px; font-weight: 800; font-size: 12px; background: var(--accent); color: #1b1606; cursor: pointer; white-space: nowrap; }
   .shop-row button:disabled { background: rgba(243,241,234,0.12); color: var(--muted); cursor: default; }
-  .tabs.six { grid-template-columns: repeat(6, 1fr); }
+  .tabs.six { display: flex; overflow-x: auto; }
+  .tabs.six button { flex: 1 0 auto; padding-left: 12px; padding-right: 12px; }
+  .search { width: 100%; box-sizing: border-box; background: rgba(243,241,234,0.08); border: 1px solid var(--line); color: var(--ink, #f3f1ea); border-radius: 10px; padding: 9px 11px; font-size: 14px; margin: 6px 0; }
+  .sub { margin: 10px 0 4px; font-size: 13px; }
+  .seatmap { display: flex; flex-direction: column; gap: 3px; max-height: 190px; overflow: auto; align-items: center; }
+  .srow { display: flex; gap: 3px; align-items: center; }
+  .srow b { width: 22px; font-size: 11px; color: var(--muted); }
+  .srow i { width: 16px; }
+  .srow button { width: 26px; height: 24px; border-radius: 6px; border: 0; font-weight: 800; font-size: 11px; background: rgba(243,241,234,0.16); color: inherit; cursor: pointer; }
+  .srow button.x { background: #55303a; color: #8a6a70; cursor: not-allowed; }
+  .srow button.on { background: #1ee06a; color: #06210f; }
   .tabs.six button { font-size: 10.5px; }
 </style>
 </head>
@@ -401,6 +411,7 @@
     <div class="map-legend"><span><i class="dot" style="background:#ffc93c"></i><span id="homeDist">0 m</span></span><span id="tgtLegend" hidden><i class="dot" style="background:#3ccf7a"></i><span id="tgtDist">0 m</span></span></div>
     <div class="cash" id="cash">AED 0</div>
     <div class="chip timechip" id="timeChip"><span class="value" id="timeVal">07:30</span><span class="label" id="timeNext">Next: Zuhr 12:15</span></div>
+    <div class="chip small stay timechip" id="flightChip" hidden><span class="label" id="flightLabel">Flight</span><span class="value" id="flightVal"></span></div>
     <div class="chip small stay timechip" id="stayChip" hidden><span class="label" id="stayLabel">Room</span><span class="value" id="stayVal"></span></div>
   </div>
 </div>
@@ -484,6 +495,15 @@
       <h2>Phone Store</h2>
       <p>Buy a new phone. Better phones get your vehicle to you faster.</p>
       <div class="scroll" id="storeList"></div>
+    </div>
+
+    <div class="pane" id="pane-travel" hidden>
+      <h2>Travel</h2>
+      <p>Search a city, pick a flight, class and seat. Go to the airport before it leaves.</p>
+      <input id="destSearch" class="search" type="text" placeholder="Search a city or country" autocomplete="off">
+      <div class="scroll" id="destList"></div>
+      <h3 class="sub">My tickets</h3>
+      <div class="scroll" id="ticketList"></div>
     </div>
 
     <div class="pane" id="pane-home" hidden>
@@ -607,6 +627,7 @@
       <button data-tab="garage">Garage</button>
       <button data-tab="missions">Missions</button>
       <button data-tab="store">Store</button>
+      <button data-tab="travel">Travel</button>
       <button data-tab="help">Help</button>
       <button data-tab="home">Settings</button>
     </nav>
@@ -796,7 +817,7 @@
   // under the Dubai Metro, Downtown with the Burj Khalifa lies to the south-east, the Burj Al Arab stands on its own island off the beach,
   // old Dubai and the Creek are to the east, the Marina to the west and the desert beyond.
   const INT = { active: null, frozen: false, camFn: null, hotelName: '', mosqueName: '' };
-  const SEA_EDGE = -520;
+  let SEA_EDGE = -520;
   const SEA_OK = []; // places over the water you may drive or walk: oriented rectangles (centre, half width, half depth, turn about y)
   const addSeaOk = (x, z, hw, hd, a = 0) => SEA_OK.push({ x, z, hw, hd, a, c: Math.cos(a), s: Math.sin(a) });
   addSeaOk(-160, -590.5, 7, 90.5);   // causeway to the Burj Al Arab island
@@ -819,6 +840,7 @@
   const inSea = (x, z) => z < SEA_EDGE + 1;
 
   function zoneOf(cx, cz) {
+    if (WORLD.id !== 'dubai') return 'wcity';
     const ax = Math.abs(cx);
     if (cz <= -7) return 'sea';
     if (cz === -6) return 'beach';
@@ -832,6 +854,7 @@
     return 'suburb';
   }
   const districtAt = (x, z) => {
+    if (WORLD.id !== 'dubai') return worldDistrict(x, z);
     const cx = Math.round(x / CH), cz = Math.round(z / CH);
     if (z < SEA_EDGE) return Math.hypot(x - BAA.x, z - BAA.z) < 90 ? 'Burj Al Arab Island' : 'Arabian Gulf';
     if (Math.hypot(x - BK.x, z - BK.z) < 110) return 'Downtown Dubai';
@@ -965,6 +988,13 @@
   const key = (cx, cz) => cx + ',' + cz;
 
   function addTree(g, cols, ox, oz, x, z) {
+    if (WORLD.id !== 'dubai' && !WORLD_DEFS[WORLD.id].palms) {
+      const hh = 3.4 + Math.abs(Math.sin(x * 12.9 + z * 78.2)) * 1.6;
+      put(g, new THREE.CylinderGeometry(0.2, 0.3, hh, 6), MAT.trunk, x, hh / 2, z).receiveShadow = false;
+      const lf = put(g, new THREE.IcosahedronGeometry(2.2, 0), LEAF, x, hh + 1.4, z); lf.scale.y = 1.15;
+      cols.push({ minX: ox + x - 0.35, maxX: ox + x + 0.35, minZ: oz + z - 0.35, maxZ: oz + z + 0.35, h: hh + 3 });
+      return;
+    }
     const h = 5.4 + Math.abs(Math.sin(x * 12.9 + z * 78.2)) * 2.6;
     const t = put(g, new THREE.CylinderGeometry(0.16, 0.27, h, 6), MAT.trunk, x, h / 2, z);
     t.receiveShadow = false;
@@ -1085,6 +1115,7 @@
   function chunkLayout(cx, cz) {
     const k = key(cx, cz);
     if (layoutCache.has(k)) return layoutCache.get(k);
+    if (WORLD.id !== 'dubai') { const wl = worldLayoutLots(cx, cz); layoutCache.set(k, wl); return wl; }
     const zone = zoneOf(cx, cz);
     const rnd = mulberry(((cx * 73856093) ^ (cz * 19349663)) + 7);
     const lots = [];
@@ -1184,8 +1215,8 @@
       if (lot.cols) list.push(...lot.cols);
       for (const c of list) out.push({ minX: ox + c.x - c.w / 2, maxX: ox + c.x + c.w / 2, minZ: oz + c.z - c.d / 2, maxZ: oz + c.z + c.d / 2, h: c.h });
     }
-    for (const c of PALM_COLS) if (Math.round((c.minX + c.maxX) / 2 / CH) === cx && Math.round((c.minZ + c.maxZ) / 2 / CH) === cz) out.push(c);
-    if (cx === BAA_C.cx && cz === BAA_C.cz) out.push({ minX: BAA.x - 24, maxX: BAA.x + 24, minZ: BAA.z - 18, maxZ: BAA.z + 19.5, h: 285 });
+    if (WORLD.id === 'dubai') for (const c of PALM_COLS) if (Math.round((c.minX + c.maxX) / 2 / CH) === cx && Math.round((c.minZ + c.maxZ) / 2 / CH) === cz) out.push(c);
+    if (WORLD.id === 'dubai' && cx === BAA_C.cx && cz === BAA_C.cz) out.push({ minX: BAA.x - 24, maxX: BAA.x + 24, minZ: BAA.z - 18, maxZ: BAA.z + 19.5, h: 285 });
     return out;
   }
   const BAA_C = { cx: -2, cz: -9 };
@@ -1196,7 +1227,7 @@
     const { x, z, w, d, h } = b;
     switch (b.shape) {
       case 'box': {
-        const m = b.sand ? SAND_MATS[b.mi % SAND_MATS.length] : BUILD_MATS[b.mi % BUILD_MATS.length];
+        const m = b.sand ? SAND_MATS[b.mi % SAND_MATS.length] : palOf(b)[b.mi % 9];
         facade(g, w, h, d, m, x, 0, z);
         if (b.top) box(w * 0.4, 3, d * 0.4, MAT.concrete, x, h + 1.5, z, g);
         break;
@@ -1209,7 +1240,7 @@
         break;
       }
       case 'stepped': {
-        const m = b.resort ? BUILD_MATS[b.mi % BUILD_MATS.length] : TOWER_MATS[b.mi % TOWER_MATS.length];
+        const m = b.resort ? palOf(b)[b.mi % 9] : TOWER_MATS[b.mi % TOWER_MATS.length];
         let y0 = 0;
         TIERS.forEach(([k, f]) => { const top = h * f; facade(g, w * k, top - y0, d * k, m, x, y0, z); y0 = top; });
         if (b.resort) { box(w * 1.02, 1.0, d * 1.02, MAT.blue, x, h * 0.46 + 0.5, z, g); put(g, new THREE.CylinderGeometry(0.2, 0.3, 14, 5), SILVER, x, h + 7, z); }
@@ -1247,7 +1278,7 @@
         break;
       }
       case 'villa': {
-        const m = BUILD_MATS[b.mi % BUILD_MATS.length];
+        const m = palOf(b)[b.mi % 9];
         const fl = b.floors || 1, hh = 3.4 * fl;
         facade(g, w, hh, d, m, x, 0, z);
         box(w + 0.8, 0.35, d + 0.8, MAT.white, x, hh + 0.17, z, g);
@@ -1263,7 +1294,7 @@
         break;
       }
       case 'restaurant': {
-        const m = BUILD_MATS[b.mi % BUILD_MATS.length], nz = b.door.nz;
+        const m = palOf(b)[b.mi % 9], nz = b.door.nz;
         facade(g, w, h, d, m, x, 0, z);
         box(w + 0.6, 0.35, d + 0.6, MAT.white, x, h + 0.17, z, g);
         box(w * 0.82, 2.4, 0.15, GLASS, x, 1.5, z + nz * (d / 2 + 0.1), g);
@@ -1271,8 +1302,17 @@
         box(w * 0.5, 0.9, w * 0.5, MAT.concrete, x, h + 0.8, z, g);
         break;
       }
+      case 'lm': { LMK[b.lmk](g, b); break; }
+      case 'terminal': {
+        const nz = b.door.nz;
+        facade(g, w, h, d, palOf(b)[b.mi % 9], x, 0, z);
+        put(g, slantGeo(w + 2, 4, d + 2), mat(0x9aa4ae), x, h + 2, z);
+        box(w * 0.86, 4.4, 0.2, GLASS, x, 2.6, z + nz * (d / 2 + 0.12), g);
+        put(g, new THREE.CylinderGeometry(0.5, 0.5, 16, 8), SILVER, x - w * 0.4, h + 8, z); put(g, new THREE.SphereGeometry(1.6, 8, 6), mat(0xe8e8f0), x - w * 0.4, h + 17, z);
+        break;
+      }
       case 'house': {
-        const m = b.sand ? SAND_MATS[b.mi % SAND_MATS.length] : BUILD_MATS[b.mi % BUILD_MATS.length];
+        const m = b.sand ? SAND_MATS[b.mi % SAND_MATS.length] : palOf(b)[b.mi % 9];
         facade(g, w, h, d, m, x, 0, z);
         box(w + 0.5, 0.4, d + 0.5, b.sand ? MAT.sand : MAT.white, x, h + 0.2, z, g);
         if (b.wind) { box(2.8, 4.8, 2.8, mat(0xcaa874), x + w * 0.22, h + 2.8, z + d * 0.22, g); box(1.8, 3.0, 0.15, MAT.dark, x + w * 0.22, h + 3.6, z + d * 0.22 + 1.45, g); box(1.8, 3.0, 0.15, MAT.dark, x + w * 0.22, h + 3.6, z + d * 0.22 - 1.45, g); }
@@ -1475,7 +1515,7 @@
       }
       if (lot.cols) for (const c of lot.cols) cols.push({ minX: ox + c.x - c.w / 2, maxX: ox + c.x + c.w / 2, minZ: oz + c.z - c.d / 2, maxZ: oz + c.z + c.d / 2, h: c.h });
     }
-    if (cz === 0 && Math.abs(cx) <= 13) buildMetro(g, cols, ox, oz, cx);
+    if (WORLD.id === 'dubai' && cz === 0 && Math.abs(cx) <= 13) buildMetro(g, cols, ox, oz, cx);
     if (zone === 'beach') {
       plane(g, CH, 5, FOAM, 0, 0.03, -37.4);
     }
@@ -1515,7 +1555,7 @@
   }
 
   // ================= Dubai: landmarks that are always in view =================
-  const dubai = { trains: [], jets: [], sail: null, beacon: null, bkBeacon: null, wheel: null };
+  const dubai = { trains: [], jets: [], sail: null, beacon: null, bkBeacon: null, wheel: null, roots: [] };
   function buildBurjKhalifa(parent) {
     const g = new THREE.Group(); g.position.set(BK.x, 0, BK.z); parent.add(g);
     const glass = glassMat(0xc4d9ea); NIGHT_MATS.push(glass);
@@ -1638,6 +1678,7 @@
     put(g, new THREE.BoxGeometry(24, 8, 18), GLASS, AX, 72, AZ);
     sign(g, 22, 3, labelMat('ATLANTIS THE PALM', '#f6e7c6', '#6a2f4a', 640, 88, 36), AX, 4, AZ + 40.2, 0);
     mergeStatic(g);
+    return g;
   }
   function easeStop(f) { if (f < 0.375) return 0; const x = (f - 0.375) / 0.625; return x * x * (3 - 2 * x); }
   function initDubai() {
@@ -1647,25 +1688,27 @@
     const land = new THREE.Mesh(new THREE.PlaneGeometry(12000, 6480).rotateX(-Math.PI / 2), MAT.sand);
     land.position.set(0, -0.32, SEA_EDGE + 3240); scene.add(land);
     const lm = new THREE.Group(); scene.add(lm);
-    buildBurjKhalifa(lm); buildBurjAlArab(lm); buildFountain(lm); buildPalm(scene); buildAinDubai(lm);
+    dubai.roots.push(sea, land, lm);
+    buildBurjKhalifa(lm); buildBurjAlArab(lm); buildFountain(lm); dubai.roots.push(buildPalm(scene)); buildAinDubai(lm); dubai.roots.push(buildAirportIsland(scene));
     // Dubai Metro: three trains each way along Sheikh Zayed Road
     for (let i = 0; i < 6; i++) {
       const dir = i < 3 ? 1 : -1;
       const t = makeTrain(dir); t.userData.phase = (i % 3) * 4.33 + (dir < 0 ? 2 : 0);
       t.position.y = DECK_Y + 0.2; t.rotation.y = dir > 0 ? 0 : Math.PI;
-      scene.add(t); dubai.trains.push(t);
+      scene.add(t); dubai.trains.push(t); dubai.roots.push(t);
     }
   }
   const SEG_T = 16;
   function updateDubai(dt, now) {
     const t = now / 1000;
+    updateAirport(dt);
     WAVE.offset.set((t * 0.004) % 1, (t * 0.0025) % 1);
     for (const tr of dubai.trains) {
       const u = (((t / SEG_T + tr.userData.phase) % 13) + 13) % 13, n = Math.floor(u), f = u - n;
       const x = -1040 + 160 * (n + easeStop(f));
       const dir = tr.userData.dir;
       tr.position.x = x * dir; tr.position.z = dir > 0 ? 2.1 : -2.1;
-      tr.visible = chunks.has(key(Math.round(tr.position.x / CH), 0));
+      tr.visible = WORLD.id === 'dubai' && chunks.has(key(Math.round(tr.position.x / CH), 0));
     }
     for (const j of dubai.jets) { const h = j.userData.h0 * (0.55 + 0.45 * Math.sin(t * 2.1 + j.userData.ph)); j.scale.y = h; j.position.y = h / 2 + 0.2; }
     if (dubai.wheel) { dubai.wheel.ring.rotation.z += dt * 0.025; for (const c of dubai.wheel.caps) c.rotation.z = -dubai.wheel.ring.rotation.z; }
@@ -2414,9 +2457,7 @@
   const PED_N = isTouch ? 12 : 22;
   function spawnPed(x, z) {
     const hum = makeHuman(pick(SHIRTS), pick(PANTS), pick(SKINS), false);
-    const rr = Math.random();
-    if (rr < 0.3) dressHuman(hum, pick([{ robe: 0xf5f3ec, head: 'ghutra' }, { robe: 0xf5f3ec, head: 'ghutra' }, { robe: 0xd8d2c2, head: 'ghutra' }, { robe: 0x8d9096, head: 'ghutra' }]));
-    else if (rr < 0.42) dressHuman(hum, { robe: 0x121212, head: 'hijab' });
+    localDress(hum);
     const p = { hum, x, z, h: 0, dir: { x: 0, z: 1 }, speed: rand(1.2, 1.8), state: 'walk', hp: 40, t: 0, phase: Math.random() * 6, deadT: 0, from: null, blood: null };
     scene.add(hum.g);
     peds.push(p);
@@ -3161,9 +3202,10 @@
   let dial = '', calling = false;
   function setTab(name) {
     for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('on', b.dataset.tab === name);
-    for (const p of ['dialer', 'garage', 'missions', 'store', 'help', 'home']) $('pane-' + p).hidden = p !== name;
+    for (const p of ['dialer', 'garage', 'missions', 'store', 'travel', 'help', 'home']) $('pane-' + p).hidden = p !== name;
     if (name === 'missions') renderMissions();
     if (name === 'store') renderStore();
+    if (name === 'travel') renderTravel();
     if (name === 'home') renderHome();
   }
   document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));
@@ -3230,6 +3272,7 @@
   }
   $('goHome').addEventListener('click', () => {
     if (stars > 0) { toast('You cannot go home while wanted.', 'fail'); return; }
+    if (WORLD.id !== 'dubai') { toast('You are abroad. Book a flight home on your phone (Travel tab).', 'fail', 3500); return; }
     if (mode === 'drive') { const v = current; v.x = -15; v.z = -21; v.h = -Math.PI / 2; v.speed = 0; }
     else { P.x = HOME_SPAWN.x; P.z = HOME_SPAWN.z; P.h = HOME_SPAWN.h; }
     snapCam = true; togglePhone(false); toast('Welcome home!');
@@ -3765,7 +3808,7 @@
     for (let i = x0; i <= x1; i++) { g.moveTo(i * CH, Math.max(F.z - 170, i === -2 ? -690 : i === 3 ? -1130 : SEA_EDGE)); g.lineTo(i * CH, F.z + 170); }
     for (let i = z0; i <= z1; i++) if (i * CH >= SEA_EDGE) { g.moveTo(F.x - 170, i * CH); g.lineTo(F.x + 170, i * CH); }
     g.stroke();
-    if (Math.abs(F.z) < 200) { g.strokeStyle = '#c62828'; g.lineWidth = 3; g.beginPath(); g.moveTo(Math.max(F.x - 170, -1040), 0); g.lineTo(Math.min(F.x + 170, 1040), 0); g.stroke(); }
+    if (WORLD.id === 'dubai' && Math.abs(F.z) < 200) { g.strokeStyle = '#c62828'; g.lineWidth = 3; g.beginPath(); g.moveTo(Math.max(F.x - 170, -1040), 0); g.lineTo(Math.min(F.x + 170, 1040), 0); g.stroke(); }
     g.fillStyle = '#74a957'; g.fillRect(-40, -40, 29, 29);
     g.restore();
     const f = fwd(F.h);
@@ -3784,7 +3827,7 @@
     for (const o of cops) if (!o.dead && !o.inCar) { const [mx, my] = toMap(o.x, o.z, 0); if (Math.hypot(mx - c, my - c) < c) { g.beginPath(); g.arc(mx, my, 4, 0, 7); g.fill(); } }
     const dotAt = (x, z, color, r) => { const [mx, my] = toMap(x, z, c - 14); g.fillStyle = '#12161f'; g.beginPath(); g.arc(mx, my, r + 3, 0, 7); g.fill(); g.fillStyle = color; g.beginPath(); g.arc(mx, my, r, 0, 7); g.fill(); };
     dotAt(HOME_SPAWN.x, HOME_SPAWN.z, '#ffc93c', 9);
-    dotAt(BK.x, BK.z, '#ffffff', 5); dotAt(BAA.x, BAA.z, '#9fe3ff', 5);
+    if (WORLD.id === 'dubai') { dotAt(BK.x, BK.z, '#ffffff', 5); dotAt(BAA.x, BAA.z, '#9fe3ff', 5); }
     const tp = targetPos();
     if (tp) dotAt(tp.x, tp.z, '#' + mission.steps[mission.i].color.toString(16).padStart(6, '0'), 9);
     g.fillStyle = '#ffffff'; g.strokeStyle = '#12161f'; g.lineWidth = 3;
@@ -3806,7 +3849,7 @@
     if (!INT.active) drawMap(F, now);
     updateLifeHud();
     const dist = Math.hypot(HOME_SPAWN.x - F.x, HOME_SPAWN.z - F.z);
-    $('homeDist').textContent = INT.active ? 'Indoors' : 'Home ' + fmtDist(dist);
+    $('homeDist').textContent = INT.active ? 'Indoors' : WORLD.id !== 'dubai' ? wdef().city : 'Home ' + fmtDist(dist);
     $('homeInfo').textContent = 'Home is ' + fmtDist(dist) + ' away.';
     $('cash').textContent = money(save.cash);
     // Health and wanted level
@@ -3921,7 +3964,7 @@
     save.night = f < 0.45;
   }
   function setNight(on) {
-    GC.min = on ? 21 * 60 : 8 * 60;
+    { const target = on ? 21 * 60 : 8 * 60; advanceClock(wrapDay(target - GC.min)); }
     applyLight(true);
     if (!phoneOpen && started) toast(on ? 'Night falls over the city.' : 'Good morning!');
     renderHome();
@@ -3950,6 +3993,7 @@
   const EW_NAMES = { '-6': 'Jumeirah Beach Rd', '-5': 'Al Hadiqa St', '-4': 'Al Wasl Rd', '-3': 'Umm Suqeim St', '-2': 'Al Safa St', '-1': 'Al Satwa Rd', '0': 'Sheikh Zayed Rd', '1': 'Trade Centre Rd', '2': 'Al Saada St', '3': 'Financial Centre Rd', '4': 'Al Asayel St', '5': 'Marsa Dubai Rd', '6': 'Al Khail Rd', '7': 'Umm Al Sheif Rd' };
   const NS_NAMES = ['Mohammed Bin Rashid Blvd', 'Al Mustaqbal St', 'Al Sufouh Rd', 'Emirates Rd', 'Al Quoz St', 'Oud Metha Rd', 'Za\'abeel Rd', 'Al Karama St', 'Baniyas Rd'];
   function streetAt(x, z) {
+    if (WORLD.id !== 'dubai') return worldStreet(x, z);
     const row = Math.round(z / CH), col = Math.round(x / CH);
     const dz = Math.abs(z - row * CH), dx = Math.abs(x - col * CH);
     if (dz <= dx) return EW_NAMES[String(row)] || (row > 7 ? 'Desert Highway ' + row : 'Street ' + row);
@@ -4080,6 +4124,7 @@
     if (food < 22 && hungerWarn <= 0 && !phoneOpen) { toast('You are hungry. Eat at a restaurant or the Dubai Mall food court.', 'fail', 3600); hungerWarn = 90; }
     hungerWarn -= dt;
     if (stay.on && GC.total >= stay.endTotal) endStay();
+    tickTravel(dt);
     mosqueTimer -= dt;
     if (mosqueTimer <= 0) { mosqueTimer = 1.2; findMosque(); if (INT.active && INT.active.refreshJamaat && !pray.on) INT.active.refreshJamaat(); }
     if (food <= 0 && wastedT < 0) { hp -= dt * 0.6; if (hp <= 0) { hp = 0; die(); } }
@@ -4097,6 +4142,7 @@
     $('xpBar').style.transform = 'scaleX(' + clamp((save.xp - lo) / (hi - lo), 0, 1).toFixed(3) + ')';
     $('foodBar').style.transform = 'scaleX(' + (food / 100).toFixed(3) + ')';
     $('foodBar').classList.toggle('low', food < 20);
+    updateTravelHud();
     $('stayChip').hidden = !stay.on;
     if (stay.on) { $('stayLabel').textContent = stay.hotel + ' · room ' + stay.roomNo; $('stayVal').textContent = fmtLeft(leftMins()) + ' left'; }
     $('foodText').textContent = food <= 0 ? 'STARVING' : 'FOOD ' + Math.ceil(food);
@@ -4223,7 +4269,8 @@
     return best;
   }
   function nearestDoor(x, z) {
-    if (Math.hypot(x - BAA.x, z - (BAA.z + 21.4)) < 4.6) return { kind: 'baa', name: 'Burj Al Arab Jumeirah' };
+    if (WORLD.id === 'dubai' && Math.hypot(x - AIR.door.x, z - (AIR.door.z + 1.5)) < 5) return { kind: 'airport', name: 'Dubai International Airport' };
+    if (WORLD.id === 'dubai' && Math.hypot(x - BAA.x, z - (BAA.z + 21.4)) < 4.6) return { kind: 'baa', name: 'Burj Al Arab Jumeirah' };
     const ccx = Math.round(x / CH), ccz = Math.round(z / CH);
     let best = null, bd = 3.8;
     for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
@@ -4260,13 +4307,14 @@
     else if (d.kind === 'restaurant') enterRestaurant(d);
     else if (d.kind === 'mall') enterMall();
     else if (d.kind === 'mosque') enterMosque(d.name);
+    else if (d.kind === 'airport') enterAirport();
   }
 
   // Walking into a hotel, restaurant, mall or masjid pauses the street: no traffic, no police, no mission clock
   function updateInterior(dt, now) {
     const it = INT.active;
-    iLight.intensity = 0.5; iLight.position.set(P.x, 7, P.z);
-    hemi.intensity = 0.72; sun.intensity = 0.1;
+    if (it.outdoor) { iLight.intensity = 0; applyLight(false); sun.position.set(P.x + 40, 80, P.z + 30); }
+    else { iLight.intensity = 0.5; iLight.position.set(P.x, 7, P.z); hemi.intensity = 0.72; sun.intensity = 0.1; }
     for (const f of it.upd) f(dt, now / 1000);
   }
   function forceExitInterior() {
@@ -5113,6 +5161,1007 @@
   function seaFixOk(x, z) { return !seaFix(x, z, 0.5); }
   // </LIFE>
 
+  // <TRAVEL>
+
+  // ================= The wider world: cities abroad you can fly to =================
+  // Dubai is the home world. Every other world re-uses the same road grid with its own colours, street names,
+  // buildings and landmarks. Switching world rebuilds the streets around you.
+  const WORLD = { id: 'dubai' };
+  const gcc = (id) => id === 'dubai' || id === 'riyadh';
+  const WORLD_DEFS = {
+    dubai: { id: 'dubai', city: 'Dubai', country: 'United Arab Emirates', code: 'DXB', airport: 'Dubai International Airport', lat: 25.2, lon: 55.4, flag: ['#00732f', '#ffffff', '#000000', '#ff0000'], local: 'gulf' },
+    mumbai: {
+      id: 'mumbai', city: 'Mumbai', country: 'India', code: 'BOM', airport: 'Chhatrapati Shivaji Maharaj Airport', lat: 19.1, lon: 72.9, flag: ['#ff9933', '#ffffff', '#138808'], local: 'india',
+      pave: 0xa8a090, grass: 0x5f9a3e, day: [0x6fb0e0, 0xe0d8c8], palms: true, mosque: 0.05, tall: 0.5,
+      palette: [0xe9b77a, 0xd98a6a, 0xf2e2b0, 0xc8d8c0, 0xe3a9a0, 0xb8c9d9, 0xf0c872, 0xd7d2c4, 0xc9a37a],
+      ew: ['Marine Drive', 'Linking Road', 'Colaba Causeway', 'Hill Road', 'SV Road', 'Western Express Hwy', 'Dr Ambedkar Rd'], ns: ['MG Road', 'Nehru Road', 'Juhu Tara Rd', 'Lokhandwala Rd', 'Peddar Road'],
+      districts: ['Colaba', 'Bandra', 'Juhu', 'Andheri', 'Worli', 'Dadar', 'Powai'], hotels: ['Taj Seaview Hotel', 'Marine Plaza', 'Juhu Beach Resort', 'Gateway Grand'], cuisines: ['indian', 'indian', 'cafe', 'burger'],
+      lm: [[0, 0, 1, -1, 'gateway'], [0, 0, -1, 1, 'rickshaw']],
+    },
+    delhi: {
+      id: 'delhi', city: 'Delhi and Agra', country: 'India', code: 'DEL', airport: 'Indira Gandhi International Airport', lat: 28.6, lon: 77.1, flag: ['#ff9933', '#ffffff', '#138808'], local: 'india',
+      pave: 0xb0a690, grass: 0x6aa044, day: [0x74b2e0, 0xe6dcc6], palms: true, mosque: 0.08, tall: 0.3,
+      palette: [0xe8d9b4, 0xd9b98f, 0xf0e4c8, 0xc99a74, 0xe3cfa0, 0xd6c8b0, 0xbfa77d, 0xf2ead2, 0xd8a070],
+      ew: ['Rajpath', 'Janpath', 'Connaught Place', 'Chandni Chowk', 'Ring Road', 'Aurangzeb Road', 'Lodhi Road'], ns: ['Barakhamba Rd', 'Akbar Road', 'Mathura Road', 'Sardar Patel Marg', 'Shanti Path'],
+      districts: ['Connaught Place', 'Lutyens Delhi', 'Chandni Chowk', 'Hauz Khas', 'Agra'], hotels: ['Imperial Palace Hotel', 'Lotus Grand', 'Red Fort Inn', 'Taj Gardens'], cuisines: ['indian', 'indian', 'dessert', 'cafe'],
+      lm: [[0, 0, 1, -1, 'indiagate'], [0, 0, -1, 1, 'taj'], [1, 0, -1, -1, 'qutub']],
+    },
+    lahore: {
+      id: 'lahore', city: 'Lahore', country: 'Pakistan', code: 'LHE', airport: 'Allama Iqbal International Airport', lat: 31.5, lon: 74.4, flag: ['#01411c', '#ffffff'], local: 'pk',
+      pave: 0xa89e88, grass: 0x58943a, day: [0x76b4e0, 0xe4d8c0], palms: true, mosque: 0.14, tall: 0.15,
+      palette: [0xb5553a, 0xc9704a, 0xe0c9a0, 0xd8b88a, 0xa84a30, 0xe8dcc0, 0xc58a5a, 0xd9c8a8, 0xb8603f],
+      ew: ['The Mall', 'Canal Road', 'Jail Road', 'Mall Road', 'Ferozepur Rd', 'Lawrence Road', 'Gulberg Main Blvd'], ns: ['Ichhra Bazaar', 'Shahrah-e-Quaid-e-Azam', 'Walled City Rd', 'Liberty Chowk'],
+      districts: ['Walled City', 'Gulberg', 'Model Town', 'Anarkali', 'Iqbal Park'], hotels: ['Pearl Continental Lahore', 'Badshahi View Hotel', 'Shalimar Inn', 'Gulberg Suites'], cuisines: ['indian', 'arabic', 'dessert', 'cafe'],
+      lm: [[0, 0, 1, -1, 'minar'], [0, 0, -1, 1, 'badshahi']],
+    },
+    london: {
+      id: 'london', city: 'London', country: 'United Kingdom', code: 'LHR', airport: 'Heathrow Airport', lat: 51.5, lon: -0.5, flag: ['#012169', '#ffffff', '#c8102e'], local: 'west',
+      pave: 0x8c8c90, grass: 0x4f8a3a, day: [0x8fb4d8, 0xcfd3d8], palms: false, mosque: 0.03, tall: 0.18,
+      palette: [0xa4553b, 0x8d4a35, 0xb86a4a, 0xc9c0b0, 0x7d6a5a, 0xd8cfc0, 0x9a5a40, 0xb0a290, 0x866050],
+      ew: ['Strand', 'Oxford Street', 'Regent Street', 'Fleet Street', 'Baker Street', 'Piccadilly', 'Whitehall'], ns: ['Park Lane', 'Kings Road', 'Westminster Bridge Rd', 'Tower Bridge Rd', 'Embankment'],
+      districts: ['Westminster', 'Southwark', 'Kensington', 'Soho', 'The City'], hotels: ['The Westminster Hotel', 'Thames View Hotel', 'Kensington Suites', 'Mayfair Grand'], cuisines: ['burger', 'cafe', 'pizza', 'indian'],
+      lm: [[0, 0, 1, -1, 'bigben'], [0, 0, -1, 1, 'towerbridge'], [1, 0, -1, -1, 'londoneye']],
+    },
+    newyork: {
+      id: 'newyork', city: 'New York', country: 'United States', code: 'JFK', airport: 'John F. Kennedy Airport', lat: 40.6, lon: -73.8, flag: ['#b22234', '#ffffff', '#3c3b6e'], local: 'west',
+      pave: 0x7f7f84, grass: 0x4f8a3a, day: [0x7fb0e6, 0xd2d8de], palms: false, mosque: 0.02, tall: 0.6,
+      palette: [0x9a5a45, 0xb0705a, 0xc4b8a8, 0x6b6b72, 0xd0c8b8, 0x8a6a58, 0xa8a8ae, 0xc07a5a, 0x7a7a82],
+      ew: ['42nd Street', 'Broadway', '5th Avenue', 'Wall Street', 'Canal Street', '34th Street', 'Houston Street'], ns: ['Park Avenue', '7th Avenue', 'Madison Avenue', '8th Avenue', 'Lexington Ave'],
+      districts: ['Manhattan', 'Midtown', 'Lower Manhattan', 'Chelsea', 'Battery Park'], hotels: ['Times Square Hotel', 'Central Park Suites', 'Empire Grand Hotel', 'Hudson Inn'], cuisines: ['burger', 'pizza', 'cafe', 'dessert'],
+      lm: [[0, 0, 1, -1, 'liberty'], [0, 0, -1, 1, 'empire']],
+    },
+    paris: {
+      id: 'paris', city: 'Paris', country: 'France', code: 'CDG', airport: 'Charles de Gaulle Airport', lat: 49, lon: 2.5, flag: ['#0055a4', '#ffffff', '#ef4135'], local: 'west',
+      pave: 0xa8a49a, grass: 0x58903e, day: [0x86b4dc, 0xdcd8d0], palms: false, mosque: 0.02, tall: 0.1,
+      palette: [0xe8dcc0, 0xdccfb0, 0xefe6d0, 0xd2c4a8, 0xe0d4bc, 0xc9bda4, 0xf2ebd8, 0xd8ccb4, 0xcfc2aa],
+      ew: ['Champs-Elysees', 'Rue de Rivoli', 'Boulevard Haussmann', 'Rue de la Paix', 'Quai de Seine', 'Avenue Foch'], ns: ['Boulevard Saint-Germain', 'Avenue Montaigne', 'Rue Cler', 'Rue Saint-Honore'],
+      districts: ['Champs-Elysees', 'Le Marais', 'Montmartre', 'Latin Quarter', 'Trocadero'], hotels: ['Hotel Parisien', 'Eiffel Palace', 'Seine Grand Hotel', 'Le Marais Suites'], cuisines: ['cafe', 'dessert', 'seafood', 'pizza'],
+      lm: [[0, 0, 1, -1, 'eiffel'], [0, 0, -1, 1, 'arc']],
+    },
+    tokyo: {
+      id: 'tokyo', city: 'Tokyo', country: 'Japan', code: 'HND', airport: 'Haneda Airport', lat: 35.5, lon: 139.8, flag: ['#ffffff', '#bc002d'], local: 'east',
+      pave: 0x7c7c82, grass: 0x58903e, day: [0x7fb2e0, 0xd8dce0], palms: false, mosque: 0.01, tall: 0.5,
+      palette: [0xd8d8dc, 0xc4c8d0, 0xe6e2da, 0xb8bcc8, 0xd0d4dc, 0xe0d8d0, 0xa8acb8, 0xcfd2d8, 0xdcd6cc],
+      ew: ['Chuo Dori', 'Omotesando', 'Meiji Dori', 'Yasukuni Dori', 'Harumi Dori', 'Aoyama Dori'], ns: ['Shibuya Crossing Rd', 'Sotobori Dori', 'Roppongi Dori', 'Ginza Chuo Dori'],
+      districts: ['Shibuya', 'Shinjuku', 'Ginza', 'Roppongi', 'Asakusa'], hotels: ['Shinjuku Sky Hotel', 'Ginza Grand', 'Sakura Inn Tokyo', 'Shibuya Capsule Hotel'], cuisines: ['sushi', 'sushi', 'cafe', 'burger'],
+      lm: [[0, 0, 1, -1, 'tokyotower'], [0, 0, -1, 1, 'torii']],
+    },
+    cairo: {
+      id: 'cairo', city: 'Cairo and Giza', country: 'Egypt', code: 'CAI', airport: 'Cairo International Airport', lat: 30.1, lon: 31.4, flag: ['#ce1126', '#ffffff', '#000000'], local: 'gulf',
+      pave: 0xb0a284, grass: 0x6a9a44, day: [0x80b6e0, 0xe8dcc0], palms: true, mosque: 0.14, tall: 0.1,
+      palette: [0xd8c298, 0xcfb488, 0xe2d0a8, 0xc4a878, 0xe8d8b4, 0xbf9c70, 0xd6c49c, 0xcaae80, 0xdcc89c],
+      ew: ['Tahrir Street', 'Corniche El Nil', 'Pyramids Road', 'Salah Salem St', 'Talaat Harb St', 'Ramses Street'], ns: ['26th July Street', 'Qasr El Nil', 'Mohamed Mahmoud St', 'El Moez Street'],
+      districts: ['Giza', 'Downtown Cairo', 'Zamalek', 'Islamic Cairo', 'Heliopolis'], hotels: ['Nile View Hotel', 'Pyramids Oasis Resort', 'Cairo Grand', 'Zamalek Palace'], cuisines: ['arabic', 'arabic', 'dessert', 'cafe'],
+      lm: [[0, 0, 1, -1, 'pyramids'], [0, 0, -1, 1, 'pyramids'], [1, 0, -1, -1, 'sphinx']],
+    },
+    istanbul: {
+      id: 'istanbul', city: 'Istanbul', country: 'Turkey', code: 'IST', airport: 'Istanbul Airport', lat: 41.3, lon: 28.7, flag: ['#e30a17', '#ffffff'], local: 'gulf',
+      pave: 0x9a968c, grass: 0x58903e, day: [0x7eb4e0, 0xdad6cc], palms: false, mosque: 0.14, tall: 0.15,
+      palette: [0xd8b8a0, 0xcf9d82, 0xe4d2b4, 0xb8c4cc, 0xd2a28a, 0xe8dcc4, 0xc48a6e, 0xd4c6b0, 0xbf8f78],
+      ew: ['Istiklal Avenue', 'Divan Yolu', 'Galata Bridge Rd', 'Barbaros Blvd', 'Ataturk Blvd', 'Bagdat Avenue'], ns: ['Taksim Rd', 'Bosphorus Coast Rd', 'Grand Bazaar Rd', 'Galip Dede St'],
+      districts: ['Sultanahmet', 'Taksim', 'Galata', 'Besiktas', 'Kadikoy'], hotels: ['Bosphorus Palace Hotel', 'Sultanahmet Inn', 'Galata Tower Hotel', 'Golden Horn Resort'], cuisines: ['arabic', 'dessert', 'cafe', 'seafood'],
+      lm: [[0, 0, 1, -1, 'hagia'], [0, 0, -1, 1, 'galata']],
+    },
+    singapore: {
+      id: 'singapore', city: 'Singapore', country: 'Singapore', code: 'SIN', airport: 'Changi Airport', lat: 1.4, lon: 104, flag: ['#ed2939', '#ffffff'], local: 'east',
+      pave: 0x888a8c, grass: 0x3f8a3a, day: [0x78b8e8, 0xd8e0e0], palms: true, mosque: 0.04, tall: 0.55,
+      palette: [0xe8e4dc, 0xd2dcd8, 0xc8d4dc, 0xe0d8c8, 0xb8cabc, 0xdcd4c4, 0xc4d0c8, 0xd8dcd0, 0xcfd8d4],
+      ew: ['Orchard Road', 'Marina Boulevard', 'Raffles Avenue', 'Shenton Way', 'Bras Basah Road', 'Beach Road'], ns: ['Collyer Quay', 'Bayfront Avenue', 'Sentosa Gateway', 'Victoria Street'],
+      districts: ['Marina Bay', 'Orchard', 'Chinatown', 'Sentosa', 'Clarke Quay'], hotels: ['Marina Bay Sky Hotel', 'Orchard Grand', 'Raffles Court', 'Sentosa Resort'], cuisines: ['sushi', 'indian', 'cafe', 'seafood'],
+      lm: [[0, 0, 1, -1, 'mbs'], [0, 0, -1, 1, 'supertrees']],
+    },
+    sydney: {
+      id: 'sydney', city: 'Sydney', country: 'Australia', code: 'SYD', airport: 'Kingsford Smith Airport', lat: -33.9, lon: 151.2, flag: ['#012169', '#ffffff', '#c8102e'], local: 'west',
+      pave: 0x8c8c84, grass: 0x58a03e, day: [0x72b6ea, 0xdce2e0], palms: true, mosque: 0.02, tall: 0.25,
+      palette: [0xd8c4a0, 0xc9b084, 0xe8dcc0, 0xb8a888, 0xd0c0a0, 0xe0d4b8, 0xc4b290, 0xd6c8a8, 0xbcaa86],
+      ew: ['George Street', 'Circular Quay', 'Macquarie Street', 'Pitt Street', 'Harbour Street', 'Bondi Road'], ns: ['Sydney Harbour Bridge Rd', 'Elizabeth Street', 'Oxford Street', 'Cahill Expressway'],
+      districts: ['Circular Quay', 'The Rocks', 'Darling Harbour', 'Bondi', 'Surry Hills'], hotels: ['Harbour View Hotel', 'Opera Grand Hotel', 'Bondi Beach Resort', 'The Rocks Inn'], cuisines: ['burger', 'seafood', 'cafe', 'pizza'],
+      lm: [[0, 0, 1, -1, 'opera'], [0, 0, -1, 1, 'harbourbridge']],
+    },
+    shanghai: {
+      id: 'shanghai', city: 'Shanghai', country: 'China', code: 'PVG', airport: 'Pudong International Airport', lat: 31.1, lon: 121.8, flag: ['#de2910', '#ffde00'], local: 'east',
+      pave: 0x82828a, grass: 0x58903e, day: [0x8cb2d6, 0xd2d6da], palms: false, mosque: 0.01, tall: 0.65,
+      palette: [0xcfd2d8, 0xb8bcc8, 0xe2dcd2, 0xa8aeb8, 0xd8d6d0, 0xc8ccd4, 0xbfc4cc, 0xdad4c8, 0xb4b8c0],
+      ew: ['The Bund', 'Nanjing Road', 'Huaihai Road', 'Yan An Road', 'Century Avenue', 'Zhongshan Road'], ns: ['Pudong Avenue', 'Lujiazui Ring Rd', 'Xizang Road', 'Fuxing Road'],
+      districts: ['Pudong', 'The Bund', 'Xintiandi', 'Jing An', 'Lujiazui'], hotels: ['Bund Grand Hotel', 'Pudong Sky Hotel', 'Nanjing Road Inn', 'Pearl Tower Suites'], cuisines: ['sushi', 'indian', 'cafe', 'burger'],
+      lm: [[0, 0, 1, -1, 'pearl'], [0, 0, -1, 1, 'jinmao']],
+    },
+    riyadh: {
+      id: 'riyadh', city: 'Riyadh', country: 'Saudi Arabia', code: 'RUH', airport: 'King Khalid International Airport', lat: 24.9, lon: 46.7, flag: ['#006c35', '#ffffff'], local: 'gulf',
+      pave: 0xa89c84, grass: 0x6a9a44, day: [0x7ab2e4, 0xe8dcc2], palms: true, mosque: 0.16, tall: 0.3,
+      palette: [0xe0cfa8, 0xd2bc90, 0xe8dcbc, 0xc9b088, 0xdcc89c, 0xe4d6b4, 0xc4a878, 0xd8c8a0, 0xcdb68c],
+      ew: ['King Fahd Road', 'Olaya Street', 'Tahlia Street', 'Prince Sultan Rd', 'Takhassusi Street', 'Northern Ring Road'], ns: ['Al Urubah Road', 'King Abdullah Road', 'Imam Saud Road', 'Thumama Road'],
+      districts: ['Olaya', 'Al Malaz', 'King Abdullah Financial District', 'Diriyah', 'Al Wurud'], hotels: ['Kingdom Grand Hotel', 'Olaya Palace', 'Riyadh Oasis Hotel', 'Diriyah Suites'], cuisines: ['arabic', 'arabic', 'dessert', 'cafe'],
+      lm: [[0, 0, 1, -1, 'kingdom'], [0, 0, -1, 1, 'faisaliyah']],
+    },
+  };
+  const WORLD_ORDER = ['dubai', 'mumbai', 'delhi', 'lahore', 'riyadh', 'cairo', 'istanbul', 'london', 'paris', 'newyork', 'tokyo', 'singapore', 'shanghai', 'sydney'];
+  const wdef = () => WORLD_DEFS[WORLD.id];
+  const PALS = {};
+  function palFor(id) {
+    if (!PALS[id]) {
+      PALS[id] = WORLD_DEFS[id].palette.map((c) => { const m = new THREE.MeshLambertMaterial({ color: c, map: winTex, emissive: 0xffffff, emissiveMap: litTex, emissiveIntensity: lightF < 0 ? 0 : 0.9 * (1 - lightF) }); NIGHT_MATS.push(m); return m; });
+    }
+    return PALS[id];
+  }
+  const palOf = (b) => (b.pal ? palFor(b.pal) : BUILD_MATS);
+
+  // ---- landmark models (each fits a 25 m lot) ----
+  function beam(g, ax, ay, az, bx, by, bz, t, m) {
+    const dx = bx - ax, dy = by - ay, dz = bz - az, len = Math.hypot(dx, dy, dz);
+    const mesh = own(new THREE.Mesh(new THREE.BoxGeometry(t, len, t), m));
+    mesh.position.set((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2);
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx, dy, dz).normalize());
+    mesh.castShadow = true; mesh.receiveShadow = true; g.add(mesh);
+    return mesh;
+  }
+  const STONE = () => mat(0xcdb98e), IRON = () => mat(0x4a4540), RED = () => mat(0xc8321e), WHITE = () => mat(0xf2efe6), SAND = () => mat(0xd6bb87), GOLDM = () => GOLD;
+  function lattice(g, x, z, sMat, h, base, steps) {
+    // a Paris/Tokyo style tower: four legs that narrow, cross bracing, platforms
+    const half = (y) => base * (1 - y / h) ** 1.6 + 0.35;
+    const ys = steps;
+    for (let i = 0; i < ys.length - 1; i++) {
+      const y0 = ys[i], y1 = ys[i + 1], a = half(y0), b = half(y1);
+      for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) beam(g, x + sx * a, y0, z + sz * a, x + sx * b, y1, z + sz * b, 0.9 + (1 - y0 / h) * 0.8, sMat);
+      for (const sg of [[-1, 1], [1, 1]]) { beam(g, x - a, y0, z + sg[0] * a, x + b, y1, z + sg[0] * b, 0.35, sMat); beam(g, x + sg[0] * a, y0, z - a, x + sg[0] * b, y1, z + b, 0.35, sMat); }
+      box(2 * b + 0.8, 0.8, 2 * b + 0.8, sMat, x, y1, z, g);
+    }
+  }
+  function dome(g, x, y, z, r, m, sy = 0.9) { const d = put(g, new THREE.SphereGeometry(r, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), m, x, y, z); d.scale.y = sy; return d; }
+  function minaret(g, x, z, h, m, capM) { put(g, new THREE.CylinderGeometry(0.8, 1.1, h, 10), m, x, h / 2, z); put(g, new THREE.CylinderGeometry(1.5, 1.5, 0.5, 10), m, x, h * 0.78, z); put(g, new THREE.ConeGeometry(1.0, 3.4, 10), capM || GOLD, x, h + 1.7, z); }
+  function clockFace(g, x, y, z, ry) { sign(g, 5.4, 5.4, labelMat('XII', '#222222', '#f4ecd0', 128, 128, 56), x, y, z, ry); }
+  const LMK = {
+    eiffel(g, b) { const m = mat(0x6b5a48); lattice(g, b.x, b.z, m, 300, 11, [0, 58, 116, 180, 250, 300]); put(g, new THREE.CylinderGeometry(0.15, 0.6, 24, 6), m, b.x, 312, b.z); },
+    tokyotower(g, b) { const r = mat(0xe8552a), w = mat(0xf6f2ea); lattice(g, b.x, b.z, r, 330, 10.5, [0, 60, 120, 200, 260, 330]); box(6, 1.2, 6, w, b.x, 120, b.z, g); put(g, new THREE.CylinderGeometry(0.2, 0.9, 40, 6), w, b.x, 345, b.z); },
+    bigben(g, b) {
+      const st = mat(0xcdb58a), gl = GOLD;
+      box(9, 52, 9, st, b.x - 5, 26, b.z, g); box(10.4, 6, 10.4, st, b.x - 5, 55, b.z, g); box(8, 14, 8, mat(0xb9a07a), b.x - 5, 63, b.z, g);
+      put(g, new THREE.ConeGeometry(6.2, 22, 4).rotateY(Math.PI / 4), mat(0x5a6a6a), b.x - 5, 81, b.z);
+      for (const [dx, dz, ry] of [[0, 4.6, 0], [0, -4.6, Math.PI], [4.6, 0, Math.PI / 2], [-4.6, 0, -Math.PI / 2]]) clockFace(g, b.x - 5 + dx, 50, b.z + dz, ry);
+      box(16, 14, 10, st, b.x + 6, 7, b.z + 4, g); box(14, 20, 6, st, b.x + 6, 10, b.z - 4, g);
+      for (let i = 0; i < 5; i++) box(1, 24, 1, gl, b.x - 7 + i * 2, 24, b.z + 4.8, g);
+    },
+    towerbridge(g, b) {
+      const st = mat(0x8a9aa8), bl = mat(0x2a6ab5);
+      for (const s of [-1, 1]) { box(7, 34, 7, st, b.x + s * 9.5, 17, b.z, g); put(g, new THREE.ConeGeometry(5, 8, 4).rotateY(Math.PI / 4), mat(0x3a4a5a), b.x + s * 9.5, 38, b.z); box(2, 8, 2, st, b.x + s * 9.5, 40, b.z, g); }
+      box(26, 1.4, 6, mat(0x9a9aa0), b.x, 12, b.z, g); box(26, 1.2, 6, bl, b.x, 31, b.z, g);
+      for (let i = -3; i <= 3; i++) { beam(g, b.x - 9.5, 31, b.z + 3.2, b.x + i * 2.2, 12.8, b.z + 3.2, 0.3, bl); beam(g, b.x + 9.5, 31, b.z - 3.2, b.x + i * 2.2, 12.8, b.z - 3.2, 0.3, bl); }
+      box(26, 0.3, 26, mat(0x2a6ab5), b.x, 0.12, b.z, g);
+    },
+    londoneye(g, b) {
+      const w = WHITE(); const ring = new THREE.Mesh(new THREE.TorusGeometry(30, 0.7, 6, 48), w); ring.position.set(b.x, 36, b.z); ring.castShadow = true; g.add(ring);
+      for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; beam(g, b.x, 36, b.z, b.x + Math.cos(a) * 30, 36 + Math.sin(a) * 30, b.z, 0.2, w); box(2.6, 2.2, 2.2, GLASS, b.x + Math.cos(a) * 31, 36 + Math.sin(a) * 31, b.z + 1.4, g); }
+      beam(g, b.x, 36, b.z - 2, b.x - 14, 0, b.z - 8, 1.6, w); beam(g, b.x, 36, b.z - 2, b.x + 14, 0, b.z - 8, 1.6, w);
+    },
+    liberty(g, b) {
+      const gr = mat(0x6fb39a), st = mat(0xc8c2b4);
+      box(14, 3, 14, st, b.x, 1.5, b.z, g); box(10, 10, 10, st, b.x, 8, b.z, g); box(8, 8, 8, st, b.x, 17, b.z, g);
+      put(g, new THREE.CylinderGeometry(2.2, 4.4, 20, 12), gr, b.x, 31, b.z); put(g, new THREE.SphereGeometry(2.2, 12, 8), gr, b.x, 42.6, b.z);
+      for (let i = 0; i < 7; i++) { const a = (i / 7 - 0.5) * 2.2; beam(g, b.x, 44, b.z, b.x + Math.sin(a) * 4.6, 44 + Math.cos(a) * 3.2, b.z, 0.5, gr); }
+      beam(g, b.x + 2, 38, b.z, b.x + 4.5, 52, b.z, 1.2, gr); put(g, new THREE.ConeGeometry(1.1, 3.4, 8), GOLD, b.x + 4.6, 54.6, b.z);
+      box(2.4, 3.4, 0.6, gr, b.x - 3.2, 34, b.z + 1.2, g);
+    },
+    empire(g, b) {
+      const st = mat(0xb8b2a4);
+      box(22, 28, 22, st, b.x, 14, b.z, g); box(16, 24, 16, st, b.x, 40, b.z, g); box(11, 22, 11, st, b.x, 63, b.z, g); box(7, 18, 7, st, b.x, 83, b.z, g); box(4, 10, 4, st, b.x, 97, b.z, g);
+      put(g, new THREE.CylinderGeometry(0.2, 1.4, 38, 6), IRON(), b.x, 121, b.z);
+    },
+    arc(g, b) {
+      const st = mat(0xd8cdb4);
+      for (const s of [-1, 1]) box(6, 28, 12, st, b.x + s * 8, 14, b.z, g);
+      box(22, 10, 12, st, b.x, 33, b.z, g); box(24, 1.6, 13, st, b.x, 39, b.z, g);
+      put(g, new THREE.CylinderGeometry(2.4, 2.4, 0.4, 12), mat(0x222222), b.x, 0.3, b.z);
+    },
+    indiagate(g, b) {
+      const st = mat(0xc9a070);
+      for (const s of [-1, 1]) box(6, 24, 8, st, b.x + s * 6.5, 12, b.z, g);
+      box(19, 8, 8, st, b.x, 28, b.z, g); box(20, 1.2, 9, st, b.x, 32.6, b.z, g); box(8, 2, 6, mat(0x8a6a48), b.x, 34, b.z, g);
+      sign(g, 9, 1.4, labelMat('INDIA', '#3a2a18', '#d8b27a', 256, 40, 28), b.x, 29, b.z + 4.1, 0);
+      box(24, 0.3, 24, mat(0x4a8a3a), b.x, 0.1, b.z + 6, g);
+    },
+    gateway(g, b) {
+      const st = mat(0xc4a56a), dk = mat(0x6a5a40);
+      for (const s of [-1, 1]) box(5, 22, 9, st, b.x + s * 6.5, 11, b.z, g);
+      box(18, 9, 9, st, b.x, 22.5, b.z, g); box(8, 5, 8, mat(0x3a3224), b.x, 4, b.z, g);
+      for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { put(g, new THREE.CylinderGeometry(1.4, 1.4, 6, 8), st, b.x + sx * 9, 30, b.z + sz * 3.8); put(g, new THREE.SphereGeometry(1.4, 8, 6), st, b.x + sx * 9, 33.6, b.z + sz * 3.8); }
+      dome(g, b.x, 27, b.z, 5, st, 0.8);
+    },
+    rickshaw(g, b) { plane(g, 23, 23, mat(0x6a9a4a), b.x, 0.06, b.z); for (const [x, z] of [[-5, -4], [4, 5], [-3, 6], [6, -5]]) { box(2.6, 1.8, 1.7, mat(0xf2c230), b.x + x, 1.2, b.z + z, g); box(2.6, 0.2, 1.7, mat(0x1b1b1f), b.x + x, 2.2, b.z + z, g); } },
+    taj(g, b) {
+      const w = mat(0xf6f2e8);
+      box(25, 2, 25, mat(0xe9dfcc), b.x, 1, b.z, g); box(14, 14, 14, w, b.x, 9, b.z, g); box(7, 10, 2, mat(0x2a2a2a), b.x, 7, b.z + 7.1, g);
+      dome(g, b.x, 16, b.z, 6.6, w, 1.05); put(g, new THREE.CylinderGeometry(0.2, 0.2, 3.4, 6), GOLD, b.x, 24.6, b.z);
+      for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { put(g, new THREE.CylinderGeometry(1.1, 1.3, 20, 10), w, b.x + sx * 10.6, 12, b.z + sz * 10.6); dome(g, b.x + sx * 10.6, 22, b.z + sz * 10.6, 1.5, w); dome(g, b.x + sx * 5.2, 14, b.z + sz * 5.2, 1.6, w); }
+      plane(g, 4, 10, mat(0x4fa8c8), b.x, 2.1, b.z + 12);
+    },
+    qutub(g, b) { const r = mat(0xb8573a); for (let i = 0; i < 5; i++) { const rb = 5.2 - i * 0.8, rt = rb - 0.8, h = 16 - i; put(g, new THREE.CylinderGeometry(rt, rb, h, 14), mat(i % 2 ? 0xc9694a : 0xb8573a), b.x, 8 + i * 14.4 + h / 2 - 6, b.z); put(g, new THREE.CylinderGeometry(rb + 0.8, rb + 0.8, 0.5, 14), r, b.x, 8 + (i + 1) * 14.4 - 6.4, b.z); } put(g, new THREE.CylinderGeometry(0.2, 1.4, 6, 8), mat(0xf4e8c8), b.x, 86, b.z); },
+    minar(g, b) {
+      const st = mat(0xc9a06a);
+      for (let i = 0; i < 4; i++) put(g, new THREE.CylinderGeometry(4.2 - i * 0.7, 5 - i * 0.7, 9, 12), mat(i % 2 ? 0xe0cfae : 0xc9a06a), b.x, 4.5 + i * 9, b.z);
+      for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; box(2.6, 7, 0.6, mat(0xe8dcc0), b.x + Math.cos(a) * 6.4, 3.5, b.z + Math.sin(a) * 6.4, g).rotation.y = -a; }
+      put(g, new THREE.CylinderGeometry(1.3, 2, 14, 10), mat(0xe8dcc0), b.x, 44, b.z); dome(g, b.x, 51, b.z, 2, mat(0xd8c8a0));
+    },
+    badshahi(g, b) {
+      const r = mat(0xa8452e), w = mat(0xf4efe4);
+      box(24, 6, 24, r, b.x, 3, b.z, g); box(16, 10, 10, r, b.x, 11, b.z - 4, g);
+      dome(g, b.x, 16, b.z - 4, 5.2, w, 1.1); dome(g, b.x - 6, 12, b.z - 4, 3.2, w); dome(g, b.x + 6, 12, b.z - 4, 3.2, w);
+      for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) minaret(g, b.x + sx * 11, b.z + sz * 11, 26, r, w);
+    },
+    pyramids(g, b) {
+      const s = SAND(); put(g, new THREE.ConeGeometry(15.5, 22, 4).rotateY(Math.PI / 4), s, b.x, 11, b.z);
+      put(g, new THREE.ConeGeometry(7, 10, 4).rotateY(Math.PI / 4), mat(0xcfb27c), b.x + 5, 5, b.z + 9);
+    },
+    sphinx(g, b) {
+      const s = mat(0xcfb27c); box(7, 4.6, 16, s, b.x, 2.3, b.z, g); box(4, 5, 4, s, b.x, 6.8, b.z - 8, g); put(g, new THREE.SphereGeometry(2.2, 10, 8), s, b.x, 9.6, b.z - 8.4);
+      for (const sx of [-1, 1]) box(1.6, 2, 6, s, b.x + sx * 2.4, 1, b.z - 12, g);
+      LMK.pyramids(g, { x: b.x + 4, z: b.z + 20 - 6 });
+    },
+    hagia(g, b) {
+      const st = mat(0xd8b898), gr = mat(0x8a9aa0);
+      box(18, 10, 18, st, b.x, 5, b.z, g); dome(g, b.x, 10, b.z, 8.4, gr, 0.85); dome(g, b.x, 10, b.z - 9, 4.2, gr); dome(g, b.x, 10, b.z + 9, 4.2, gr);
+      for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { minaret(g, b.x + sx * 11.5, b.z + sz * 11.5, 28, mat(0xe8dcc8), mat(0x6a7a7a)); box(4, 8, 4, st, b.x + sx * 8, 4, b.z + sz * 8, g); }
+    },
+    galata(g, b) { const st = mat(0xcdbfa6); put(g, new THREE.CylinderGeometry(5, 6, 38, 16), st, b.x, 19, b.z); put(g, new THREE.CylinderGeometry(6.4, 6.4, 3, 16), st, b.x, 37, b.z); put(g, new THREE.CylinderGeometry(5.4, 5.4, 5, 16), st, b.x, 41, b.z); put(g, new THREE.ConeGeometry(6, 12, 16), mat(0x6a7a6a), b.x, 50, b.z); },
+    mbs(g, b) {
+      const gl = mat(0xc9d6de);
+      for (let i = -1; i <= 1; i++) { const t = new THREE.Mesh(slantGeo(5.6, 62, 20), gl); t.position.set(b.x + i * 7.4, 31, b.z); t.castShadow = true; g.add(t); }
+      const ship = box(26, 1.6, 8, mat(0xe8e4dc), b.x, 63, b.z, g); box(8, 1.2, 6, POOL_MAT, b.x + 6, 64.4, b.z, g); put(g, new THREE.ConeGeometry(5, 2, 4).rotateZ(-Math.PI / 2), mat(0xe8e4dc), b.x + 14.6, 63, b.z);
+    },
+    supertrees(g, b) { for (const [x, z, h] of [[-6, -5, 26], [5, -3, 20], [-2, 6, 30], [7, 7, 16]]) { put(g, new THREE.CylinderGeometry(0.7, 1.4, h, 8), mat(0x6a5a4a), b.x + x, h / 2, b.z + z); const c = put(g, new THREE.CylinderGeometry(6, 0.8, 3.6, 12), mat(0x3f9a4a), b.x + x, h + 1.4, b.z + z); } plane(g, 23, 23, mat(0x4f9a3e), b.x, 0.05, b.z); box(3, 2, 3, mat(0xe8e4dc), b.x - 9, 1, b.z + 9, g); put(g, new THREE.ConeGeometry(1.2, 4, 8), mat(0xe8e4dc), b.x - 9, 4, b.z + 9); },
+    opera(g, b) {
+      const w = mat(0xf4f0e6);
+      box(24, 3, 20, mat(0xd8cdb4), b.x, 1.5, b.z, g);
+      for (let i = 0; i < 4; i++) { const sh = put(g, new THREE.SphereGeometry(1, 16, 10, 0, Math.PI, 0, Math.PI / 2), w, b.x - 8 + i * 4.2, 3, b.z); sh.scale.set(5.2 - i * 0.3, 11 - i * 0.7, 6.6); sh.rotation.y = Math.PI / 2; }
+      for (let i = 0; i < 3; i++) { const sh = put(g, new THREE.SphereGeometry(1, 14, 8, 0, Math.PI, 0, Math.PI / 2), w, b.x - 5 + i * 4.8, 3, b.z + 6); sh.scale.set(4, 8 - i, 5); sh.rotation.y = -Math.PI / 2; }
+    },
+    harbourbridge(g, b) {
+      const st = mat(0x6a707a); const arch = new THREE.Mesh(new THREE.TorusGeometry(15, 0.9, 6, 24, Math.PI), st); arch.position.set(b.x, 4, b.z); arch.castShadow = true; g.add(arch);
+      box(32, 1, 6, mat(0x555a62), b.x, 4.2, b.z, g); for (let i = -6; i <= 6; i++) { const y = Math.sqrt(Math.max(0, 225 - (i * 2.4) ** 2)); box(0.3, Math.max(0.4, y), 0.3, st, b.x + i * 2.4, 4 + y / 2, b.z, g); }
+      for (const s of [-1, 1]) box(4, 9, 6, mat(0xb8a890), b.x + s * 16, 4.5, b.z, g);
+    },
+    pearl(g, b) {
+      const pk = mat(0xd93a6a), sl = mat(0xc8ccd4);
+      for (const [dx, dz] of [[-3, -3], [3, -3], [0, 3.4]]) beam(g, b.x + dx * 1.7, 0, b.z + dz * 1.7, b.x + dx * 0.6, 40, b.z + dz * 0.6, 1.6, sl);
+      put(g, new THREE.SphereGeometry(7, 14, 10), pk, b.x, 40, b.z); put(g, new THREE.SphereGeometry(3.4, 12, 8), pk, b.x, 70, b.z); put(g, new THREE.SphereGeometry(5, 12, 8), pk, b.x, 96, b.z);
+      put(g, new THREE.CylinderGeometry(0.5, 1.6, 90, 8), sl, b.x, 85, b.z); put(g, new THREE.CylinderGeometry(0.2, 0.5, 40, 6), sl, b.x, 150, b.z);
+    },
+    jinmao(g, b) { const gl = mat(0xb8c4cc); let w = 16; for (let i = 0; i < 6; i++) { box(w, 18, w, gl, b.x, 9 + i * 17, b.z, g); w -= 2; } put(g, new THREE.ConeGeometry(2, 22, 4).rotateY(Math.PI / 4), gl, b.x, 123, b.z); },
+    kingdom(g, b) {
+      const gl = mat(0xc4d0da);
+      for (const s of [-1, 1]) box(7, 80, 18, gl, b.x + s * 6.5, 40, b.z, g);
+      box(20, 18, 18, gl, b.x, 71, b.z, g); box(20, 4, 18, mat(0x8aa0b4), b.x, 51, b.z, g);
+      put(g, new THREE.TorusGeometry(5, 0.8, 6, 24, Math.PI).rotateZ(0), mat(0xe8e4dc), b.x, 80, b.z + 9.2);
+    },
+    faisaliyah(g, b) { const gl = mat(0xc9d2da); box(14, 70, 14, gl, b.x, 35, b.z, g); put(g, new THREE.SphereGeometry(5, 14, 10), mat(0xe8c870), b.x, 76, b.z); put(g, new THREE.CylinderGeometry(0.3, 0.8, 28, 6), mat(0xe8e4dc), b.x, 98, b.z); },
+    torii(g, b) { const r = mat(0xd8321e); for (const s of [-1, 1]) put(g, new THREE.CylinderGeometry(0.9, 1.1, 14, 10), r, b.x + s * 5, 7, b.z); box(15, 1.2, 1.6, r, b.x, 12.6, b.z, g); box(11, 0.8, 1, r, b.x, 10.4, b.z, g); plane(g, 23, 23, mat(0x58903e), b.x, 0.05, b.z); },
+  };
+  const LMK_H = { eiffel: 320, tokyotower: 360, bigben: 90, towerbridge: 44, londoneye: 70, liberty: 56, empire: 140, arc: 40, indiagate: 36, gateway: 34, rickshaw: 2.6, taj: 26, qutub: 90, minar: 54, badshahi: 28, pyramids: 22, sphinx: 12, hagia: 38, galata: 56, mbs: 66, supertrees: 32, opera: 14, harbourbridge: 20, pearl: 170, jinmao: 128, kingdom: 82, faisaliyah: 100, torii: 14 };
+
+  // ---- how a foreign city is laid out ----
+  const worldZone = (cx, cz) => { const m = Math.max(Math.abs(cx), Math.abs(cz)); return m <= 3 ? 'cbd' : m <= 9 ? 'mid' : 'outer'; };
+  function worldLayoutLots(cx, cz) {
+    const d = wdef(), rnd = mulberry(((cx * 73856093) ^ (cz * 19349663)) + 91 + d.code.charCodeAt(0) * 17);
+    const zone = worldZone(cx, cz), lots = [];
+    const tall = (zone === 'cbd' ? 1 : zone === 'mid' ? 0.55 : 0.2) * (0.5 + d.tall);
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+      const lot = { sx, sz, ground: 'plaza', park: false, trees: [], buildings: [], deco: [] };
+      lots.push(lot);
+      const lm = d.lm.find((e) => e[0] === cx && e[1] === cz && e[2] === sx && e[3] === sz);
+      if (lm) {
+        lot.ground = 'grass'; lot.park = true;
+        bld(lot, 'lm', sx * 25.5, sz * 25.5, 23, 23, LMK_H[lm[4]] || 20, 0, { lmk: lm[4] });
+        for (const [x, z] of [[14, 14], [37, 14], [14, 37], [37, 37]]) lot.trees.push([sx * x, sz * z]);
+        continue;
+      }
+      if (cx === 1 && cz === 0 && sx === 1 && sz === 1) { lot.ground = 'plaza'; bld(lot, 'terminal', sx * 25.5, sz * 25.5, 24, 22, 14, 0, { enter: { kind: 'airport', name: d.airport } }); continue; }
+      const r = rnd();
+      if (r < 0.1) { lot.park = true; lot.ground = 'grass'; for (let i = 0; i < 6; i++) lot.trees.push([sx * (14 + rnd() * 23), sz * (14 + rnd() * 23)]); }
+      else if (r < 0.1 + d.mosque) bld(lot, 'mosque', sx * 25.5, sz * 25.5, 16, 16, 12, 0, { enter: { kind: 'mosque', name: pickName(MOSQUE_NAMES, rnd) } });
+      else if (r < 0.28) {
+        const pool = RESTAURANTS.filter((x) => d.cuisines.includes(x.cuisine));
+        for (const [a0, a1] of [[13.5, 24.5], [26.5, 37.5]]) for (const [b0, b1] of [[13.5, 24.5], [26.5, 37.5]]) {
+          if (rnd() < 0.2) { lot.deco.push(['garden', sx * (a0 + a1) / 2, sz * (b0 + b1) / 2, 9]); continue; }
+          const rr = pool[Math.floor(rnd() * pool.length)] || RESTAURANTS[0];
+          bld(lot, 'restaurant', sx * (a0 + a1) / 2, sz * (b0 + b1) / 2, 10.6, 9.6, 5.6, Math.floor(rnd() * 9), { enter: { kind: 'restaurant', name: rr.name, cuisine: rr.cuisine }, rc: rr.c });
+        }
+      }
+      else if (d.tall >= 0.2 && r < 0.28 + tall * 0.6) {
+        const hMin = zone === 'cbd' ? 56 + d.tall * 70 : 36, hVar = zone === 'cbd' ? 40 + d.tall * 150 : 50;
+        towerLot(lot, rnd, sx, sz, hMin, hVar, d.tall > 0.4 ? TOWER_SHAPES : ['tower', 'box', 'stepped', 'slant']);
+        for (const b of lot.buildings) if (b.shape === 'tower' && rnd() < 0.14 && !b.enter) { b.enter = { kind: 'hotel', name: pickName(d.hotels, rnd) }; b.door = { x: b.x, z: b.z - sz * (b.d / 2), nz: -sz }; }
+      }
+      else if (zone === 'outer' && rnd() < 0.5) villaLot(lot, rnd, sx, sz, 0.8);
+      else aptLot(lot, rnd, sx, sz, zone === 'cbd' ? 22 : 12, zone === 'cbd' ? 40 : 24);
+      for (const b of lot.buildings) { b.pal = d.id; if (b.shape === 'box' && b.mi < 100) b.mi = Math.floor(rnd() * 9); }
+    }
+    for (const [x, z] of [[11.6, 25], [11.6, -25], [-11.6, 25], [-11.6, -25], [25, 11.6], [-25, 11.6], [25, -11.6], [-25, -11.6]]) if (rnd() < 0.5) lots.push({ street: true, trees: [[x, z]], buildings: [], deco: [] });
+    return lots;
+  }
+
+  // ---- names for the HUD ----
+  function worldStreet(x, z) {
+    const d = wdef(), row = Math.round(z / CH), col = Math.round(x / CH);
+    const dz = Math.abs(z - row * CH), dx = Math.abs(x - col * CH);
+    if (dz <= dx) return d.ew[((row % d.ew.length) + d.ew.length) % d.ew.length];
+    return d.ns[((col % d.ns.length) + d.ns.length) % d.ns.length];
+  }
+  function worldDistrict(x, z) {
+    const d = wdef(), cx = Math.round(x / CH), cz = Math.round(z / CH);
+    const h = Math.abs((Math.floor(cx / 2) * 7 + Math.floor(cz / 2) * 13) | 0);
+    return d.districts[h % d.districts.length];
+  }
+
+  // ---- ped clothes follow the country ----
+  function localDress(hum) {
+    const k = wdef().local, r = Math.random();
+    if (k === 'gulf') { if (r < 0.3) dressHuman(hum, pick([{ robe: 0xf5f3ec, head: 'ghutra' }, { robe: 0xf5f3ec, head: 'ghutra' }, { robe: 0xd8d2c2, head: 'ghutra' }, { robe: 0x8d9096, head: 'ghutra' }])); else if (r < 0.42) dressHuman(hum, { robe: 0x121212, head: 'hijab' }); }
+    else if (k === 'india') { if (r < 0.22) dressHuman(hum, { robe: pick([0xd93a6a, 0xf29a2e, 0x3a9a6a, 0x4a6ad9, 0xc8321e]), head: 'none' }); }
+    else if (k === 'pk') { if (r < 0.36) dressHuman(hum, { robe: pick([0xf4f0e6, 0x6a8ab0, 0x8a9a6a, 0xd8c8a0]), head: 'cap', cap: 0xe8dcc0 }); }
+  }
+
+  // ---- switching world ----
+  const worldGround = new THREE.Mesh(new THREE.PlaneGeometry(12000, 12000).rotateX(-Math.PI / 2), mat(0x888888)); worldGround.position.y = -0.32; worldGround.visible = false; scene.add(worldGround);
+  function applyWorldTheme(id) {
+    const d = WORLD_DEFS[id];
+    SEA_EDGE = id === 'dubai' ? -520 : -1e9;
+    if (id === 'dubai') { MAT.pave.color.setHex(0xaaa293); MAT.grass.color.setHex(0x5a8f3e); C_DAY.top.setHex(0x5aa5e6); C_DAY.fog.setHex(0xe6dcc6); }
+    else { MAT.pave.color.setHex(d.pave); MAT.grass.color.setHex(d.grass); C_DAY.top.setHex(d.day[0]); C_DAY.fog.setHex(d.day[1]); worldGround.material.color.setHex(d.pave); }
+    for (const o of dubai.roots) o.visible = id === 'dubai';
+    worldGround.visible = id !== 'dubai';
+    applyLight(true);
+  }
+  function switchWorld(id, spawn) {
+    if (INT.active) forceExitInterior();
+    if (mode === 'drive') exit(true);
+    if (mission) endMission(false, 'You left the country.');
+    WORLD.id = id;
+    for (const [k, c] of chunks) { if (c.keep) continue; scene.remove(c.g); disposeTree(c.g); chunks.delete(k); }
+    layoutCache.clear(); lastChunk = '';
+    applyWorldTheme(id);
+    for (const v of vehicles.slice()) removeVehicle(v);
+    for (const t of traffic.slice()) removeTraffic(t);
+    P.x = spawn.x; P.z = spawn.z; P.h = spawn.h || 0; P.walk = 0;
+    resetPose(); player.position.set(P.x, 0, P.z); player.rotation.set(0, P.h, 0); player.visible = true;
+    updateChunks(P.x, P.z);
+    spawnTraffic(isTouch ? 8 : 14);
+    for (const p of peds) placePed(p, true);
+    if (id === 'dubai' && spawn.home) spawnHomeVehicles();
+    snapCam = true; stars = 0; wantedT = 0;
+  }
+
+  // ================= Dubai International Airport: its own island with a runway, apron and planes =================
+  const AIR = {
+    door: { x: 720, z: -1109.6 },
+    taxiZ: -1268, runZ: -1312, standZ: -1225, runX0: 620, runX1: 1760, exitX: 1010,
+    stands: [{ x: 700 }, { x: 790 }, { x: 880 }, { x: 970 }],
+  };
+  addSeaOk(720, -790, 8, 270);        // the causeway from the beach road
+  addSeaOk(720, -1075, 130, 35);      // forecourt, car park and drop-off
+  const AIRLINE = { name: 'AZARR AIR', c1: 0xb3141d, c2: 0xd9b24a };
+
+  function buildPlane(c1) {
+    const g = new THREE.Group();
+    const body = new THREE.MeshPhongMaterial({ color: 0xf4f4f6, shininess: 70, specular: 0x666666 }), liv = mat(c1), dk = mat(0x23262c), gl = GLASS;
+    const fus = put(g, new THREE.CylinderGeometry(3.1, 3.1, 52, 16).rotateX(Math.PI / 2), body, 0, 0, 0); fus.castShadow = true;
+    const nose = put(g, new THREE.SphereGeometry(3.1, 16, 10), body, 0, 0, -26); nose.scale.z = 2.4;
+    put(g, new THREE.BoxGeometry(5.2, 1.2, 2.2), gl, 0, 1.1, -29.2);
+    const tail = put(g, new THREE.ConeGeometry(3.1, 17, 16).rotateX(-Math.PI / 2), body, 0, 0.8, 34);
+    put(g, new THREE.BoxGeometry(6.28, 0.7, 52.4), liv, 0, -1.9, 0);
+    for (const s of [-1, 1]) {
+      const w = put(g, new THREE.BoxGeometry(34, 0.6, 9), body, s * 17, -1, 4); w.rotation.y = -s * 0.52;
+      const e = put(g, new THREE.CylinderGeometry(1.45, 1.35, 6, 12).rotateX(Math.PI / 2), dk, s * 11, -2.9, -1.5);
+      put(g, new THREE.ConeGeometry(1.2, 1.4, 12).rotateX(-Math.PI / 2), mat(0x9aa0aa), s * 11, -2.9, -5);
+      put(g, new THREE.BoxGeometry(0.1, 0.5, 38), dk, s * 3.12, 1.0, -6);
+      put(g, new THREE.BoxGeometry(14, 0.4, 5), body, s * 8, 1.4, 32).rotation.y = -s * 0.5;
+    }
+    const fin = put(g, new THREE.BoxGeometry(0.6, 13, 10), liv, 0, 9, 29); fin.rotation.x = 0.18;
+    put(g, new THREE.BoxGeometry(0.62, 3, 6), body, 0, 14, 31.4).rotation.x = 0.18;
+    for (const s of [-1, 1]) sign(g, 20, 2.6, labelMat(AIRLINE.name, '#b3141d', null, 512, 64, 40), s * 3.14, 0.6, -2, s * Math.PI / 2);
+    mergeStatic(g);
+    const gear = new THREE.Group();
+    for (const [x, z] of [[0, -22], [-2.4, 3], [2.4, 3], [-2.4, 6.2], [2.4, 6.2]]) { const w = box(0.7, 1.3, 1.3, dk, x, -4.2, z, gear); box(0.2, 1.6, 0.2, dk, x, -3.3, z, gear); }
+    gear.traverse((o) => { o.userData.keep = true; });
+    g.add(gear);
+    return { g, gear };
+  }
+
+  const airport = { planes: [], t: 0, nextArrival: 14, runway: null };
+  function buildAirportIsland(parent) {
+    const g = new THREE.Group(); parent.add(g);
+    const asph = mat(0x34373d), conc = mat(0xb4b0a6), white = new THREE.MeshBasicMaterial({ color: 0xf4f4f0 });
+    // the island, apron, taxiway and runway
+    box(1260, 1.2, 300, mat(0x9a9588), 1180, -0.6, -1185, g); box(1268, 0.8, 308, MAT.rock, 1180, -0.9, -1185, g);
+    plane(g, 1240, 80, conc, 1180, 0.06, -1075);
+    plane(g, 420, 90, asph, 800, 0.07, -1225);
+    plane(g, 1240, 20, asph, 1180, 0.07, AIR.taxiZ);
+    plane(g, 1240, 46, asph, 1180, 0.08, AIR.runZ);
+    plane(g, 22, 52, asph, AIR.exitX, 0.08, -1290);
+    for (let x = AIR.runX0 + 30; x < AIR.runX1; x += 36) plane(g, 20, 1.2, white, x, 0.1, AIR.runZ);
+    for (const x0 of [AIR.runX0 + 4, AIR.runX1 - 4]) for (let i = -5; i <= 5; i++) plane(g, 18, 1.6, white, x0 + (x0 < 1000 ? 9 : -9), 0.1, AIR.runZ + i * 3.6).rotation.y = 0;
+    for (let x = AIR.runX0; x <= AIR.runX1; x += 40) for (const s of [-1, 1]) { put(g, new THREE.SphereGeometry(0.5, 6, 4), new THREE.MeshBasicMaterial({ color: s > 0 ? 0xffe9a0 : 0xffe9a0 }), x, 0.4, AIR.runZ + s * 23.5, 0, false); }
+    for (const st of AIR.stands) { plane(g, 3, 40, white, st.x, 0.1, AIR.standZ).rotation.y = 0; plane(g, 18, 1.2, white, st.x, 0.1, AIR.standZ + 22); }
+    // terminal: 260 m long, glass front, curved roof, jet bridges' look
+    const tx = 720, tz = -1150;
+    box(260, 24, 80, mat(0xe2e6ea), tx, 12, tz, g);
+    box(262, 3, 82, mat(0x9aa4ae), tx, 25.5, tz, g);
+    box(240, 14, 0.4, GLASS, tx, 8, tz + 40.3, g); box(240, 0.8, 4, mat(0x9aa4ae), tx, 15.5, tz + 42, g);
+    sign(g, 46, 3.8, labelMat('DUBAI INTERNATIONAL AIRPORT', '#ffffff', '#14212e', 1280, 100, 52), tx, 19.4, tz + 40.6, 0);
+    sign(g, 12, 2.2, labelMat('DEPARTURES', '#ffffff', '#b3141d', 360, 66, 36), AIR.door.x, 5.2, AIR.door.z + 0.1, 0);
+    box(7, 4.4, 0.3, GLASS, AIR.door.x, 2.2, AIR.door.z - 0.0, g); box(0.5, 4.8, 0.5, MAT.rail, AIR.door.x - 3.8, 2.4, AIR.door.z, g); box(0.5, 4.8, 0.5, MAT.rail, AIR.door.x + 3.8, 2.4, AIR.door.z, g); box(11, 0.4, 5, SILVER, AIR.door.x, 5.0, AIR.door.z + 2.4, g);
+    for (const x of [tx - 100, tx - 60, tx - 20, tx + 20, tx + 60, tx + 100]) box(3, 3, 12, mat(0xc9ced4), x, 6, tz - 48, g);
+    // control tower
+    put(g, new THREE.CylinderGeometry(3.2, 4.4, 54, 14), mat(0xe8eaee), 920, 27, -1130); put(g, new THREE.CylinderGeometry(7.4, 5.2, 7, 14), GLASS, 920, 57, -1130); put(g, new THREE.CylinderGeometry(7.8, 7.8, 0.8, 14), mat(0xb8bcc4), 920, 61, -1130); put(g, new THREE.CylinderGeometry(0.15, 0.2, 14, 5), SILVER, 920, 68, -1130);
+    // hangars and fuel tanks
+    for (let i = 0; i < 3; i++) { box(70, 16, 50, mat(0xc4c8d0), 1180 + i * 90, 8, -1170, g); box(72, 2, 52, mat(0x9aa4ae), 1180 + i * 90, 17, -1170, g); }
+    for (let i = 0; i < 3; i++) put(g, new THREE.CylinderGeometry(9, 9, 14, 16), mat(0xe8e4dc), 1500 + i * 24, 7, -1170);
+    // forecourt: palms, lamps, car park markings
+    for (let x = 600; x <= 840; x += 20) { addTree(g, [], 0, 0, x, -1068); addTree(g, [], 0, 0, x, -1102); }
+    for (let x = 600; x <= 840; x += 40) plane(g, 0.3, 28, white, x, 0.1, -1072);
+    mergeStatic(g);
+    PALM_COLS.push(...[0, 1, 2, 3].map((i) => ({ minX: tx - 130 + i * 65, maxX: tx - 130 + (i + 1) * 65, minZ: tz - 40, maxZ: tz + 40, h: 24 })), { minX: 914, maxX: 927, minZ: -1137, maxZ: -1123, h: 60 });
+    // planes: four at the stands (two always there) and a pool for ambient traffic
+    for (let i = 0; i < 4; i++) {
+      const pl = buildPlane([0xb3141d, 0x1d4fa8, 0x2e7d32, 0x7a3b8e][i]); parent.add(pl.g);
+      const p = { g: pl.g, gear: pl.gear, st: i < 2 ? 'parked' : 'gone', t: 0, stand: i, x: AIR.stands[i].x, y: 0, z: AIR.standZ, h: Math.PI, pitch: 0, speed: 0, path: null, pi: 0, mine: false, wait: 20 + i * 15 };
+      p.g.visible = p.st !== 'gone'; airport.planes.push(p); dubai.roots.push(pl.g);
+    }
+    return g;
+  }
+  function posePlane(p) {
+    p.g.position.set(p.x, p.y + 4.2, p.z); p.g.rotation.set(p.pitch, p.h, 0, 'YXZ'); p.gear.visible = p.y < 4;
+  }
+  const standTaken = (i) => airport.planes.some((p) => p.stand === i && p.st !== 'gone' && p.st !== 'takeoff');
+  const headingOf = (dx, dz) => Math.atan2(-dx, -dz);
+  function followPath(p, dt, spd) {
+    const tgt = p.path[p.pi]; if (!tgt) return true;
+    const dx = tgt.x - p.x, dz = tgt.z - p.z, d = Math.hypot(dx, dz);
+    if (d < spd * dt + 0.01) { p.x = tgt.x; p.z = tgt.z; p.pi++; return p.pi >= p.path.length; }
+    p.x += dx / d * spd * dt; p.z += dz / d * spd * dt;
+    const want = headingOf(dx, dz); p.h += wrapAngle(want - p.h) * Math.min(1, dt * 2.5);
+    return false;
+  }
+  function planeArrive(p, stand) {
+    p.stand = stand; p.st = 'inbound'; p.t = 0; p.g.visible = true; p.mine = false;
+    p.x = 3600; p.z = AIR.runZ; p.y = 230; p.h = Math.PI / 2 + Math.PI; p.pitch = -0.05; p.speed = 68;
+    airport.runway = p;
+  }
+  function planeDepart(p) {
+    p.st = 'taxi_out'; p.t = 0;
+    p.path = [{ x: p.x, z: AIR.taxiZ }, { x: AIR.exitX, z: AIR.taxiZ }, { x: AIR.exitX, z: AIR.runZ }, { x: AIR.exitX + 2, z: AIR.runZ }]; p.pi = 0;
+  }
+  function updatePlane(p, dt) {
+    switch (p.st) {
+      case 'parked': p.wait -= dt; if (p.wait <= 0 && !airport.runway && !p.mine) planeDepart(p); break;
+      case 'inbound': {
+        p.x -= p.speed * dt; p.h = Math.PI / 2;
+        const glide = clamp((p.x - 1720) / (3600 - 1720), 0, 1);
+        p.y = glide * 230; p.pitch = p.y > 1 ? -0.07 : 0.02;
+        if (p.x <= 1720) { p.st = 'roll'; p.y = 0; p.pitch = 0; p.speed = 62; shake = 0; }
+        break;
+      }
+      case 'roll': p.x -= p.speed * dt; p.speed = Math.max(11, p.speed - 11 * dt);
+        if (p.x <= AIR.exitX + 30 || p.speed <= 11.1 && p.x < 1300) { p.st = 'taxi_in'; p.path = [{ x: AIR.exitX, z: AIR.runZ }, { x: AIR.exitX, z: AIR.taxiZ }, { x: AIR.stands[p.stand].x, z: AIR.taxiZ }, { x: AIR.stands[p.stand].x, z: AIR.standZ }]; p.pi = 0; airport.runway = null; }
+        break;
+      case 'taxi_in': if (followPath(p, dt, 12)) { p.st = 'parked'; p.h = Math.PI; p.wait = p.mine ? 1e9 : 40 + Math.random() * 40; } break;
+      case 'taxi_out': if (followPath(p, dt, 12)) { p.st = 'takeoff'; p.speed = 0; airport.runway = p; p.h = -Math.PI / 2; } break;
+      case 'takeoff': {
+        p.speed += 18 * dt * (p.x > 1600 ? 1.4 : 1); p.x += p.speed * dt; p.h = -Math.PI / 2;
+        if (p.x > 1550 && p.speed > 60) { p.y += 15 * dt * (p.x - 1550) / 120; p.pitch = Math.min(0.26, p.pitch + dt * 0.2); }
+        if (p.x > 1900) airport.runway = null;
+        if (p.x > 4200) { p.st = 'gone'; p.g.visible = false; airport.runway = null; p.stand = -1; p.wait = 10; }
+        break;
+      }
+      case 'gone': p.wait -= dt; break;
+    }
+    posePlane(p);
+  }
+  function updateAirport(dt) {
+    if (WORLD.id !== 'dubai') return;
+    airport.t += dt; airport.nextArrival -= dt;
+    for (const p of airport.planes) updatePlane(p, dt);
+    if (airport.nextArrival <= 0) {
+      airport.nextArrival = 28 + Math.random() * 25;
+      const free = [0, 1, 2, 3].filter((i) => !standTaken(i)), gone = airport.planes.find((p) => p.st === 'gone');
+      if (free.length && gone && !airport.runway) planeArrive(gone, free[Math.floor(Math.random() * free.length)]);
+    }
+  }
+
+  // ================= Flights: schedule, tickets, the Travel tab on the phone =================
+  const hashStr = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const rad = (d) => d * Math.PI / 180;
+  function distKm(a, b) {
+    const A = WORLD_DEFS[a], B = WORLD_DEFS[b];
+    const dl = rad(B.lat - A.lat), dn = rad(B.lon - A.lon);
+    const x = Math.sin(dl / 2) ** 2 + Math.cos(rad(A.lat)) * Math.cos(rad(B.lat)) * Math.sin(dn / 2) ** 2;
+    return 6371 * 2 * Math.asin(Math.sqrt(x));
+  }
+  const flagCss = (d) => { const c = d.flag, n = c.length, st = c.map((col, i) => col + ' ' + (i * 100 / n) + '% ' + ((i + 1) * 100 / n) + '%').join(','); return 'linear-gradient(180deg,' + st + ')'; };
+  const minOfDay = (total) => wrapDay(total + 450);
+  const fmtTotal = (total) => fmtClock(minOfDay(total));
+  function flightsFor(from, to) {
+    const h = hashStr(from + '>' + to), km = distKm(from, to);
+    const dur = Math.round(km / 820 * 60 + 35);
+    const eco = Math.round(150 + km * 0.2), biz = Math.round(eco * 3.2);
+    const base = [360 + (h % 60), 790 + ((h >> 3) % 50), 1290 + ((h >> 6) % 40)];
+    return base.map((m, i) => ({ m, no: 'AZ ' + (100 + ((h >> (i + 2)) % 880)), dur, eco, biz, stand: (h >> (i + 5)) % 4 }));
+  }
+  function nextDepTotal(m0, lead = 90) {
+    const t0 = GC.total + lead, day = Math.floor((t0 + 450) / 1440);
+    let c = day * 1440 + m0 - 450;
+    if (c < t0) c += 1440;
+    return c;
+  }
+  function seatTaken(flightNo, depTotal, seat) { return hashStr(flightNo + depTotal + seat) % 100 < 38; }
+  const BIZ_ROWS = [1, 2, 3, 4, 5], BIZ_LETTERS = ['A', 'C', 'D', 'F'];
+  const ECO_ROWS = []; for (let r = 8; r <= 32; r++) ECO_ROWS.push(r);
+  const ECO_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+  save.tickets = save.tickets || [];
+  const tickets = save.tickets;
+
+  function ticketLabel(t) { return t.flightNo + ' · ' + WORLD_DEFS[t.from].city + ' to ' + WORLD_DEFS[t.to].city; }
+  function renderTravel() {
+    const q = ($('destSearch') ? $('destSearch').value : '').trim().toLowerCase();
+    const list = $('destList'); list.innerHTML = '';
+    for (const id of WORLD_ORDER) {
+      if (id === WORLD.id) continue;
+      const d = WORLD_DEFS[id];
+      if (q && !(d.city + ' ' + d.country + ' ' + d.code).toLowerCase().includes(q)) continue;
+      const row = document.createElement('div'); row.className = 'shop-row';
+      row.innerHTML = '<span class="sw" style="width:22px;height:14px;background:' + flagCss(d) + '"></span><span class="nm"></span><button>Flights</button>';
+      row.querySelector('.nm').innerHTML = d.city + ', ' + d.country + '<small>' + d.code + ' · ' + Math.round(distKm(WORLD.id, id)).toLocaleString('en-US') + ' km · from ' + fmtMoney(flightsFor(WORLD.id, id)[0].eco) + '</small>';
+      row.querySelector('button').addEventListener('click', () => openFlightBooking(id));
+      list.appendChild(row);
+    }
+    if (!list.children.length) list.innerHTML = '<p>No city found.</p>';
+    const tl = $('ticketList'); tl.innerHTML = '';
+    const mine = tickets.filter((t) => t.status === 'booked' || t.status === 'flying');
+    if (!mine.length) tl.innerHTML = '<p>No tickets yet. Search a city above and book a flight.</p>';
+    for (const t of mine) {
+      const row = document.createElement('div'); row.className = 'shop-row';
+      const left = t.depTotal - GC.total;
+      row.innerHTML = '<span class="nm"></span><button>Cancel</button>';
+      row.querySelector('.nm').innerHTML = ticketLabel(t) + '<small>' + t.cls + ' · seat ' + t.seat + ' · Gate S' + (t.stand + 1) + ' · departs ' + fmtTotal(t.depTotal) + (left > 0 ? ' (in ' + fmtLeft(left) + ')' : ' (now)') + (t.checkedIn ? ' · checked in' : '') + '</small>';
+      const b = row.querySelector('button'); b.disabled = t.status === 'flying' || left < 45;
+      b.addEventListener('click', () => { const refund = Math.round(t.price * 0.7); save.cash += refund; t.status = 'cancelled'; persist(); toast('Ticket cancelled. Refund ' + fmtMoney(refund) + '.'); renderTravel(); });
+      tl.appendChild(row);
+    }
+  }
+  function openFlightBooking(to) {
+    const d = WORLD_DEFS[to], fl = flightsFor(WORLD.id, to);
+    const st = { f: null, cls: 'Economy', seat: null };
+    const render = () => {
+      let html = '<div class="row"><span class="sw" style="width:30px;height:20px;background:' + flagCss(d) + '"></span><div class="nm">' + WORLD_DEFS[WORLD.id].city + ' to ' + d.city + '<small>' + d.airport + ' (' + d.code + ') · ' + Math.round(distKm(WORLD.id, to)).toLocaleString('en-US') + ' km</small></div></div>';
+      html += '<h4>Flights today and tomorrow</h4>';
+      fl.forEach((f, i) => { const dep = nextDepTotal(f.m); html += '<div class="row"><div class="nm">' + f.no + ' · ' + fmtTotal(dep) + '<small>Duration ' + fmtLeft(f.dur) + ' · arrives ' + fmtTotal(dep + f.dur) + ' · Gate S' + (f.stand + 1) + '</small></div><button class="b' + (st.f === i ? '' : ' alt') + '" data-act="flight" data-i="' + i + '">' + (st.f === i ? 'Selected' : 'Select') + '</button></div>'; });
+      if (st.f !== null) {
+        const f = fl[st.f];
+        html += '<h4>Class</h4><div class="row"><div class="nm">Economy<small>3-3 seats, rows 8 to 32</small></div><div class="pr">' + fmtMoney(f.eco) + '</div><button class="b' + (st.cls === 'Economy' ? '' : ' alt') + '" data-act="cls" data-c="Economy">Economy</button></div>';
+        html += '<div class="row"><div class="nm">Business<small>2-2 lie-flat seats, rows 1 to 5</small></div><div class="pr">' + fmtMoney(f.biz) + '</div><button class="b' + (st.cls === 'Business' ? '' : ' alt') + '" data-act="cls" data-c="Business">Business</button></div>';
+        html += '<h4>Choose your seat (' + (st.seat || 'none') + ')</h4><div class="seatmap">';
+        const rows = st.cls === 'Business' ? BIZ_ROWS : ECO_ROWS, lets = st.cls === 'Business' ? BIZ_LETTERS : ECO_LETTERS, dep = nextDepTotal(f.m);
+        for (const r of rows) {
+          html += '<div class="srow"><b>' + r + '</b>';
+          for (let i = 0; i < lets.length; i++) {
+            if (i === lets.length / 2) html += '<i></i>';
+            const sid = r + lets[i], taken = seatTaken(f.no, dep, sid);
+            html += '<button data-act="seat" data-s="' + sid + '" class="' + (taken ? 'x' : st.seat === sid ? 'on' : '') + '"' + (taken ? ' disabled' : '') + '>' + lets[i] + '</button>';
+          }
+          html += '</div>';
+        }
+        html += '</div><div class="total"><span>Total</span><span>' + fmtMoney(st.cls === 'Business' ? f.biz : f.eco) + '</span></div>';
+        html += '<button class="b" data-act="pay"' + (st.seat ? '' : ' disabled') + '>Pay and get ticket</button>';
+      }
+      setPanel(html);
+    };
+    togglePhone(false);
+    openPanel('Book a flight', '', (act, dd) => {
+      if (act === 'flight') { st.f = +dd.i; st.seat = null; render(); }
+      else if (act === 'cls') { st.cls = dd.c; st.seat = null; render(); }
+      else if (act === 'seat') { st.seat = dd.s; render(); }
+      else if (act === 'pay') {
+        const f = fl[st.f], price = st.cls === 'Business' ? f.biz : f.eco;
+        if (save.cash < price) { toast('Not enough cash for this ticket.', 'fail'); return; }
+        save.cash -= price; persist();
+        const dep = nextDepTotal(f.m);
+        tickets.push({ id: Date.now() + '' + tickets.length, from: WORLD.id, to, flightNo: f.no, depTotal: dep, durMin: f.dur, cls: st.cls, seat: st.seat, stand: f.stand, price, status: 'booked', checkedIn: false, n120: false, n45: false, n15: false });
+        addXP(Math.round(price / 30) + 20); persist();
+        closePanel(); toast('Ticket booked: ' + f.no + ' to ' + d.city + ', seat ' + st.seat + ', departs ' + fmtTotal(dep) + '.', 'win', 5200); beep([659, 880, 1175], 0.6, 'sine', 0.08);
+      }
+    });
+    render();
+  }
+  $('destSearch').addEventListener('input', renderTravel);
+
+  // ---- reminders ----
+  function tickTickets() {
+    for (const t of tickets) {
+      if (t.status !== 'booked') continue;
+      const left = t.depTotal - GC.total, here = WORLD.id === t.from;
+      if (left <= 120 && !t.n120) { t.n120 = true; toast('Flight ' + t.flightNo + ' to ' + WORLD_DEFS[t.to].city + ' leaves at ' + fmtTotal(t.depTotal) + '. Check in at ' + WORLD_DEFS[t.from].airport + '.', '', 5000); }
+      if (left <= 45 && !t.n45) { t.n45 = true; toast('Boarding now: ' + t.flightNo + ' to ' + WORLD_DEFS[t.to].city + ', Gate S' + (t.stand + 1) + '. ' + (here ? 'Go to the airport.' : ''), 'win', 6500); beep([880, 1109, 1319], 1.0, 'sine', 0.09); }
+      if (left <= 15 && !t.n15) { t.n15 = true; toast('Final call for ' + t.flightNo + ' to ' + WORLD_DEFS[t.to].city + '. Gate closes soon!', 'fail', 5500); beep([1175, 1175, 1175], 0.8, 'square', 0.06); }
+      if (left <= 5) { t.status = 'missed'; const refund = Math.round(t.price * 0.25); save.cash += refund; persist(); toast('You missed flight ' + t.flightNo + '. Refund ' + fmtMoney(refund) + '.', 'fail', 5500); }
+    }
+  }
+  function nextTicket() { return tickets.filter((t) => t.status === 'booked' || t.status === 'flying').sort((a, b) => a.depTotal - b.depTotal)[0] || null; }
+
+  // ================= Airport interiors: departures, the apron bus, the cabin, arrivals =================
+  const flight = { t: null, phase: '', timer: 0, speed: 1, seated: false, door: null, doorT: 0, arrAnnounced: false };
+  const SEAT_X = { A: -4.2, B: -3.2, C: -2.2, D: 2.2, E: 3.2, F: 4.2 };
+  const BIZ_X = { A: -4.4, C: -2.5, D: 2.5, F: 4.4 };
+  const seatPos = (sid) => {
+    const r = parseInt(sid, 10), l = sid.replace(/\d+/, ''), biz = r <= 5;
+    return { x: (biz ? BIZ_X : SEAT_X)[l], z: biz ? -33 + (r - 1) * 2.9 : -17 + (r - 8) * 1.75, biz };
+  };
+
+  // --- departure hall (one per world, built on first use) ---
+  function buildAirportHall(wid) {
+    const d = WORLD_DEFS[wid], it = newInterior('airport:' + wid, d.airport);
+    it.world = wid;
+    const W = 130, D = 84, H = 17;
+    it.cuisine = 'court';
+    it.room(W, D, H, pho(texMarble(W, D, 12, '#d4cebe', '#c4bda9', '#a69c82'), 90), mat(0xe4e6ea), mat(0xdcdee2));
+    for (let i = 0; i < 12; i++) it.plane(5, D - 4, new THREE.MeshBasicMaterial({ color: 0xfffbee }), -55 + i * 10, H - 0.06, 0).rotation.x = Math.PI;
+    for (const x of [-48, -16, 16, 48]) for (const z of [-20, 14]) it.cyl(1.3, H, mat(0xcfd4da), x, H / 2, z, true, 16);
+    // glass wall to the apron and a view of the sky
+    it.box(W, 8, 0.3, GLASS, 0, 5, -D / 2 + 0.3);
+    it.sign(60, 3, d.airport.toUpperCase(), '#ffffff', '#14212e', 0, 12.5, -D / 2 + 0.5, 0, 46);
+    // flag colours as a big banner
+    it.box(18, 8, 0.3, mat(0xeeeeee), W / 2 - 14, 9, -D / 2 + 0.7);
+    d.flag.forEach((c, i) => it.box(18, 8 / d.flag.length, 0.34, mat(parseInt(c.slice(1), 16)), W / 2 - 14, 5.5 + (d.flag.length - 1 - i) * (8 / d.flag.length) + 0.6, -D / 2 + 0.72));
+    // check-in desks
+    for (let i = 0; i < 8; i++) { it.box(7, 1.2, 2, mat(0x2b4a7a), -50 + i * 8.5, 0.6, -24, true); it.box(7.2, 0.12, 2.3, mat(0xd8dde4), -50 + i * 8.5, 1.26, -24); it.human(makeHuman(0xb3141d, 0xb3141d, SKINS[i % 4], false), -50 + i * 8.5, -26, 0); }
+    it.sign(24, 2, 'AZARR AIR CHECK-IN', '#ffffff', '#b3141d', -29, 7, -29.5, 0, 36);
+    // security arches and gates
+    for (let i = 0; i < 3; i++) { it.box(0.5, 3.2, 0.5, MAT.rail, -22 + i * 5, 1.6, -6, false); it.box(0.5, 3.2, 0.5, MAT.rail, -19.6 + i * 5, 1.6, -6); it.box(2.9, 0.4, 0.5, MAT.rail, -20.8 + i * 5, 3.3, -6); }
+    it.sign(14, 1.4, 'SECURITY', '#ffffff', '#14212e', -14, 4.4, -6.2, 0, 34);
+    // departures board
+    it.board2 = true;
+    // gate desks S1..S4
+    for (let i = 0; i < 4; i++) {
+      const x = -42 + i * 14, z = -34;
+      it.box(7, 1.2, 1.6, mat(0x3a3f4a), x, 0.6, z, true); it.sign(7, 1.6, 'GATE S' + (i + 1), '#ffffff', '#1d4fa8', x, 3.4, z - 1.2, 0, 34);
+      it.spot(x, z + 2.4, 3.6, () => gateLabel(i), () => gateAction(it, i));
+    }
+    // seating
+    for (let i = 0; i < 5; i++) for (let j = 0; j < 2; j++) it.box(8, 0.5, 1.2, mat(0x4a5a7a), -45 + i * 11, 0.5, -14 + j * 3.6, true);
+    // restaurant tables on the right with the usual waiter and bill
+    const tabX = [24, 36, 48], tabZ = [8, 20, 32];
+    for (const x of tabX) for (const z of tabZ) {
+      it.cyl(1.1, 0.12, mat(0xf0ece0), x, 0.78, z, false, 14); it.cyl(0.14, 0.78, MAT.rail, x, 0.39, z, false, 6); it.col(x, z, 2.2, 2.2, 0.9);
+      for (const [dx, dz] of [[1.5, 0], [-1.5, 0], [0, 1.5], [0, -1.5]]) { it.box(0.65, 0.1, 0.65, mat(0x2a7a8a), x + dx, 0.5, z + dz); it.box(0.1, 0.5, 0.1, MAT.rail, x + dx, 0.25, z + dz); }
+      const sp = it.spot(x, z, 2.7, () => mealLabel(sp), () => mealAct(it, sp));
+    }
+    it.box(3, 1.2, 12, mat(0x3a2418), W / 2 - 5, 0.6, 20, true); it.box(3.2, 0.12, 12.4, mat(0xd8b24a), W / 2 - 5, 1.26, 20);
+    it.sign(14, 2.4, 'AIRPORT KITCHEN', '#ffffff', '#b85c2e', W / 2 - 0.5, 5, 20, -Math.PI / 2, 38);
+    it.human(makeHuman(0xb85c2e, 0x1a1c22, SKINS[2], false), W / 2 - 2.2, 20, Math.PI / 2);
+    it.waiter = it.human(makeHuman(0xf3f3f3, 0x1a1c22, SKINS[1], false), W / 2 - 2.2, 25, Math.PI / 2);
+    it.payAt = { x: it.bx + W / 2 - 8, z: it.bz + 20 }; it.exitAt = { x: it.bx, z: it.bz + D / 2 - 4 };
+    it.spot(W / 2 - 8, 20, 3.6, () => (meal.tab > 0 ? 'pay the bill (' + fmtMoney(meal.tab) + ')' : 'cashier: nothing to pay'), () => payBill(it));
+    for (const x of [-W / 2 + 4, W / 2 - 4]) for (const z of [-D / 2 + 4, D / 2 - 4]) plant(it, x, z, 1.3);
+    // check-in desk spot, the exit
+    it.spot(-29, -20.5, 8, 'check in for your flight', () => openCheckIn(it));
+    it.spot(0, D / 2 - 3, 4, () => (meal.tab > 0 ? 'leave (you owe ' + fmtMoney(meal.tab) + ')' : 'leave the airport'), () => tryLeave(it));
+    it.box(14, 4.4, 0.3, GLASS, 0, 2.2, D / 2 - 0.1); it.sign(5, 0.9, 'EXIT', '#ffffff', '#1a6b3a', 0, 5.4, D / 2 - 0.4, Math.PI, 34);
+    it.spawn = { x: 0, z: D / 2 - 6, h: 0 };
+    it.onEnter = () => { it.title = d.airport; refreshBoard(it); };
+    it.onLeave = () => { clearPlates(); meal.spot = null; meal.state = 'none'; meal.tab = 0; guards.phase = ''; hideBanner(); };
+    it.upd.push((dt) => { mealUpdate(it, dt); it.bt = (it.bt || 0) - dt; if (it.bt <= 0) { it.bt = 2; refreshBoard(it); } });
+    return registerInterior(it);
+  }
+  function refreshBoard(it) {
+    const g = it.board2; if (!g) return;
+    const here = it.world, rows = [];
+    const to = WORLD_ORDER.filter((x) => x !== here);
+    for (const id of to) for (const f of flightsFor(here, id)) { const dep = nextDepTotal(f.m, -30); rows.push({ dep, id, f }); }
+    rows.sort((a, b) => a.dep - b.dep);
+    const pick8 = rows.filter((r) => r.dep >= GC.total - 30).slice(0, 9);
+    drawBoard(it, pick8);
+  }
+  function drawBoard(it, rows) {
+    if (!it.boardCv) { const cv = document.createElement('canvas'); cv.width = 1350; cv.height = 360; it.boardCv = cv; it.boardTex = new THREE.CanvasTexture(cv); const m = new THREE.MeshBasicMaterial({ map: it.boardTex }); const mesh = sign(it.g, 30, 8, m, -65 + 0.8, 9, 2, Math.PI / 2); mesh.userData.keep = true; }
+    const g = it.boardCv.getContext('2d'); g.fillStyle = '#0a1420'; g.fillRect(0, 0, 1350, 360);
+    g.fillStyle = '#ffcc33'; g.font = 'bold 30px Arial'; g.fillText('DEPARTURES', 24, 38); g.fillStyle = '#7fa8c8'; g.font = '22px Arial'; g.fillText('TIME     FLIGHT      DESTINATION                 GATE     STATUS', 24, 68);
+    g.font = 'bold 26px "Courier New", monospace';
+    rows.forEach((r, i) => {
+      const left = r.dep - GC.total, st = left < 0 ? 'DEPARTED' : left <= 15 ? 'GATE CLOSING' : left <= 45 ? 'BOARDING' : 'ON TIME';
+      g.fillStyle = left <= 45 && left >= 0 ? '#5fe08a' : left < 0 ? '#e06a6a' : '#e8e8e8';
+      g.fillText(fmtTotal(r.dep) + '   ' + r.f.no.padEnd(7) + '   ' + (WORLD_DEFS[r.id].city.toUpperCase()).padEnd(18).slice(0, 18) + '    S' + (r.f.stand + 1) + '    ' + st, 24, 104 + i * 28);
+    });
+    it.boardTex.needsUpdate = true;
+  }
+
+  function myTicketHere() { return tickets.find((t) => (t.status === 'booked') && t.from === WORLD.id) || null; }
+  function gateLabel(i) {
+    const t = myTicketHere();
+    if (!t || t.stand !== i) return 'Gate S' + (i + 1) + ': not your gate';
+    const left = t.depTotal - GC.total;
+    if (!t.checkedIn) return 'Gate S' + (i + 1) + ': check in first at the desks';
+    if (left > 45) return 'Gate S' + (i + 1) + ': boarding opens at ' + fmtTotal(t.depTotal - 45);
+    return 'board your flight ' + t.flightNo + ' to ' + WORLD_DEFS[t.to].city;
+  }
+  function gateAction(it, i) {
+    const t = myTicketHere();
+    if (!t) { toast('You have no flight from this airport. Book one on your phone (Travel tab).'); return; }
+    if (t.stand !== i) { toast('Your gate is S' + (t.stand + 1) + '.'); return; }
+    if (!t.checkedIn) { toast('Check in first at the check-in desks.', 'fail'); return; }
+    const left = t.depTotal - GC.total;
+    if (left > 45) { toast('Boarding opens at ' + fmtTotal(t.depTotal - 45) + '. Have a coffee first.'); return; }
+    startBoarding(t);
+  }
+  function openCheckIn(it) {
+    const mine = tickets.filter((t) => t.status === 'booked' && t.from === WORLD.id);
+    if (!mine.length) { openPanel('Check-in', '<p class="note">You have no flight from this airport. Book a ticket in your phone, Travel tab.</p>', null); return; }
+    let html = '<p class="note">Check in to get your boarding pass. Boarding opens 45 minutes before departure and the gate closes 5 minutes before.</p>';
+    for (const t of mine) html += '<div class="row"><div class="nm">' + ticketLabel(t) + '<small>' + t.cls + ' · seat ' + t.seat + ' · Gate S' + (t.stand + 1) + ' · departs ' + fmtTotal(t.depTotal) + '</small></div><button class="b" data-act="ci" data-id="' + t.id + '"' + (t.checkedIn ? ' disabled' : '') + '>' + (t.checkedIn ? 'Checked in' : 'Check in') + '</button></div>';
+    openPanel('Check-in', html, (act, dd) => { const t = tickets.find((x) => x.id === dd.id); if (t) { t.checkedIn = true; persist(); toast('Checked in. Your boarding pass: seat ' + t.seat + ', Gate S' + (t.stand + 1) + '.', 'win', 4200); beep([784, 988], 0.4, 'sine', 0.08); closePanel(); } });
+  }
+
+  // --- the apron and the bus ---
+  function buildApronInterior() {
+    const it = newInterior('apron', 'Airport apron');
+    it.outdoor = true;
+    it.plane(240, 140, mat(0x3a3d44), 0, 0.03, 0);
+    it.box(246, 1, 4, mat(0xb4b0a6), 0, 0.5, 70, true); it.box(2, 6, 140, mat(0x9aa4ae), -121, 3, 0, true); it.box(2, 6, 140, mat(0x9aa4ae), 121, 3, 0, true); it.box(246, 6, 2, mat(0x9aa4ae), 0, 3, -71, true);
+    it.box(240, 22, 8, mat(0xe2e6ea), 0, 11, 62, true); it.box(200, 12, 0.3, GLASS, 0, 8, 57.8);
+    for (const x of [-60, -30, 0, 30, 60]) plane(it.g, 3, 40, new THREE.MeshBasicMaterial({ color: 0xf2c230 }), x, 0.06, 25);
+    const pl = buildPlane(0xb3141d); pl.g.rotation.y = Math.PI / 2; pl.g.position.set(14, 4.2, -8); it.g.add(pl.g); it.plane3d = pl;
+    box(2.6, 4.4, 1.2, mat(0xcfd4da), -17, 2.2, -3.6, it.g); box(2.6, 0.3, 6, mat(0xcfd4da), -17, 4.4, -1, it.g);
+    for (let i = 0; i < 6; i++) box(2.6, 0.2, 0.8, mat(0x9aa4ae), -17, 0.4 + i * 0.7, 3.4 - i * 0.7, it.g);
+    // the bus
+    const bus = new THREE.Group();
+    box(2.6, 2.2, 10.5, mat(0xf2c230), 0, 1.7, 0, bus); box(2.62, 0.9, 9.5, GLASS, 0, 2.2, 0, bus); box(2.7, 0.35, 10.6, mat(0xb3141d), 0, 0.9, 0, bus);
+    for (const [x, z] of [[-1.2, -3.3], [1.2, -3.3], [-1.2, 3.3], [1.2, 3.3]]) put(bus, new THREE.CylinderGeometry(0.55, 0.55, 0.35, 12).rotateZ(Math.PI / 2), mat(0x1b1c1f), x, 0.55, z);
+    box(2.4, 0.3, 0.1, RED_LIGHT, 0, 0.9, 5.3, bus);
+    bus.traverse((o) => { o.userData.keep = true; });
+    it.g.add(bus); it.bus = bus; bus.position.set(-52, 0, 40); bus.rotation.y = Math.PI;
+    it.spawn = { x: -52, z: 40, h: 0 };
+    it.upd.push((dt) => { apronUpdate(it, dt); apronDone(it, dt); });
+    it.onEnter = () => { player.visible = false; };
+    it.onLeave = () => { player.visible = true; };
+    return registerInterior(it);
+  }
+
+  // --- the cabin ---
+  function buildCabinInterior() {
+    const it = newInterior('cabin', 'In flight');
+    const L = 84, Wd = 12, Hh = 6.4;
+    it.plane(Wd, L, mat(0x4a4f5c), 0, 0.02, 0);
+    const shellM = mat(0xf0eee8);
+    it.box(0.5, Hh, L, shellM, -Wd / 2 - 0.25, Hh / 2, 0, true); it.box(0.5, Hh, L, shellM, Wd / 2 + 0.25, Hh / 2, 0, true);
+    it.box(Wd + 1, Hh, 0.5, shellM, 0, Hh / 2, -L / 2 - 0.25, true); it.box(Wd + 1, Hh, 0.5, shellM, 0, Hh / 2, L / 2 + 0.25, true);
+    put(it.g, new THREE.PlaneGeometry(Wd, L).rotateX(Math.PI / 2), mat(0xf4f2ec), 0, Hh, 0, 0, false);
+    for (let z = -38; z <= 38; z += 4) { it.bulb(0, Hh - 0.25, z, 0.16); for (const s of [-1, 1]) it.box(0.2, 0.5, 3, mat(0xe6e4dc), s * 3.6, 5.2, z, false); }
+    // windows share one canvas so the view can change
+    const wc = document.createElement('canvas'); wc.width = 128; wc.height = 128; const wt = new THREE.CanvasTexture(wc); wt.wrapS = wt.wrapT = THREE.RepeatWrapping; it.winTex = wt; it.winCv = wc;
+    const winM = new THREE.MeshBasicMaterial({ map: wt });
+    for (const s of [-1, 1]) for (let r = 8; r <= 32; r++) { const z = -17 + (r - 8) * 1.75; put(it.g, new THREE.PlaneGeometry(0.9, 1.2), winM, s * (Wd / 2 - 0.03), 2.5, z, -s * Math.PI / 2, false); }
+    for (const s of [-1, 1]) for (let r = 1; r <= 5; r++) { const z = -33 + (r - 1) * 2.9; put(it.g, new THREE.PlaneGeometry(0.9, 1.2), winM, s * (Wd / 2 - 0.03), 2.5, z, -s * Math.PI / 2, false); }
+    // seats
+    it.seatSpots = {};
+    const addSeat = (sid, biz) => {
+      const p = seatPos(sid), col = biz ? 0x6a2a3a : 0x2a4a8a;
+      it.box(biz ? 1.3 : 0.9, 0.35, biz ? 1.6 : 0.9, mat(col), p.x, 0.45, p.z); it.box(biz ? 1.3 : 0.9, biz ? 1.3 : 1.0, 0.2, mat(col), p.x, biz ? 1.1 : 1.0, p.z + (biz ? 0.7 : 0.4));
+      const lab = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.26), labelMat(sid, '#ffffff', '#1a2a4a', 96, 48, 30)); lab.position.set(p.x, biz ? 1.55 : 1.4, p.z + (biz ? 0.82 : 0.51)); lab.userData.own = false; it.g.add(lab);
+      const sp = it.spot(p.x, p.z, 0.95, () => (flight.t && flight.t.seat === sid ? (flight.seated ? 'stand up' : 'sit in your seat ' + sid) : 'seat ' + sid + ' is not your seat' + (flight.t ? ' (yours is ' + flight.t.seat + ')' : '')), () => seatAction(it, sid));
+      it.seatSpots[sid] = sp;
+    };
+    for (const r of BIZ_ROWS) for (const l of BIZ_LETTERS) addSeat(r + l, true);
+    for (const r of ECO_ROWS) for (const l of ECO_LETTERS) addSeat(r + l, false);
+    for (const x of [-5, 5]) it.box(0.2, 0.8, L - 4, mat(0xe0ded6), x, 5.4, 0);
+    // galley, toilets, cockpit door
+    it.box(Wd, 3, 0.4, mat(0xcfd4da), 0, 1.5, -36, true); it.sign(3, 0.6, 'COCKPIT', '#ffffff', '#222222', 0, 3.4, -35.7, 0, 22);
+    it.box(2, 3, 2, mat(0xcfd4da), -4.8, 1.5, 38.8, true); it.box(2, 3, 2, mat(0xcfd4da), 4.8, 1.5, 38.8, true);
+    // the door: a panel that slides shut
+    const door = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.4, 1.6), mat(0xd0d4da)); door.position.set(-Wd / 2 + 0.1, 1.9, -33); door.userData.keep = true; it.g.add(door); it.door = door; door.visible = false;
+    it.doorLabel = it.sign(2, 0.5, 'EXIT', '#ffffff', '#1a6b3a', -Wd / 2 + 0.1, 3.8, -33, Math.PI / 2, 28);
+    // the green "your seat" marker
+    const mk = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.12, 1.3), new THREE.MeshBasicMaterial({ color: 0x1ee06a, transparent: true, opacity: 0.8 })); mk.userData.keep = true; it.g.add(mk); it.mark = mk;
+    const mk2 = dynSign(it, 2.6, 0.7, 0, 2.6, 0, 0); mk2.set('YOUR SEAT', '#06210f', '#1ee06a', 34); it.markSign = it.g.children[it.g.children.length - 1]; it.markSign.userData.keep = true;
+    // crew
+    it.crew = [0, 1, 2].map((i) => it.human((() => { const h = makeHuman(0xb3141d, 0xb3141d, SKINS[i + 1], false); dressHuman(h, { robe: 0xb3141d, head: 'cap', cap: 0xb3141d }); return h; })(), -4.8 + i * 2, -34.4, Math.PI));
+    // other passengers
+    it.pax = [];
+    const all = Object.keys(it.seatSpots), rnd = mulberry(77);
+    for (const sid of all) {
+      if (rnd() > 0.34) continue;
+      const p = seatPos(sid), h = makeHuman(pick(SHIRTS), pick(PANTS), pick(SKINS), false);
+      h.legL.rotation.x = h.legR.rotation.x = 1.45; h.armL.rotation.x = h.armR.rotation.x = 0.8; h.g.scale.setScalar(0.92);
+      it.human(h, p.x, p.z + 0.1, 0); h.g.position.y = -0.42; h.sid = sid; it.pax.push(h);
+    }
+    it.spot(-Wd / 2 + 2, -33, 2.4, () => (flight.phase === 'arrived' ? 'leave the plane' : 'the plane door'), () => { if (flight.phase === 'arrived') leavePlane(); else toast('The door is closed in flight.'); }, () => !flight.t);
+    it.spawn = { x: 0, z: -34.5, h: Math.PI };
+    it.onEnter = () => cabinEnter(it);
+    it.upd.push((dt, t) => cabinUpdate(it, dt, t));
+    return registerInterior(it);
+  }
+
+  // --- boarding, the flight itself and arriving ---
+  function startBoarding(t) {
+    const ap = INTERIORS.get('apron') || buildApronInterior();
+    flight.t = t; flight.phase = 'bus'; flight.seated = false; flight.timer = 0; flight.speed = 1; flight.busI = 0;
+    switchInterior(ap, null, () => {
+      INT.frozen = true; ap.bus.position.set(-52, 0, 40); ap.bus.rotation.y = Math.PI;
+      INT.camFn = () => { const b = ap.bus.position; return [ap.bx + b.x + 11, 4.5, ap.bz + b.z + 12, ap.bx + b.x, 1.6, ap.bz + b.z]; };
+      showBanner('Airport bus', 'Taking you to flight ' + t.flightNo + ' to ' + WORLD_DEFS[t.to].city);
+      toast('Boarding: the airport bus takes you to the plane.', 'win');
+    });
+  }
+  const BUS_PATH = [{ x: -52, z: 14 }, { x: -22, z: 9 }];
+  function apronUpdate(it, dt) {
+    player.visible = false;
+    if (flight.phase !== 'bus') return;
+    const b = it.bus, tgt = BUS_PATH[flight.busI];
+    if (!tgt) { flight.phase = 'bus_done'; flight.timer = 0; return; }
+    const dx = tgt.x - b.position.x, dz = tgt.z - b.position.z, d = Math.hypot(dx, dz);
+    if (d < 6 * dt + 0.05) { b.position.x = tgt.x; b.position.z = tgt.z; flight.busI++; return; }
+    b.position.x += dx / d * 6 * dt; b.position.z += dz / d * 6 * dt; b.rotation.y += wrapAngle(Math.atan2(dx, dz) - b.rotation.y) * Math.min(1, dt * 3);
+    flight.timer += dt;
+  }
+  function apronDone(it, dt) {
+    if (flight.phase !== 'bus_done') return;
+    flight.timer += dt;
+    if (flight.timer > 1.5) { flight.phase = 'boarding_cabin'; hideBanner(); INT.camFn = null; INT.frozen = false; const cb = INTERIORS.get('cabin') || buildCabinInterior(); switchInterior(cb, null); }
+  }
+  function setWindowView(it, mode) {
+    const g = it.winCv.getContext('2d');
+    if (mode === 'apron') { g.fillStyle = '#7e8a96'; g.fillRect(0, 0, 128, 128); g.fillStyle = '#9aa4ae'; g.fillRect(0, 70, 128, 58); g.fillStyle = '#c9d2dc'; g.fillRect(0, 0, 128, 48); }
+    else if (mode === 'speed') { const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, '#8fb8e0'); gr.addColorStop(1, '#c9d2dc'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); g.fillStyle = 'rgba(255,255,255,0.6)'; for (let i = 0; i < 14; i++) g.fillRect(0, 30 + i * 6, 128, 1.5); }
+    else if (mode === 'night') { g.fillStyle = '#04070f'; g.fillRect(0, 0, 128, 128); g.fillStyle = 'rgba(255,214,140,0.8)'; for (let i = 0; i < 24; i++) g.fillRect(Math.random() * 128, 70 + Math.random() * 58, 2, 2); }
+    else { const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, '#3f86d8'); gr.addColorStop(1, '#b6d6f2'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); g.fillStyle = 'rgba(255,255,255,0.92)'; for (let i = 0; i < 6; i++) { const x = Math.random() * 120, y = 66 + Math.random() * 50; g.beginPath(); g.ellipse(x, y, 22 + Math.random() * 14, 7 + Math.random() * 5, 0, 0, 7); g.fill(); } }
+    it.winTex.needsUpdate = true;
+  }
+  function cabinEnter(it) {
+    const t = flight.t;
+    if (!t) return;
+    flight.phase = 'boarding'; flight.seated = false; flight.timer = 0;
+    const sp = seatPos(t.seat);
+    it.mark.position.set(sp.x, 0.95, sp.z + 0.1); it.markSign.position.set(sp.x, 2.7, sp.z + 0.2);
+    for (const h of it.pax) h.g.visible = h.sid !== t.seat;
+    it.door.visible = true; it.door.position.set(-6 + 0.1, 1.9, -34.6);
+    setWindowView(it, minOfDay(GC.total) > 1100 || minOfDay(GC.total) < 330 ? 'night' : 'apron');
+    showBanner('Welcome aboard ' + t.flightNo, 'Find your seat ' + t.seat + ' (the green one) and press E to sit');
+    toast('Welcome aboard! Your seat ' + t.seat + ' is marked green.', 'win', 4500);
+    for (let i = 0; i < it.crew.length; i++) it.crew[i].g.position.set(-4.8 + i * 2, 0, -34.4);
+  }
+  function seatAction(it, sid) {
+    const t = flight.t;
+    if (!t) return;
+    if (t.seat !== sid) { toast('That is not your seat. Yours is ' + t.seat + ', marked green.', 'fail'); return; }
+    if (!flight.seated) {
+      const sp = seatPos(sid);
+      flight.seated = true; INT.frozen = true;
+      P.x = it.bx + sp.x; P.z = it.bz + sp.z; P.h = 0;
+      resetPose(); sitPose(true);
+      player.position.set(P.x, -0.42, P.z); player.rotation.set(0, 0, 0);
+      INT.camFn = () => [P.x + 1.7, 2.3, P.z + 2.7, P.x, 1.2, P.z - 2.5];
+      it.mark.visible = false; it.markSign.visible = false;
+      flight.phase = 'doors'; flight.timer = 0;
+      showBanner('Seated', 'The cabin crew are closing the door');
+      toast('Cabin crew, doors to automatic and cross-check.', '', 3500);
+      return;
+    }
+    openSeatPanel(it);
+  }
+  function openSeatPanel(it) {
+    const t = flight.t, cruise = flight.phase === 'cruise' || flight.phase === 'landing';
+    let html = '<p class="note">' + ticketLabel(t) + ' · seat ' + t.seat + '</p>';
+    html += '<div class="row"><div class="nm">Order from the cabin crew<small>Snacks and drinks, charged at once</small></div><button class="b" data-act="order">Order</button></div>';
+    html += '<div class="row"><div class="nm">Speed up the flight x4<small>Time passes faster while you cruise</small></div><button class="b" data-act="speed"' + (flight.phase === 'cruise' ? '' : ' disabled') + '>' + (flight.speed > 1 ? 'Normal speed' : 'Speed up') + '</button></div>';
+    html += '<div class="row"><div class="nm">Stand up and walk<small>Only when the seat belt sign is off</small></div><button class="b alt" data-act="stand"' + (flight.phase === 'cruise' || flight.phase === 'wait' || flight.phase === 'arrived' ? '' : ' disabled') + '>Stand up</button></div>';
+    openPanel('Your seat', html, (act) => {
+      closePanel();
+      if (act === 'order') openMenu({ cuisine: 'room', name: 'Cabin crew', mode: 'room' });
+      else if (act === 'speed') { flight.speed = flight.speed > 1 ? 1 : 4; toast(flight.speed > 1 ? 'Time runs 4 times faster.' : 'Normal speed.'); }
+      else if (act === 'stand') standFromSeat();
+    });
+  }
+  function standFromSeat() {
+    flight.seated = false; INT.frozen = false; INT.camFn = null; resetPose(); sitPose(false); const it = INT.active;
+    P.z = it.bz + seatPos(flight.t.seat).z; P.x = it.bx + 0; player.position.set(P.x, 0, P.z); snapCam = true;
+  }
+  function cabinUpdate(it, dt) {
+    const t = flight.t; if (!t || INT.active !== it) return;
+    flight.timer += dt;
+    switch (flight.phase) {
+      case 'doors': {
+        it.door.position.z = lerp2(-34.6, -33, clamp(flight.timer / 3, 0, 1));
+        if (flight.timer > 3.6) { flight.phase = 'wait'; flight.timer = 0; toast('Doors closed. Departure at ' + fmtTotal(t.depTotal) + '.', 'win', 3600); }
+        break;
+      }
+      case 'wait': {
+        const left = t.depTotal - GC.total;
+        showBanner(t.flightNo + ' · ' + WORLD_DEFS[t.from].city + ' to ' + WORLD_DEFS[t.to].city, left > 1 ? 'Departure at ' + fmtTotal(t.depTotal) + ' (in ' + fmtLeft(Math.max(0, left)) + ')' : 'Pushback');
+        if (left <= 1) { flight.phase = 'taxi'; flight.timer = 0; setWindowView(it, 'apron'); toast('Taxiing to the runway.'); }
+        break;
+      }
+      case 'taxi': if (flight.timer > 6) { flight.phase = 'takeoff'; flight.timer = 0; setWindowView(it, 'speed'); toast('Cabin crew, take your seats for take-off.', '', 3000); } break;
+      case 'takeoff': {
+        shake = Math.max(shake, 0.05 + flight.timer * 0.02); if (Math.random() < 0.1) beep([70 + flight.timer * 14], 0.3, 'sawtooth', 0.03);
+        if (flight.timer > 9) { flight.phase = 'cruise'; flight.timer = 0; t.status = 'flying'; t.arrTotal = GC.total + t.durMin; persist(); setWindowView(it, minOfDay(GC.total) > 1100 || minOfDay(GC.total) < 330 ? 'night' : 'sky'); toast('We are airborne. Enjoy your flight!', 'win', 3500); }
+        break;
+      }
+      case 'cruise': {
+        it.winTex.offset.x = (it.winTex.offset.x + dt * 0.35 * flight.speed) % 1;
+        const left = t.arrTotal - GC.total;
+        showBanner(t.flightNo + ' · ' + WORLD_DEFS[t.from].city + ' to ' + WORLD_DEFS[t.to].city, 'Arrives ' + fmtTotal(t.arrTotal) + ' (in ' + fmtLeft(Math.max(0, left)) + ')' + (flight.speed > 1 ? ' · speed x4' : ''), () => { flight.speed = flight.speed > 1 ? 1 : 4; });
+        $('banSkip').textContent = flight.speed > 1 ? 'Normal speed' : 'Speed up x4';
+        if (left <= 25) { flight.phase = 'landing'; flight.timer = 0; flight.speed = 1; hideBanner(); toast('Cabin crew, prepare for landing.', '', 4000); beep([523, 440], 0.8, 'sine', 0.06); setWindowView(it, 'speed'); }
+        break;
+      }
+      case 'landing': {
+        shake = Math.max(shake, 0.06 + Math.sin(flight.timer * 3) * 0.03);
+        const left = t.arrTotal - GC.total;
+        showBanner('Landing at ' + WORLD_DEFS[t.to].airport, 'Landing in ' + fmtLeft(Math.max(0, left)));
+        if (left <= 0) {
+          flight.phase = 'arrived'; flight.timer = 0; setWindowView(it, 'apron'); hideBanner(); t.status = 'flown'; persist();
+          if (flight.seated) standFromSeat();
+          it.door.position.z = -34.6;
+          const d = WORLD_DEFS[t.to];
+          toast('Welcome to ' + d.city + ' (' + d.code + ')! The plane has landed. Walk to the door and press E to leave.', 'win', 7000); beep([784, 988, 1175], 1.0, 'sine', 0.09);
+        }
+        break;
+      }
+    }
+  }
+  function leavePlane() {
+    const t = flight.t; if (!t) return;
+    const ar = INTERIORS.get('arrivals:' + t.to) || buildArrivalsHall(t.to);
+    switchInterior(ar, null, () => { toast('Welcome to ' + WORLD_DEFS[t.to].city + '. Passport control is ahead.'); });
+  }
+  function buildArrivalsHall(wid) {
+    const d = WORLD_DEFS[wid], it = newInterior('arrivals:' + wid, d.airport + ' arrivals');
+    const W = 100, D = 62, H = 12;
+    it.room(W, D, H, pho(texMarble(W, D, 10, '#d4cebe', '#c4bda9', '#a69c82'), 90), mat(0xe4e6ea), mat(0xdcdee2));
+    for (let i = 0; i < 8; i++) it.plane(4, D - 4, new THREE.MeshBasicMaterial({ color: 0xfffbee }), -40 + i * 11, H - 0.06, 0).rotation.x = Math.PI;
+    it.sign(34, 3, 'WELCOME TO ' + d.city.toUpperCase(), '#ffffff', '#14212e', 0, 9.5, D / 2 - 0.6, Math.PI, 44);
+    d.flag.forEach((c, i) => it.box(16, 6 / d.flag.length, 0.3, mat(parseInt(c.slice(1), 16)), 28, 8.2 - i * (6 / d.flag.length), D / 2 - 0.7));
+    for (let i = 0; i < 6; i++) { it.box(5, 1.2, 1.8, mat(0x2b4a7a), -30 + i * 7, 0.6, -14, true); it.human(makeHuman(0x2a3a5a, 0x1a1c22, SKINS[i % 4], true), -30 + i * 7, -16, 0); }
+    it.sign(20, 1.6, 'PASSPORT CONTROL', '#ffffff', '#2b4a7a', -15, 5, -20.5, 0, 36);
+    // baggage carousel
+    it.box(26, 0.7, 6, mat(0x3a3d44), 0, 0.35, 12, true); const bags = [];
+    for (let i = 0; i < 6; i++) { const b = new THREE.Group(); box(1.1, 0.7, 0.6, mat([0x2a4a8a, 0xb3141d, 0x222222, 0x6a4a2a, 0x2e7d32][i % 5]), 0, 0, 0, b); b.traverse((o) => { o.userData.keep = true; }); b.position.set(-11 + i * 4.4, 1.0, 12); it.g.add(b); bags.push(b); }
+    it.upd.push((dt) => { for (const b of bags) { b.position.x += dt * 0.8; if (b.position.x > 12) b.position.x = -12; } });
+    it.sign(14, 1.2, 'BAGGAGE CLAIM', '#ffffff', '#1d4fa8', 0, 4.2, 18, Math.PI, 32);
+    let stamped = false, bag = false;
+    it.spot(-15, -11, 6, () => (stamped ? 'passport control: you are cleared' : 'show your passport'), () => { stamped = true; toast('Passport stamped. Welcome to ' + d.country + '!', 'win'); beep([660, 880], 0.3, 'sine', 0.08); });
+    it.spot(0, 8.4, 6, () => (bag ? 'baggage: you have your bag' : 'collect your luggage'), () => { bag = true; toast('You picked up your bag.'); });
+    it.spot(0, D / 2 - 3, 4, () => (stamped ? 'go out into ' + d.city : 'go out (passport control first)'), () => { if (!stamped) { toast('Go through passport control first.', 'fail'); return; } finishArrival(wid); });
+    it.box(12, 4.4, 0.3, GLASS, 0, 2.2, D / 2 - 0.1);
+    it.spawn = { x: 0, z: -24, h: Math.PI };
+    return registerInterior(it);
+  }
+  function finishArrival(wid) {
+    const sp = wid === 'dubai' ? { x: 720, z: -1096, h: 0 } : { x: 105.5, z: 9.5, h: Math.PI };
+    fadeThen(() => {
+      switchWorld(wid, sp);
+      flight.t = null; flight.phase = '';
+      addXP(150); save.gems += 2; persist();
+      toast('You are in ' + WORLD_DEFS[wid].city + ', ' + WORLD_DEFS[wid].country + '. Explore, eat, shop. Book your next flight in Phone > Travel.', 'win', 6500);
+    }, 400);
+  }
+  function enterAirport() {
+    const it = INTERIORS.get('airport:' + WORLD.id) || buildAirportHall(WORLD.id);
+    enterInterior(it);
+  }
+
+  // ---- HUD chip and tick ----
+  let ticketTimer = 0;
+  function tickTravel(dt) {
+    ticketTimer -= dt;
+    if (ticketTimer <= 0) { ticketTimer = 1; tickTickets(); }
+  }
+  function updateTravelHud() {
+    const t = nextTicket(), chip = $('flightChip');
+    chip.hidden = !t;
+    if (!t) return;
+    const left = t.depTotal - GC.total;
+    $('flightLabel').textContent = t.flightNo + ' to ' + WORLD_DEFS[t.to].city + ' · seat ' + t.seat;
+    $('flightVal').textContent = t.status === 'flying' ? 'In flight' : left > 45 ? 'Boards in ' + fmtLeft(left - 45) : left > 5 ? 'BOARDING · Gate S' + (t.stand + 1) : 'Gate closed';
+    chip.classList.toggle('now', t.status === 'booked' && left <= 45);
+  }
+  // </TRAVEL>
+
   // ================= Camera & loop =================
   let snapCam = true, shake = 0;
   function aimDir() {
@@ -5226,6 +6275,7 @@
   // Cash and missions passed are kept.
   function resetWorld() {
     forceExitInterior();
+    if (WORLD.id !== 'dubai') switchWorld('dubai', { x: HOME_SPAWN.x, z: HOME_SPAWN.z, h: HOME_SPAWN.h, home: false });
     if (phoneOpen) togglePhone(false);
     calling = false; $('calling').hidden = true;
     if (mode === 'drive') exit(true);
@@ -5265,7 +6315,7 @@
     $('toast').hidden = true;
   });
 
-  if (location.hash === '#debug') window.__dbg = { life: { INT, GC, stay, meal, pray, prayed, save, get food() { return food; }, set food(v) { food = v; }, get wudu() { return wudu; }, set wudu(v) { wudu = v; }, enterHotel, enterRestaurant, enterMall, enterMosque, nearestSpot, lifeAction, closePanel, hotelRoom, hotelLobby, switchInterior, advanceClock, nearestDoor, rideLift, openBooking, openMenu, startWudu, startPrayer, tryLeave, payBill, INTERIORS, SPECS, mealUpdate, guards, prayUpdate, wuduUpdate, finishPrayer, chunkLayout, zoneOf, CH }, info: () => JSON.stringify({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries }), P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
+  if (location.hash === '#debug') window.__dbg = { life: { tickets, flight, startBoarding, enterAirport, openFlightBooking, flightsFor, nextDepTotal, finishArrival, switchWorld, WORLD, WORLD_DEFS, INT, GC, stay, meal, pray, prayed, save, get food() { return food; }, set food(v) { food = v; }, get wudu() { return wudu; }, set wudu(v) { wudu = v; }, enterHotel, enterRestaurant, enterMall, enterMosque, nearestSpot, lifeAction, closePanel, hotelRoom, hotelLobby, switchInterior, advanceClock, nearestDoor, rideLift, openBooking, openMenu, startWudu, startPrayer, tryLeave, payBill, INTERIORS, SPECS, mealUpdate, guards, prayUpdate, wuduUpdate, finishPrayer, chunkLayout, zoneOf, CH }, info: () => JSON.stringify({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries }), P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
 
   const clock = new THREE.Clock();
   let introT = 0;
