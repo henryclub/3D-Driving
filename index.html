@@ -7932,7 +7932,8 @@
     const gold = GOLD, blue = mat(0x16305c), cream = mat(0xf3e8c6);
     exitSpot(it, 0, D / 2 - 3, 'the hotel');
     it.spot(0, -D / 2 + 12 + 3.6, 5.2, 'reception: book a royal suite', () => openBooking(it));
-    it.spot(W / 2 - 4, -D / 2 + 26.5, 5, 'lifts: go to your suite', () => openLift(it));
+    it.spot(W / 2 - 4, -D / 2 + 26.5, 5, 'room lift: go to your suite', () => openLift(it));
+    it.spot(-W / 2 + 4, -D / 2 + 26.5, 5, 'market lift: clothes, phones and more', () => openMarketLift(it));
     it.room(W, D, H, pho(texMarble(W, D, 8, '#dccf9e', '#cfbf86', '#b8922c'), 90), cream, mat(0xfaf1d6));
     it.plane(8, 40, lam(texCarpet(8, 40, '#6a1420', '#d9b24a')), 0, 0.06, D / 2 - 22);
     // stacked golden balconies up both side walls, lit by coloured bulbs
@@ -7955,7 +7956,12 @@
     it.box(22, 8, 0.4, blue, 0, 5.2, -D / 2 + 0.5); it.name = dynSign(it, 17, 2.6, 0, 6.6, -D / 2 + 0.75, 0); it.name.set('BURJ AL ARAB JUMEIRAH', '#f4e6c0', '#16305c', 70);
     for (const x of [-5, 5]) it.human(makeHuman(0xf3f3f3, 0x16305c, SKINS[(x + 8) % 4], false), x, dz - 2.4, Math.PI);
     liftDoors(it, W / 2 - 0.3, -D / 2 + 22, 4, 4.4, 1, gold);
-    it.sign(10, 1.1, 'LIFTS', '#16305c', '#e8c76a', W / 2 - 0.35, 5.8, -D / 2 + 26.5, -Math.PI / 2, 34);
+    it.sign(10, 1.1, 'ROOM LIFTS', '#16305c', '#e8c76a', W / 2 - 0.35, 5.8, -D / 2 + 26.5, -Math.PI / 2, 32);
+    // the market lift on the opposite wall, with a showcase of what the market sells
+    liftDoors(it, -W / 2 + 0.3, -D / 2 + 22, 4, 4.4, -1, gold);
+    it.sign(10, 1.1, 'MARKET LIFT', '#16305c', '#e8c76a', -W / 2 + 0.35, 5.8, -D / 2 + 26.5, Math.PI / 2, 30);
+    it.sign(16, 1.6, 'MARKET  \u00b7  CLOTHES  \u00b7  PHONES  \u00b7  MORE', '#ffffff', '#b3141d', -W / 2 + 0.4, 9, -D / 2 + 14, Math.PI / 2, 26);
+    for (let i = 0; i < 4; i++) { const o = outfitById.get(['mk_sh_whiteoxfordshirt', 'mk_jn_classicbluejeanswithwhitetee', 'kandura', 'mk_tr_blackabayaandhijab'][i]); if (!o) continue; it.cyl(1.4, 0.35, mat(0x2a2018), -W / 2 + 9, 0.18, -D / 2 + 33 + i * 6, true, 16); const h = makeHuman(o.shirt || o.robe, o.pants || o.robe, SKINS[i], false); dressHuman(h, o); it.human(h, -W / 2 + 9, -D / 2 + 33 + i * 6, -Math.PI / 2); }
     for (const x of [-3, 3]) it.human(makeHuman(0xf3f3f3, 0x16305c, SKINS[(x + 7) % 4], false), x * 2.4, D / 2 - 7, 0);
     // Al Mahara: the aquarium restaurant on the left
     const ax = -40, az = 8;
@@ -8177,6 +8183,136 @@
   buildHotelInterior = function (theme) { return theme === 'baa' ? buildBaaInterior() : theme === 'bk' ? buildBkInterior() : _origHotel(theme); };
   // </LANDMARKS2>
 
+    // <BAAMARKET>
+  // ================= Burj Al Arab: a second lift to the market, one floor for each kind of thing =================
+  const hexc = (c) => '#' + c.toString(16).padStart(6, '0');
+  const MK_SHIRTS = [['White Oxford Shirt', 0xf6f6f2, 140], ['Sky Blue Formal Shirt', 0x8fc0e8, 150], ['Black Slim Shirt', 0x1a1a1e, 160], ['Red Check Shirt', 0xc8102e, 120], ['Navy Polo', 0x1d2f5a, 110], ['Green Linen Shirt', 0x5f9a63, 130], ['Yellow Summer Tee', 0xf0c23a, 70], ['Grey Crew Tee', 0x8a8e96, 60], ['Maroon Kurta Shirt', 0x7a1f2e, 190], ['Pink Casual Shirt', 0xe88fb0, 115], ['Orange Sport Tee', 0xf08a3c, 75], ['Purple Party Shirt', 0x6a3aa8, 180]];
+  const MK_JEANS = [['Light Blue Denim Jeans', 0x6f95c8, 220], ['Classic Blue Jeans', 0x3f6196, 240], ['Dark Indigo Jeans', 0x1d2f54, 260], ['Black Skinny Jeans', 0x1c1c20, 250], ['Grey Slim Jeans', 0x6b6f78, 230], ['Washed Faded Jeans', 0x8aa8cf, 210], ['Stone Beige Chinos', 0xc8b48c, 200], ['Olive Cargo Pants', 0x6b7a4a, 270]];
+  const MK_TRAD = [['Cream Kandura and Ghutra', 0xefe6cf, 640, { robe: 0xefe6cf, head: 'ghutra' }], ['Brown Kandura and Ghutra', 0x6b4a32, 690, { robe: 0x6b4a32, head: 'ghutra' }], ['Black Abaya and Hijab', 0x121212, 780, { robe: 0x121212, head: 'hijab' }], ['White Thobe and Cap', 0xf4f4f2, 560, { robe: 0xf4f4f2, head: 'cap', cap: 0xf4f4f2 }], ['Pathani Suit', 0x3a6a7a, 520, { robe: 0x3a6a7a, head: 'cap', cap: 0x3a6a7a }], ['Royal Blue Bisht Set', 0x1d3a8a, 5600, { robe: 0x1d3a8a, head: 'ghutra' }]];
+  for (const [n, c, p] of MK_SHIRTS) OUTFITS.push({ id: 'mk_sh_' + n.toLowerCase().replace(/[^a-z]+/g, ''), name: n, shirt: c, pants: 0x26324a, price: p });
+  for (const [n, c, p] of MK_JEANS) OUTFITS.push({ id: 'mk_jn_' + n.toLowerCase().replace(/[^a-z]+/g, ''), name: n + ' with White Tee', shirt: 0xf2f2f2, pants: c, price: p });
+  for (const [n, c, p, o] of MK_TRAD) OUTFITS.push(Object.assign({ id: 'mk_tr_' + n.toLowerCase().replace(/[^a-z]+/g, ''), name: n, price: p }, o));
+  for (const o of OUTFITS) if (!outfitById.has(o.id)) outfitById.set(o.id, o);
+  const mkIds = (pre) => OUTFITS.filter((o) => o.id.startsWith(pre)).map((o) => o.id);
+  const MKS = [];
+  const defMk = (id, name, floor, color, vis, blurb, rows) => MKS.push(defShop('bk_' + id, name, floor, 'N', 30, color, vis, blurb, rows));
+  defMk('shoes', 'Sneakers and Shoes', 4, 0xb3301d, 'shoes', 'Sneakers, loafers, boots and sandals.', [['White Leather Sneakers', 520], ['Running Shoes', 640], ['Black Oxford Shoes', 780], ['Brown Leather Boots', 860], ['Kolhapuri Sandals', 180], ['Flip Flops', 60], ['Football Boots', 450], ['Gold Sneakers Limited', 2400]]);
+  defMk('watch', 'Luxury Watches', 6, 0x3a3a44, 'watch', 'Swiss and smart watches.', [['Steel Dress Watch', 2600], ['Diamond Bezel Watch', 24500], ['Pilot Chronograph', 9800], ['Smart Watch Ultra', 2899], ['Kids Smart Watch', 380], ['Rose Gold Ladies Watch', 7600]]);
+  defMk('bags', 'Bags and Sunglasses', 7, 0x7a4a2a, 'bag', 'Handbags, backpacks and shades.', [['Leather Handbag', 1800], ['Travel Backpack', 420], ['Designer Tote', 5200], ['Aviator Sunglasses', 380], ['Wayfarer Shades', 340], ['Cabin Suitcase', 990], ['Leather Wallet', 260], ['Crocodile Clutch', 12800]]);
+  defMk('scent', 'Oud and Perfume', 8, 0x8a3a5a, 'perfume', 'Oud, attars and designer perfumes.', [['Royal Oud 100 ml', 1200, 'u', 'A deep royal oud surrounds you.'], ['Musk Attar 12 ml', 160, 'u', 'Clean white musk.'], ['Designer Cologne', 420, 'u', 'A crisp designer cologne.'], ['Amber Perfume', 560, 'u', 'Warm amber.'], ['Bakhoor Burner Set', 380], ['Perfume Gift Box', 950]]);
+  const MK_FLOORS = [
+    { n: 1, name: 'Shirts', c: 0x2a5aa8, kind: 'outfit', ids: () => mkIds('mk_sh_') },
+    { n: 2, name: 'Denim Jeans', c: 0x1d3f7a, kind: 'outfit', ids: () => mkIds('mk_jn_') },
+    { n: 3, name: 'Phones', c: 0x222a3a, kind: 'phones' },
+    { n: 4, name: 'Sneakers and Shoes', c: 0xb3301d, kind: 'shop', shop: 'bk_shoes' },
+    { n: 5, name: 'Traditional Wear', c: 0x1d6a4a, kind: 'outfit', ids: () => mkIds('mk_tr_') },
+    { n: 6, name: 'Luxury Watches', c: 0x3a3a44, kind: 'shop', shop: 'bk_watch' },
+    { n: 7, name: 'Bags and Sunglasses', c: 0x7a4a2a, kind: 'shop', shop: 'bk_bags' },
+    { n: 8, name: 'Oud and Perfume', c: 0x8a3a5a, kind: 'shop', shop: 'bk_scent' },
+  ];
+  const phoneShop = (b) => { if (typeof openPhoneShop === 'function') openPhoneShop(b); else { togglePhone(true); setTab('store'); } };
+  const phoneBrand = (p) => p.brand || p.name.split(' ')[0];
+
+  function openOutfitList(title, ids) {
+    const render = () => {
+      let html = '<p class="note">Everything on this floor is on display. Buy it, then wear it here, in your Bag, or in Phone > Settings.</p>';
+      for (const id of ids) {
+        const o = outfitById.get(id), own = save.outfits.includes(id), wearing = save.outfit === id;
+        html += '<div class="row"><span class="sw" style="background:' + outfitColor(o) + '"></span><div class="nm">' + o.name + '<small>' + fmtMoney(o.price) + '</small></div>'
+          + (own ? '<button class="b alt" data-act="wear" data-id="' + id + '"' + (wearing ? ' disabled' : '') + '>' + (wearing ? 'Wearing' : 'Wear') + '</button>' : '<button class="b" data-act="buy" data-id="' + id + '">Buy</button>') + '</div>';
+      }
+      setPanel(html);
+    };
+    openPanel(title, '', (act, d) => { mkOutfit(d.id, act === 'wear'); render(); });
+    render();
+  }
+  function mkOutfit(id, wearOnly) {
+    const o = outfitById.get(id); if (!o) return;
+    if (!save.outfits.includes(id)) {
+      if (wearOnly) return;
+      if (save.cash < o.price) { toast('Not enough cash.', 'fail'); return; }
+      save.cash -= o.price; save.outfits.push(id); persist(); addXP(Math.round(o.price / 30) + 8);
+      toast('Bought ' + o.name + '.', 'win'); beep([523, 784], 0.4, 'sine', 0.1);
+    }
+    wearOutfit(id);
+  }
+
+  function openMarketLift(it) {
+    let html = '<p class="note">The market lift goes to the shopping floors. Pick a floor.</p>';
+    html += '<div class="row"><div class="nm">Ground · Lobby</div><button class="b alt" data-act="go" data-n="0">Go</button></div>';
+    for (const f of MK_FLOORS) html += '<div class="row"><div class="nm">Floor ' + f.n + ' · ' + f.name + '</div><button class="b" data-act="go" data-n="' + f.n + '"' + (it && it.mk === f.n ? ' disabled' : '') + '>Go</button></div>';
+    openPanel('Market lift', html, (act, d) => { closePanel(); rideMarket(+d.n); });
+  }
+  function rideMarket(n) {
+    beep([880, 1175], 0.4, 'sine', 0.08);
+    if (n === 0) { const l = INTERIORS.get('hotel:baa'); switchInterior(l, { x: -l.W / 2 + 8, z: -l.D / 2 + 26.5, h: -Math.PI / 2 }, () => toast('Ground floor: the lobby.')); return; }
+    switchInterior(INTERIORS.get('baamk:' + n) || buildMarketFloor(n), null, () => toast('Floor ' + n + ': ' + MK_FLOORS[n - 1].name));
+  }
+  function buildMarketFloor(n) {
+    const F = MK_FLOORS[n - 1], it = newInterior('baamk:' + n, 'Burj Al Arab Market · ' + F.name);
+    const W = 90, D = 64, H = 10, gold = GOLD;
+    it.W = W; it.D = D; it.mk = n; it.wide = true;
+    it.room(W, D, H, pho(texMarble(W, D, 8, '#e7ddc0', '#d9ccaa', '#b8922c'), 90), mat(0xf6efd8), mat(0xfbf5e2));
+    for (let i = 0; i < 8; i++) it.plane(3, D - 6, new THREE.MeshBasicMaterial({ color: 0xfffbee }), -48 + i * 14, H - 0.06, 0).rotation.x = Math.PI;
+    for (const x of [-36, 0, 36]) for (const z of [-20, 20]) it.cyl(1.0, H, gold, x, H / 2, z, true, 14);
+    it.sign(34, 3, 'BURJ AL ARAB MARKET', '#f4e6c0', '#16305c', 0, H - 2.2, -D / 2 + 0.5, 0, 46);
+    it.sign(22, 2.2, 'FLOOR ' + n + ' · ' + F.name.toUpperCase(), '#ffffff', hexc(F.c), 0, 6.2, -D / 2 + 0.55, 0, 38);
+    // the lift on the east wall, and the big windows over the sea on the south side
+    liftDoors(it, W / 2 - 0.3, -6, 3, 4.4, 1, gold);
+    it.sign(10, 1.1, 'MARKET LIFT', '#16305c', '#e8c76a', W / 2 - 0.35, 5.8, -1.6, -Math.PI / 2, 32);
+    it.spot(W / 2 - 4, -1.6, 5, 'market lift: change floor', () => openMarketLift(it));
+    it.box(W - 20, 6, 0.3, GLASS, 0, 4, D / 2 - 0.2);
+    it.sign(14, 1.2, 'SEA VIEW', '#ffffff', '#16305c', 0, 8.6, D / 2 - 0.5, Math.PI, 32);
+    // the counter and an assistant
+    it.box(10, 1.2, 2.2, mat(0x4a2e1c), 0, 0.6, 22, true); it.box(10.4, 0.12, 2.6, gold, 0, 1.27, 22);
+    it.human(makeHuman(0xf3f3f3, 0x16305c, SKINS[n % 4], false), 0, 24.4, Math.PI);
+    exitSpot0(it);
+    if (F.kind === 'outfit') {
+      const ids = F.ids(), per = Math.ceil(ids.length / 2);
+      ids.forEach((id, i) => {
+        const o = outfitById.get(id), row = i < per ? 0 : 1, k = row ? i - per : i, cnt = row ? ids.length - per : per;
+        const x = -36 + (k + 0.5) * (72 / cnt), z = row ? -20 : 6, ry = row ? 0 : Math.PI;
+        it.cyl(1.5, 0.35, mat(0x2a2018), x, 0.18, z, true, 16);
+        const h = makeHuman(o.shirt || o.robe, o.pants || o.robe, SKINS[(i + 1) % 4], false); dressHuman(h, o); it.human(h, x, z, ry);
+        it.sign(3.6, 0.9, o.name.length > 24 ? o.name.slice(0, 23) + '.' : o.name, '#ffffff', hexc(F.c), x, 4.3, z + (row ? 1.6 : -1.6), row ? 0 : Math.PI, 24);
+        it.sign(2.4, 0.7, 'AED ' + o.price, '#16305c', '#f4e6c0', x, 3.5, z + (row ? 1.6 : -1.6), row ? 0 : Math.PI, 30);
+        it.spot(x, z + (row ? 3 : -3), 2.2, () => o.name + ' · ' + fmtMoney(o.price) + (save.outfits.includes(id) ? (save.outfit === id ? ': you are wearing it' : ': wear it') : ': buy and wear it'), () => mkOutfit(id, false));
+      });
+      it.spot(0, 19.4, 5, 'counter: see everything on this floor', () => openOutfitList(F.name, ids));
+    } else if (F.kind === 'phones') {
+      const brands = []; for (const p of PHONES) { const b = phoneBrand(p); if (!brands.includes(b)) brands.push(b); }
+      const per = Math.ceil(brands.length / 2);
+      brands.forEach((b, i) => {
+        const row = i < per ? 0 : 1, k = row ? i - per : i, cnt = row ? brands.length - per : per;
+        const x = -37 + (k + 0.5) * (74 / cnt), z = row ? -20 : 4, ps = PHONES.filter((p) => phoneBrand(p) === b && p.price);
+        it.box(8.4, 1.1, 2.4, mat(0x1c1f26), x, 0.55, z, true); it.box(8.6, 0.1, 2.6, CASE_GLASS, x, 1.15, z);
+        ps.slice(0, 6).forEach((p, j) => {
+          const u = x - 3.4 + j * 1.5, folded = !!p.fold;
+          it.box(folded ? 0.6 : 0.8, 1.5, 0.14, mat(p.color ? parseInt(p.color.slice(1), 16) : 0x333333), u, 1.95, z, false).rotation.x = -0.2;
+          if (folded) it.box(0.6, 1.5, 0.14, mat(0x15171c), u + 0.65, 1.95, z, false).rotation.x = -0.2;
+        });
+        it.sign(7, 1.1, b.toUpperCase(), '#ffffff', hexc(F.c), x, 3.4, z + (row ? 1.6 : -1.6), row ? 0 : Math.PI, 34);
+        it.spot(x, z + (row ? 3 : -3), 2.8, b + ': see the phones', () => phoneShop(b));
+      });
+      it.spot(0, 19.4, 5, 'counter: all phones, every brand', () => phoneShop());
+    } else {
+      const sh = ITEMS && SHOPS_DATA.find((s) => s.id === F.shop);
+      sh.items.forEach((item, i) => {
+        const row = i % 2, k = Math.floor(i / 2), x = -30 + k * 11, z = row ? -20 : 4;
+        it.box(9, 1.2, 2, mat(0x4a2e1c), x, 0.6, z, true); it.box(9.2, 0.1, 2.2, CASE_GLASS, x, 1.25, z);
+        for (let j = 0; j < 4; j++) it.box(0.9, 0.5, 0.9, mat([0xc8102e, 0x1d4f8a, 0xe0a63a, 0x2a2a2a, 0x6a3aa8][(i + j) % 5]), x - 3 + j * 2, 1.6, z);
+        it.sign(7, 0.9, item.name.length > 26 ? item.name.slice(0, 25) + '.' : item.name, '#ffffff', hexc(F.c), x, 3.2, z + (row ? 1.6 : -1.6), row ? 0 : Math.PI, 24);
+      });
+      it.spot(0, 19.4, 5, F.name + ': browse and buy', () => openShop(sh));
+      it.spot(-20, 1, 18, F.name + ': browse and buy', () => openShop(sh));
+    }
+    it.spawn = { x: W / 2 - 9, z: -1.6, h: Math.PI / 2 };
+    it.onEnter = () => { it.title = 'Burj Al Arab Market · ' + F.name; };
+    return registerInterior(it);
+  }
+  function exitSpot0(it) { it.spot(it.W / 2 - 4, it.D / 2 - 6, 4, 'back to the lobby', () => rideMarket(0)); it.sign(8, 0.9, 'LOBBY', '#ffffff', '#1a6b3a', it.W / 2 - 4, 4.4, it.D / 2 - 0.5, Math.PI, 32); }
+  // </BAAMARKET>
+
   // ================= Camera & loop =================
   let snapCam = true, shake = 0;
   function aimDir() {
@@ -8330,7 +8466,7 @@
     $('toast').hidden = true;
   });
 
-  if (location.hash === '#debug') window.__dbg = { life: { ride, enterStation, tickets, flight, startBoarding, enterAirport, openFlightBooking, flightsFor, nextDepTotal, finishArrival, switchWorld, WORLD, WORLD_DEFS, INT, GC, stay, meal, pray, prayed, save, get food() { return food; }, set food(v) { food = v; }, get wudu() { return wudu; }, set wudu(v) { wudu = v; }, enterHotel, enterRestaurant, enterMall, enterMosque, nearestSpot, lifeAction, closePanel, hotelRoom, hotelLobby, switchInterior, advanceClock, nearestDoor, rideLift, openBooking, openMenu, startWudu, startPrayer, tryLeave, payBill, INTERIORS, SPECS, mealUpdate, guards, prayUpdate, wuduUpdate, finishPrayer, chunkLayout, zoneOf, CH }, info: () => JSON.stringify({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries }), P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
+  if (location.hash === '#debug') window.__dbg = { life: { rideMarket, ride, enterStation, tickets, flight, startBoarding, enterAirport, openFlightBooking, flightsFor, nextDepTotal, finishArrival, switchWorld, WORLD, WORLD_DEFS, INT, GC, stay, meal, pray, prayed, save, get food() { return food; }, set food(v) { food = v; }, get wudu() { return wudu; }, set wudu(v) { wudu = v; }, enterHotel, enterRestaurant, enterMall, enterMosque, nearestSpot, lifeAction, closePanel, hotelRoom, hotelLobby, switchInterior, advanceClock, nearestDoor, rideLift, openBooking, openMenu, startWudu, startPrayer, tryLeave, payBill, INTERIORS, SPECS, mealUpdate, guards, prayUpdate, wuduUpdate, finishPrayer, chunkLayout, zoneOf, CH }, info: () => JSON.stringify({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries }), P, vehicles, traffic, peds, cops, byNum, createVehicle, addCrime, damagePlayer, setWeapon, fire: () => fire(), get stars() { return stars; }, get hp() { return hp; }, snap: () => { snapCam = true; }, enter: (v) => enter(v), get current() { return current; }, launchTo, startClimb, climbTarget, openFlyMap, roofAt, chunks };
 
   const clock = new THREE.Clock();
   let introT = 0;
